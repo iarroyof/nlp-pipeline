@@ -44,7 +44,7 @@ def scsis(dws, sentence, log = False):
 
     return result            
     
-def scsis_w2v(dws, sentence):
+def scsis_w2v(dws, sentence, log = False):
     """ Single Context summation inside a sentence
     
     Sum of all the word vectors in the sentence
@@ -54,24 +54,38 @@ def scsis_w2v(dws, sentence):
     sentence - the sentence as a list of words
     w2v - Toggles word2vec using
     """
-
-    first = True
-    while(first):
-        try:
-            result = dws[sentence.pop(0)]
-            first = False    
-        except KeyError:
-            continue
+    if not log:
+        first = True
+        while(first):
+            try:
+                result = dws[sentence.pop(0)]
+                first = False    
+            except KeyError:
+                continue
             
-    for word in sentence:
-        try:
-            result = result + dws[word]
-        except KeyError:
-            continue
+        for word in sentence:
+            try:
+                result = result + dws[word]
+            except KeyError:
+                continue
+    else:
+        first = True
+        while(first):
+            try:
+                result = np.log2(dws[sentence.pop(0)])
+                first = False    
+            except KeyError:
+                continue
+            
+        for word in sentence:
+            try:
+                result = result + np.log2(dws[word])
+            except KeyError:
+                continue                        
 
     return result                
 
-def ccbsp(dws, s1, s2, name="convs"):#, w2v = False):
+def ccbsp(dws, s1, s2 = None, name="convs"):#, w2v = False):
     """ Context Convolution between Sentence Pairs
     
     Applies the T operation to the scsis vectors of the sentences
@@ -81,14 +95,27 @@ def ccbsp(dws, s1, s2, name="convs"):#, w2v = False):
     s1, s2 - sentences to be combined, as lists of words
     name - name of the operation, defaults to convolution
     """
-    if 'word2vec' not in str(dws.__class__):
-        x1 = scsis(dws, s1)
-        x2 = scsis(dws, s2)
+    if name.endswith('l'): # Toggles logarithm of the output
+        log = True
     else:
-        x1 = scsis_w2v(dws, s1)
-        x2 = scsis_w2v(dws, s2)
+        log = False
         
-    return T(x1, x2, name)
+    if s2 != None:
+        if 'word2vec' not in str(dws.__class__):
+            x1 = scsis(dws, s1, log = log)
+            x2 = scsis(dws, s2, log = log)
+        else:
+            x1 = scsis_w2v(dws, s1)
+            x2 = scsis_w2v(dws, s2)
+        
+        yield T(x1, x2, name)
+    else:
+        if 'word2vec' not in str(dws.__class__):
+            x = scsis(dws, s1, log = log)
+        else:
+            x = scsis_w2v(dws, s1, log = log)
+            
+        yield x
 
 def read_sentence_pairs(filename, n=False):
     """ Generator to read sentence pairs from "filename"
@@ -107,6 +134,19 @@ def read_sentence_pairs(filename, n=False):
             s2 = s2.lower().split()
             yield row_i, s1, s2    
 
+def read_sentences(filename, n=False):
+    """ Generator to read sentences from "filename"
+    
+    The sentences are returned as a list of words each.
+    If n is specified, it yields only n sentences.
+    """
+    with open(input_file) as fin:
+        for row_i,line in enumerate(fin):
+            if not n is False and row_i == n:
+                break
+            s = line.strip().lower().split()        
+            yield row_i, s            
+
 if __name__ == "__main__":
     """Command line tool to read sentence pairs and generate combined output vectors file
     """
@@ -116,7 +156,8 @@ if __name__ == "__main__":
     parser.add_argument("-d", help="name of the database (word space). Type '-d word2vec' instead if you are using Word2Vec. This option asumes your word2vec model is in the current work directory and it is called word2vec.model", metavar="database", required=True)
     parser.add_argument("-o", help="output file name (optional, defaults to output.mtx)", default="output.mtx", metavar="output_file")
     parser.add_argument("-l", help="limit to certain number of pairs (optional, defaults to whole file)", default=False, metavar="limit")
-    parser.add_argument("-t", help="combiner operation, can be {corr:cross_correlation_same_output_dimension, conv:large_input_convolution (dim > 500), convs:large_input_convolution_same_output_dimension, convss:short_input_convolution_same_output_dimension (dim < 500), conc:concatenation, sub:subtraction}.", metavar="operation", required=True) 
+    parser.add_argument("-S", help="Toggles generation of single sentence vectors (not pairs). The input file must contain a sentence or text by line.", action="store_true")    
+    parser.add_argument("-t", help="combiner operation, can be {corr:cross_correlation_same_output_dimension, conv:large_input_convolution (dim > 500), convs:large_input_convolution_same_output_dimension, convss:short_input_convolution_same_output_dimension (dim < 500), conc:concatenation, sub:subtraction}. Place an 'l' at the end of any operation for getting output logarithmic transformation of your vectors.", metavar="operation") 
     parser.add_argument("-s", help="save as sparse", action="store_true")
     args = parser.parse_args()
     
@@ -135,7 +176,10 @@ if __name__ == "__main__":
     else:
         dws = wtov.load('word2vec.model')
         
-    if args.s and args.d != 'word2vec':
+    if args.s and args.d != 'word2vec' and not args.S:
+        if not args.t: 
+            print '-t argument is required.'
+            exit()
         for row_i, s1, s2 in read_sentence_pairs(input_file, limit):
             v = ccbsp(dws, s1, s2, operation)
             for col_i in range(0,len(v)):
@@ -148,14 +192,27 @@ if __name__ == "__main__":
         m = csr_matrix((data, (row, col)))
         io.mmwrite(output_file, m)    
     #Otherwise the vectors are appended row-wise to a file
-    else:
+    elif args.s and not args.S:
+        if not args.t: 
+            print '-t argument is required.'
+            exit()
         import os
         from numpy import savetxt
         if os.path.isfile(output_file):
             os.unlink(output_file)
         with open(output_file, "a") as fout:
             for row_i, s1, s2 in read_sentence_pairs(input_file, limit):
-                v = ccbsp(dws, s1, s2, operation).astype("float32")
+                v = np.array(list(ccbsp(dws, s1, s2, operation))).astype("float64")
                 savetxt(fout, v, newline=' ')
                 fout.write("\n")
-                
+    elif  args.S:
+        import os
+        from numpy import savetxt
+        if os.path.isfile(output_file):
+            os.unlink(output_file)
+        with open(output_file, "a") as fout:
+            for row_i, s in read_sentences(input_file, limit):
+                v = np.array(list(ccbsp(dws = dws, s1 = s)), ndtype='float32')
+                savetxt(fout, v, newline=' ')
+                fout.write("\n")    
+    
