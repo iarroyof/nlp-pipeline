@@ -31,7 +31,7 @@ def scsis(dws, sentence, log = False):
     Recieves:
     dws - the db_word_space object to get the word vectors
     sentence - the sentence as a list of words
-    w2v - Toggles word2vec using
+    log - Toggles logarithm of the output vectors    
     """
     if log:
         result = np.log2(dws.word_vector(sentence.pop(0)) + 1)
@@ -50,9 +50,9 @@ def scsis_w2v(dws, sentence, log = False):
     Sum of all the word vectors in the sentence
     
     Recieves:
-    dws - the db_word_space object to get the word vectors
-    sentence - the sentence as a list of words
-    w2v - Toggles word2vec using
+    dws - word2vec model
+    sentence - as a list of words.
+    log - Toggles logarithm of the output vectors
     """
     if not log:
         first = True
@@ -93,7 +93,7 @@ def ccbsp(dws, s1, s2 = None, name="convs"):#, w2v = False):
     Recieves:
     dws - the db_word_space object to get the word vectors
     s1, s2 - sentences to be combined, as lists of words
-    name - name of the operation, defaults to convolution
+    name - name of the operation, defaults to convolution. If name ends with 'l', logarithm of the output vectors will be computed
     """
     if name.endswith('l'): # Toggles logarithm of the output
         log = True
