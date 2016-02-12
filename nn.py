@@ -1,4 +1,4 @@
-
+from sknn.platform import cpu64
 from scipy import stats
 from sklearn.grid_search import RandomizedSearchCV
 
@@ -34,9 +34,9 @@ nn = Regressor(
     learning_rate=lrate,
     n_iter=niter)
 
-rs = RandomizedSearchCV(nn, n_iter = 20, n_jobs = 4, param_distributions={
-    'learning_momentum': stats.uniform(0.1, 2.0),
-    'learning_rate': stats.uniform(0.001, 0.05),
+rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions={
+    'learning_momentum': stats.uniform(0.1, 1.5),
+    'learning_rate': stats.uniform(0.009, 0.1),
     'learning_rule': ['sgd', 'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
     'regularize': ["L1", "L2", None],
     'hidden0__units': stats.randint(4, 50),
@@ -46,8 +46,15 @@ rs = RandomizedSearchCV(nn, n_iter = 20, n_jobs = 4, param_distributions={
     'output__type': ["Linear", "Softmax"]})
     
 #rs.fit(a_in, a_out)    
-
-rs.fit(X_train, y_train)
+crash = True
+while(crash):
+    try:
+        rs.fit(X_train, y_train)
+        crash = False
+    except RuntimeError:
+        sys.stderr.write("----------- [Crashed by RunTimeERROR] --------------------- \n")
+        crash = True
+        
 sys.stderr.write("Best Parameters: %s\n" % (str(rs.best_params_)))
 y_valid = rs.predict(X_valid)
 
