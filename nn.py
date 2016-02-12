@@ -65,6 +65,7 @@ for o in y_valid:
     y.append(o[0])
 y_out['estimated_output'] = y
 y_out['best_params'] = rs.best_params_
+y_out['best_score'] = rs.best_score_
 with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
     #savetxt(f, y_out)
     f.write(str(y_out)+'\n')
