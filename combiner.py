@@ -4,6 +4,8 @@ import sys
 from scipy import signal
 from gensim.models import Word2Vec as wtov
 
+from pdb import set_trace as st
+
 def T(x1, x2, name="convs"):
     """ Convolutional (or any other from the ones defined) operation between two CiS vectors 
     
@@ -22,6 +24,41 @@ def T(x1, x2, name="convs"):
         return signal.fftconvolve(x1, x2)
     if name.startswith("corr"):
         return np.correlate(x1, x2, mode='same')
+
+def clean_Ustring_fromU(string):
+    from unicodedata import name, normalize
+    gClean = ''
+    for ch in u''.join(string.decode('utf-8', 'ignore')):
+        try:
+            if name(ch).startswith('LATIN') or name(ch) == 'SPACE':
+                gClean = gClean + ch
+            else: # Remove non-latin characters and change them by spaces
+                gClean = gClean + ' '
+        except ValueError: # In the case name of 'ch' does not exist in the unicode database.
+            gClean = gClean + ' '
+    
+    try: # Trying different cases for bad input documents.
+        normalized_string = normalize('NFKC', gClean.lower())
+    except TypeError:
+        sys.stderr.write('Bad formed string at the first attempt\n')
+        try:
+            range_error = 999
+            normalized_string = normalize('NFKC', gClean[0:range_error].lower()) # One thousand of characters are written if available. 
+        except TypeError:
+            sys.stderr.write('\nThe wrong string at the second attempt: before %s words' % range_error)
+            try:
+                range_error = 99
+                normalized_string = normalize('NFKC', gClean[0:range_error].lower())
+            except TypeError:
+                sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
+                try:
+                    range_error = 49
+                    normalized_string = normalize('NFKC', gClean[0:range_error].lower())
+                except TypeError:    
+                    sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file')
+                    normalized_string = '# Fatally bad File\n'
+                    pass
+    return  normalized_string # Return the unicode normalized document.
 
 def scsis(dws, sentence, log = False):
     """ Single Context summation inside a sentence
@@ -54,6 +91,7 @@ def scsis_w2v(dws, sentence, log = False):
     sentence - as a list of words.
     log - Toggles logarithm of the output vectors
     """
+    
     if not log:
         first = True
         while(first):
@@ -104,18 +142,20 @@ def ccbsp(dws, s1, s2 = None, name="convs"):#, w2v = False):
         if 'word2vec' not in str(dws.__class__):
             x1 = scsis(dws, s1, log = log)
             x2 = scsis(dws, s2, log = log)
-        else:
+        else:        
+            if "mayday" in s2: st()
             x1 = scsis_w2v(dws, s1)
+            			
             x2 = scsis_w2v(dws, s2)
         
-        yield T(x1, x2, name)
+        return T(x1, x2, name)
     else:
         if 'word2vec' not in str(dws.__class__):
             x = scsis(dws, s1, log = log)
         else:
             x = scsis_w2v(dws, s1, log = log)
             
-        yield x
+        return x
 
 def read_sentence_pairs(filename, n=False):
     """ Generator to read sentence pairs from "filename"
@@ -126,13 +166,17 @@ def read_sentence_pairs(filename, n=False):
     If n is specified, it yields only n pairs.
     """
     with open(input_file) as fin:
-        for row_i,line in enumerate(fin):
-            if not n is False and row_i == n:
-                break
-            s1, s2 = line.strip().split("\t")
-            s1 = s1.lower().split()
-            s2 = s2.lower().split()
-            yield row_i, s1, s2    
+	lines = fin.readlines()#; i = 0
+        for line in lines: # Algo anda mal con enumerate, se lo he quitado.
+            #if not n is False and row_i == n:
+            #    break
+            ligne = line.split('\t')
+            s1 = clean_Ustring_fromU(ligne[0]).split()
+            s2 = clean_Ustring_fromU(ligne[1]).split()
+            #if i == 19:
+            #    st()
+            #i += 1
+            yield s1, s2    
 
 def read_sentences(filename, n=False):
     """ Generator to read sentences from "filename"
@@ -141,10 +185,11 @@ def read_sentences(filename, n=False):
     If n is specified, it yields only n sentences.
     """
     with open(input_file) as fin:
-        for row_i,line in enumerate(fin):
-            if not n is False and row_i == n:
-                break
-            s = line.strip().lower().split()        
+	lines = fin.readlines()
+        for line in lines:
+            #if not n is False and row_i == n:
+            #    break
+            s = line.strip().lower().split('\t')        
             yield row_i, s            
 
 if __name__ == "__main__":
@@ -153,7 +198,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", help="input file name (sentence pairs)", metavar="input_file", required=True)
-    parser.add_argument("-d", help="name of the database (word space). Type '-d word2vec' instead if you are using Word2Vec. This option asumes your word2vec model is in the current work directory and it is called word2vec.model", metavar="database", required=True)
+    parser.add_argument("-d", help="name of the database (word space). Type '-d word2vec' instead if you are using Word2Vec. This option assumes your word2vec model is in the current work directory and it is called word2vec.model", metavar="database", required=True)
     parser.add_argument("-o", help="output file name (optional, defaults to output.mtx)", default="output.mtx", metavar="output_file")
     parser.add_argument("-l", help="limit to certain number of pairs (optional, defaults to whole file)", default=False, metavar="limit")
     parser.add_argument("-S", help="Toggles generation of single sentence vectors (not pairs). The input file must contain a sentence or text by line.", action="store_true")    
@@ -175,7 +220,7 @@ if __name__ == "__main__":
         dws = d_ws.db_word_space(args.d)
     else:
         dws = wtov.load('word2vec.model')
-        
+    
     if args.s and args.d != 'word2vec' and not args.S:
         if not args.t: 
             print '-t argument is required.'
@@ -192,7 +237,7 @@ if __name__ == "__main__":
         m = csr_matrix((data, (row, col)))
         io.mmwrite(output_file, m)    
     #Otherwise the vectors are appended row-wise to a file
-    elif args.s and not args.S:
+    elif not args.s and not args.S:
         if not args.t: 
             print '-t argument is required.'
             exit()
@@ -201,11 +246,16 @@ if __name__ == "__main__":
         if os.path.isfile(output_file):
             os.unlink(output_file)
         with open(output_file, "a") as fout:
-            for row_i, s1, s2 in read_sentence_pairs(input_file, limit):
-                v = np.array(list(ccbsp(dws, s1, s2, operation))).astype("float64")
+            i = 0
+            for s1, s2 in read_sentence_pairs(input_file, limit):
+                try:
+                    #if i == 19: st()
+                    v = np.array(ccbsp(dws, s1, s2, operation)).astype("float64")
+                except IndexError:
+                    sys.stderr.write("RowError - %s -- %s\n" % (s1, s2))
                 savetxt(fout, v, newline=' ')
-                fout.write("\n")
-    elif  args.S:
+                fout.write("\n"); i += 1
+    elif args.S:
         import os
         from numpy import savetxt
         if os.path.isfile(output_file):
