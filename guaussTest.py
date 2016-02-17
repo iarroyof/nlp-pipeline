@@ -12,11 +12,13 @@ def plotter(K):
     from matplotlib.ticker import LinearLocator, FormatStrFormatter
     import matplotlib.pyplot as plt
     import numpy as np
-    
+    #from pdb import set_trace as st
+    #st()
+    [rows, cols] = K.shape
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    X = np.arange(0, len(K), 1)
-    Y = np.arange(0, len(K), 1)
+    X = np.arange(0, cols, 1)
+    Y = np.arange(0, rows, 1)
     X, Y = np.meshgrid(X, Y)
     surf = ax.plot_surface(X, Y, K, rstride=1, cstride=1, cmap=cm.coolwarm,
                            linewidth=0, antialiased=False)
@@ -34,6 +36,7 @@ def gamma_median_heuristic(Z, num_subsample=1000):
     i.e. it corresponds to \sigma in k(x,y)=\exp(-0.5*||x-y||^2 / \sigma^2) where
     \sigma is the median distance. \gamma = 0.5/(\sigma^2)
     """
+    
     inds = np.random.permutation(len(Z))[:np.max([num_subsample, len(Z)])]
     dists = squareform(pdist(Z[inds], 'sqeuclidean'))
     median_dist = np.median(dists[dists > 0])
@@ -43,13 +46,13 @@ def gamma_median_heuristic(Z, num_subsample=1000):
     print "Sigma: ", sigma
     gamma = 0.5 / (sigma ** 2)
     
-    return sigma, gamma, median_dist, mean_dist
+    return sigma, gamma, median_dist, mean_dist, Z.shape
 
 feats = loadtxt('vectors_w2v_puses_complete_200_m10.mtx')
 #feats = loadtxt('toy_2_dim_300.data')
 #feats = loadtxt('fm_ape_gutXX.txt')
 
-[w, g, m, M] = gamma_median_heuristic(np.array(feats))
+[w, g, m, M, s] = gamma_median_heuristic(np.array(feats))
 
 features = RealFeatures(np.array(feats).T)
 
@@ -80,8 +83,10 @@ print "\nCombined:\n",k.get_kernel_matrix()
 
 print "Num vectors: ",features.get_num_vectors()
 print "Shape: ", np.array(feats).shape
-print "sigma: ", w, "gamma: ", g, "median: ",m, "mean: ", M
+print "sigma: ", w, "gamma: ", g, "median: ",m, "mean: ", M, "Shape:", s
+
 # Comment following lines if you have not graphical interface
+plotter(np.array(feats))
 plotter(k0.get_kernel_matrix())
 plotter(k1.get_kernel_matrix())
 plotter(k.get_kernel_matrix())
