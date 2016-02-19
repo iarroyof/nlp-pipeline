@@ -52,8 +52,8 @@ if __name__ == "__main__":
     parser = ap(description='This script performs different tests over any input dataset of numerical representations. The main aim is to determine an estimate of a valid range of bandwidths for such a dataset, under the assumption the user wants to use any RBF-like kernel. Also it can be tested some bandwidth entered by the user. In both cases it is possible to see the resultant kernel matrices: the values and a furface plotting (when graphics are available).')    
     parser.add_argument("-f", help="Input file name (vectors)", metavar="input_file", required=True)
     parser.add_argument("-v", help="Custom value specification. If argument for -v is not a number, you can type {'sigma':sigma, 'median':median_dist, 'mean':mean_dist}. default = 'median'", metavar="custom_value", default = 'median')
-    parser.add_argument("-c", help="Toggles if you want to see a combined kernel. The default is a 5-degree Polynomial kernel.", default=False, metavar="combined")
-    parser.add_argument("-g", help="Toggles if you have graphics for surface plotting. You will see firstly the input data, after that the obtained Gaussian kernel. If you selected seeing combined kernel, you will see also the Polynomial kernel and after that the combined kernel (Poly-Gaussian).", default=False, metavar="graphics")
+    parser.add_argument("-c", help="Toggles if you want to see a combined kernel. The default is a 5-degree Polynomial kernel.", default=False, action="store_true")
+    parser.add_argument("-g", help="Toggles if you have graphics for surface plotting. You will see firstly the input data, after that the obtained Gaussian kernel. If you selected seeing combined kernel, you will see also the Polynomial kernel and after that the combined kernel (Poly-Gaussian).", default=False, action="store_true")
     
     args = parser.parse_args()
 
