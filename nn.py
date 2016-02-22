@@ -1,4 +1,4 @@
-#from sknn.platform import cpu64
+#from sknn.platform import cpu64 4.29
 from scipy import stats
 from sklearn.grid_search import RandomizedSearchCV
 
@@ -7,7 +7,7 @@ from numpy import  sqrt, loadtxt, savetxt, array
 import sys
 
 if len(sys.argv) < 4:
-    print "Usage: python nn.py train_vectors scores test_vectors"
+    print "Usage: python nn.py train_vectors scores test_vectors searches"
     exit()
 
 hidden0 = "Tanh"#"Sigmoid"
@@ -19,12 +19,18 @@ units1 = 30
 units2 = 10
 
 X_train = loadtxt(sys.argv[1])
+#print type(X_train)
 y_train = loadtxt(sys.argv[2])
+#print type(y_train)
 X_valid = loadtxt(sys.argv[3])
-
-print "X_train: %s"%(str(X_train.shape))
-print "y_train: %s"%(str(y_train.shape))
-print "X_test: %s"%(str(X_valid.shape))
+#print type(X_valid)
+try:
+    N = int(sys.argv[4]) # The number of searches
+except IndexError:
+    N = 1
+#print "X_train: %s"%(str(X_train.shape))
+#print "y_train: %s"%(str(y_train.shape))
+#print "X_test: %s"%(str(X_valid.shape))
 
 nn = Regressor(
     layers=[
@@ -50,29 +56,30 @@ if len(X_train) != len(y_train):
     sys.stderr.write("Number of samples and number of labels do not match.")
     exit()
 
-crash = True
-while(crash):
-    try:
-        rs.fit(X_train, y_train)
-        crash = False
-    except RuntimeError:
-        sys.stderr.write("----------- [Crashed by RunTimeERROR] --------------------- \n")
-        crash = True
+for t in xrange(N):
+    crash = True
+    while(crash):
+        try:
+            rs.fit(X_train, y_train)
+            crash = False
+        except RuntimeError:
+            sys.stderr.write("--------------------- [Crashed by RunTimeERROR] --------------------- \n")
+            crash = True
         
-sys.stderr.write("Best Parameters: %s\n" % (str(rs.best_params_)))
-y_valid = rs.predict(X_valid)
+    sys.stderr.write("Best Parameters: %s\n" % (str(rs.best_params_)))
+    y_valid = rs.predict(X_valid)
 
-input = sys.argv[3].split("/")[-1].split(".")[0]
-y_out = {}
-y = []
-for o in y_valid:
-    y.append(o[0])
-y_out['estimated_output'] = y
-y_out['best_params'] = rs.best_params_
-y_out['best_score'] = rs.best_score_
-y_out['learned_model'] = rs.best_estimator_ 
+    input = sys.argv[3].split("/")[-1].split(".")[0]
+    y_out = {}
+    y = []
+    for o in y_valid:
+        y.append(o[0])
+    y_out['estimated_output'] = y
+    y_out['best_params'] = rs.best_params_
+    y_out['best_score'] = rs.best_score_
+    #y_out['learned_model'] = rs.best_estimator_ 
 #with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
-with open("nn_output_headlines_30_coocc_svd_sub_300_m10.txt") as f:
+    with open("nn_output_headlines_30_coocc_svd_sub_300_m10.txt", "a") as f:
     #savetxt(f, y_out)
-    f.write(str(y_out)+'\n')
+        f.write(str(y_out)+'\n')
     
