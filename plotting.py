@@ -3,6 +3,7 @@ from numpy import loadtxt
 from scipy.signal import correlate
 from matplotlib.pyplot import *
 from matplotlib import pyplot as pp
+import matplotlib.pyplot as plt
 from ast import literal_eval
 from argparse import ArgumentParser
 
@@ -110,18 +111,22 @@ args = parsed.parse_args()
 label_file = args.goldStandard_file #"/home/iarroyof/data/sts_test_13/STS.output.FNWN.txt"
 output_file = args.predictions_file # "/home/iarroyof/data/output_1_sub_ccbsp_topic.txt"
 
-from pdb import set_trace
+from pdb import set_trace as st
 labs = loadtxt(label_file)
 sample = range(0, len(labs))
 est_outs = []       
+models = []
+weights = []
 
 for est in read_results(output_file):
     est_outs.append(est['estimated_output'])
+    models.append(est['learned_model'])
 
-if len(labs) != len(est_outs[0]):
-    print "Compared predicitons and goldStandard are not of the same length"
-    print "len gs: ", len(labs), " vs len outs: ",  len(est_outs[0])
-    exit()
+for out in est_outs:
+    if len(labs) != len(out):
+        print "Compared predicitons and goldStandard are not of the same length"
+        print "len gs: ", len(labs), " vs len outs: ",  len(est_outs[0])
+        exit()
     
 labels = sorted(zip(labs, sample), key = lambda tup: tup[0])
 
@@ -141,21 +146,39 @@ for out in est_outs:
 i = 0
 
 if args.number_result:
+    
+    try:
+        x = range(len(models[args.number_result]['weights'])); y = models[args.number_result]['weights']    
+        f, axarr = plt.subplots(1, 3)
+        model = True
+    except KeyError:
+        f, axarr = plt.subplots(1, 1)
+        model = False
+
     grid(True)
-    title(titlle+"["+str(i+1)+"]")
+    title(titlle+"["+str(args.number_result)+"]")
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
     p3 = Rectangle((0, 0), 1, 1, fc="g")
-    legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-    xlabel('GoldStandad sorted samples')
-    ylabel(yylabel)
-    if args.log_scale:
-        yscale('log')
-        
-    plot(sample, true, color = 'r', linewidth=2)
-    plot(sample, ordd_est_outs[args.number_result], color = 'b', linewidth=2)
-    plot(sample, ccorrs[args.number_result], color = 'g', linewidth=2)
+    axarr[0].legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
+    axarr[0].set_xlabel('GoldStandad sorted samples')
+    axarr[0].set_ylabel(yylabel)
+    if args.log_scale and model:
+        axarr[1].set_yscale('log')
+        axarr[2].set_yscale('log')
+    
+    axarr[0].plot(sample, true, color = 'r', linewidth=2)
+    axarr[0].plot(sample, ordd_est_outs[args.number_result], color = 'b', linewidth=2)
+    axarr[0].plot(sample, ccorrs[args.number_result], color = 'g', linewidth=2)
+    axarr[0].set_title('Predictions, goldstandard and cross correlation')
+    if model:
+        axarr[1].scatter(x, y)
+        axarr[1].set_title('Learned weights')
+        y = models[args.number_result]['widths']
+        axarr[2].scatter(x, y)
+        axarr[2].set_title('Generated widths')    
+        axarr[2].set_xlabel('Basis '+models[args.number_result]['family']+' index')
     show()
 else:	
     for est_o in ordd_est_outs:
