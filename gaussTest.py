@@ -51,7 +51,7 @@ def gamma_median_heuristic(Z, num_subsample=1000):
 if __name__ == "__main__":
     parser = ap(description='This script performs different tests over any input dataset of numerical representations. The main aim is to determine an estimate of a valid range of bandwidths for such a dataset, under the assumption the user wants to use any RBF-like kernel. Also it can be tested some bandwidth entered by the user. In both cases it is possible to see the resultant kernel matrices: the values and a furface plotting (when graphics are available).')    
     parser.add_argument("-f", help="Input file name (vectors)", metavar="input_file", required=True)
-    parser.add_argument("-v", help="Custom value specification. If argument for -v is not a number, you can type {'sigma':sigma, 'median':median_dist, 'mean':mean_dist}. default = 'median'", metavar="custom_value", default = 'median', required=True)
+    parser.add_argument("-v", help="Custom value specification. If argument for -v is not the number you want to test, you can type {'sigma':sigma, 'median':median_dist, 'mean':mean_dist}. default = 'median'", metavar="custom_value", default = 'median')
     parser.add_argument("-s", help="Number of samples to be considered. Must not be greater than the available number of them.", metavar="input_file", default=1000)
     parser.add_argument("-c", help="Toggles if you want to see a combined kernel. The default is a 5-degree Polynomial kernel.", default=False, action="store_true")
     parser.add_argument("-g", help="Toggles if you have graphics for surface plotting. You will see firstly the input data, after that the obtained Gaussian kernel. If you selected seeing combined kernel, you will see also the Polynomial kernel and after that the combined kernel (Poly-Gaussian).", default=False, action="store_true")
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     k1.set_width(w)
     k1.init(features, features)
     
-    print "\nRBF kernel matrix:\n", k1.get_kernel_matrix()
+    print "\nRBF kernel matrix:\n\n", k1.get_kernel_matrix()
     
     if args.c:
         commb_feats = CombinedFeatures()
@@ -88,14 +88,16 @@ if __name__ == "__main__":
         k.append_kernel(k0)
         k.append_kernel(k1)
 
-        print "Poly:\n", k0.get_kernel_matrix()
+        print "Polynomial kernel matrix:\n\n", k0.get_kernel_matrix()
 
         k.init(commb_feats, commb_feats)
 
-        print "\nCombined kernel matrix:\n",k.get_kernel_matrix()
+        print "\nCombined kernel matrix:\n\n",k.get_kernel_matrix()
 
     print "\n                   ==================== Input data stats =================="
     print "\nNum vectors:",features.get_num_vectors()
+    if unicode(args.v)[0].isnumeric():
+        print "Custom value:", float(args.v)
     print "Sigma:", params['sigma'], "\nGamma:", g 
     print "Median pairwise distance:", params['median'] 
     print "Mean pairwise distance:", params['mean']

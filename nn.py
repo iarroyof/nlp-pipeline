@@ -1,9 +1,9 @@
-from sknn.platform import cpu64
+#from sknn.platform import cpu64
 from scipy import stats
 from sklearn.grid_search import RandomizedSearchCV
 
 from sknn.mlp import Regressor, Layer
-from numpy import  sqrt, loadtxt, savetxt
+from numpy import  sqrt, loadtxt, savetxt, array
 import sys
 
 if len(sys.argv) < 4:
@@ -22,9 +22,9 @@ X_train = loadtxt(sys.argv[1])
 y_train = loadtxt(sys.argv[2])
 X_valid = loadtxt(sys.argv[3])
 
-#print "X_train: %s"%(str(X_train.shape))
-#print "y_train: %s"%(str(y_train.shape))
-#print "X_test: %s"%(str(X_valid.shape))
+print "X_train: %s"%(str(X_train.shape))
+print "y_train: %s"%(str(y_train.shape))
+print "X_test: %s"%(str(X_valid.shape))
 
 nn = Regressor(
     layers=[
@@ -34,7 +34,7 @@ nn = Regressor(
     learning_rate=lrate,
     n_iter=niter)
 
-rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions={
+rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 16, param_distributions={
     'learning_momentum': stats.uniform(0.1, 1.5),
     'learning_rate': stats.uniform(0.009, 0.1),
     'learning_rule': ['sgd', 'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
@@ -46,6 +46,10 @@ rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions={
     'output__type': ["Linear", "Softmax"]})
     
 #rs.fit(a_in, a_out)    
+if len(X_train) != len(y_train):
+    sys.stderr.write("Number of samples and number of labels do not match.")
+    exit()
+
 crash = True
 while(crash):
     try:
@@ -66,7 +70,9 @@ for o in y_valid:
 y_out['estimated_output'] = y
 y_out['best_params'] = rs.best_params_
 y_out['best_score'] = rs.best_score_
-with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
+y_out['learned_model'] = rs.best_estimator_ 
+#with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
+with open("nn_output_headlines_30_coocc_svd_sub_300_m10.txt") as f:
     #savetxt(f, y_out)
     f.write(str(y_out)+'\n')
     
