@@ -20,7 +20,7 @@ def clean_Ustring_fromU(string):
     try: # Trying different cases for bad input documents.
         normalized_string = normalize('NFKC', gClean.lower())
     except TypeError:
-        sys.stderr.write('Bad formed string at the first attempt\n')
+        sys.stderr.write('The wrong string at the first attempt\n')
         try:
             range_error = 999
             normalized_string = normalize('NFKC', gClean[0:range_error].lower()) # One thousand of characters are written if available. 
