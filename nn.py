@@ -1,4 +1,4 @@
-#from sknn.platform import cpu64 4.29
+from sknn.platform import cpu64, threading
 from scipy import stats
 from sklearn.grid_search import RandomizedSearchCV
 

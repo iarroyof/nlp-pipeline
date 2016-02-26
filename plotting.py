@@ -120,7 +120,11 @@ weights = []
 
 for est in read_results(output_file):
     est_outs.append(est['estimated_output'])
-    models.append(est['learned_model'])
+    try:
+        models.append(est['learned_model'])
+    except KeyError:
+        model = False
+        pass
 
 for out in est_outs:
     if len(labs) != len(out):
@@ -179,6 +183,7 @@ if args.number_result:
         axarr[2].scatter(x, y)
         axarr[2].set_title('Generated widths')    
         axarr[2].set_xlabel('Basis '+models[args.number_result]['family']+' index')
+
     show()
 else:	
     for est_o in ordd_est_outs:
