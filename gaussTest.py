@@ -1,5 +1,6 @@
 from modshogun import *
 import numpy as np
+import sys
 from numpy import loadtxt, genfromtxt, array
 from scipy.spatial.distance import squareform, pdist
 from argparse import ArgumentParser as ap
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     k1.set_width(w)
     k1.init(features, features)
     
-    print "\nRBF kernel matrix:\n\n", k1.get_kernel_matrix()
+    sys.stdout.write("\nRBF kernel matrix for width = %s \n\n %s" %(w, k1.get_kernel_matrix()))
     
     if args.c:
         commb_feats = CombinedFeatures()
