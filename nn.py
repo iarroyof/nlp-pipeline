@@ -34,8 +34,9 @@ except IndexError:
 
 nn = Regressor(
     layers=[
-        Layer(hidden1, units=units2),
-        Layer(hidden0, units=units1),
+        Layer(hidden2, units=1),
+        Layer(hidden1, units=1),
+        Layer(hidden0, units=1),
         Layer(output)],
     learning_rate=lrate,
     n_iter=niter)
@@ -45,10 +46,13 @@ rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 1, param_distributions={
     'learning_rate': stats.uniform(0.009, 0.1),
     'learning_rule': ['sgd', 'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
     'regularize': ["L1", "L2", None],
-    'hidden0__units': stats.randint(4, 50),
-    'hidden1__units': stats.randint(10, 100),
+    'hidden0__units': stats.randint(4, 200),
     'hidden0__type': ["Rectifier", "Sigmoid", "Tanh"],
+    'hidden1__units': stats.randint(4, 200),
     'hidden1__type': ["Rectifier", "Sigmoid", "Tanh"],
+    'hidden2__units': stats.randint(4, 200),
+    'hidden2__type': ["Rectifier", "Sigmoid", "Tanh"],
+
     'output__type': ["Linear", "Softmax"]})
     
 #rs.fit(a_in, a_out)    
