@@ -1,6 +1,7 @@
 # Author: Ignacio Arroyo-Fernandez (UNAM)
 
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, Doc2Vec
+from gensim.models.Doc2Vec import TaggedLineDocument
 import os
 from argparse import ArgumentParser as ap
 import sys
@@ -52,21 +53,20 @@ class yield_line_documents(object):
 
 if __name__ == "__main__":
     parser = ap(description='Trains and saves a word2vec model into a file for mmap\'ing. Tokenization is performed un utf-8 an for Python 2.7. Non-latin characters are replaced by spaces. The model is saved into a given directory. All options are needed.')    
-    parser.add_argument('-i', type=str, dest = 'indirname', help='Specifies the directory containing files to be processed. No sub-directories are allowed.')
+    parser.add_argument('-i', type=str, dest = 'indir_file_name', help='Specifies the directory containing files to be processed. No sub-directories are allowed. In the case doc2vec is used, a file name must be specified. This file must contain a a sentence/document by line.')
     parser.add_argument('-o', type=str, dest = 'outfile', help='Specifies the file where to be stored the model.')
     parser.add_argument('-t', type=int, dest = 'threads', help='Specifies the number of threads the training will be divided.')
     parser.add_argument('-H', type=int, dest = 'hidden', help='Specifies the number of hidden units the model going to have.')
     parser.add_argument('-m', type=int, dest = 'minc', help='Specifies the minimum frequency a word should have in the corpus to be considered.')
-    #args_indirname = '/home/ignacio/WikiFr_cadenas_test/'
-    #args_outfile = '/home/ignacio/w2v_model/mymodel'
-    #args_threads = 4
-    #args_hidden = 100
-    #args_minc = 5
+    parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
+
     args = parser.parse_args()
-    articles = yield_line_documents(args.indirname)
-    w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
-    w2v_model.save(args.outfile, separately = None)
-    
-    #w2v_new = Word2Vec.load(args_outfile)
-    #print w2v_new['computer']
-    	
+    if args.d2v:
+        articles = TaggedLineDocument(args.indir_file_name)
+        d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)    
+        d2v_model.save(args.outfile, separately = None)
+    else:
+        articles = yield_line_documents(args.indir_file_name)
+        w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
+        w2v_model.save(args.outfile, separately = None)
+        	
