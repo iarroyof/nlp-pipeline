@@ -1,7 +1,7 @@
 # Author: Ignacio Arroyo-Fernandez (UNAM)
 
 from gensim.models import Word2Vec, Doc2Vec
-from gensim.models.Doc2Vec import TaggedLineDocument
+from gensim.models.doc2vec import TaggedLineDocument
 import os
 from argparse import ArgumentParser as ap
 import sys
