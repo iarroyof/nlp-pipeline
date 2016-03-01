@@ -7,6 +7,7 @@ from argparse import ArgumentParser as ap
 import sys
 
 def clean_Ustring_fromU(string):
+  if string:      
     from unicodedata import name, normalize
     gClean = ''
     for ch in u''.join(string.decode('utf-8', 'ignore')):
@@ -21,25 +22,29 @@ def clean_Ustring_fromU(string):
     try: # Trying different cases for bad input documents.
         normalized_string = normalize('NFKC', gClean.lower())
     except TypeError:
-        sys.stderr.write('Badly formed string at the first attempt\n-- Document sample: '+gClean[0:49])
+        sys.stderr.write("\nBadly formed string at the first attempt\n-- Document sample: '"+gClean[0:49]+"'\n")
         try:
             range_error = 999
             normalized_string = normalize('NFKC', gClean[0:range_error].lower()) # One thousand of characters are written if available. 
         except TypeError:
-            sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
+            #sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
             try:
                 range_error = 99
                 normalized_string = normalize('NFKC', gClean[0:range_error].lower())
             except TypeError:
-                sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
+                #sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
                 try:
                     range_error = 49
                     normalized_string = normalize('NFKC', gClean[0:range_error].lower())
                 except TypeError:    
-                    sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
-                    normalized_string = '# Fatally bad File\n'
+                 #   sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
+                    normalized_string = None
                     pass
-    return  normalized_string.split() # Return the unicode normalized document.
+    if normalized_string:
+        return  normalized_string.split() # Return the unicode normalized document.
+    return None
+  else:
+    return None
 
 class yield_line_documents(object):
     def __init__(self, dirname, d2v=False):
@@ -48,10 +53,21 @@ class yield_line_documents(object):
     def __iter__(self):
         if self.d2v:
             for fname in os.listdir(self.dirname):
-                l = 1
+                l = -1
                 for line in open(os.path.join(self.dirname, fname)):
-                    yield LabeledSentence(clean_Ustring_fromU(line), str(l)+"_"+fname)
                     l += 1
+                    cs = clean_Ustring_fromU(line)
+                    if cs:
+                        try:
+                            tag = str(l)+"_"+line[:15]
+                        except IndexError:
+                            tag = str(l)+"_"+line[:5]
+                        yield LabeledSentence(cs, ["sent_"+str(l), tag])
+                    else:
+                        #tag = str(l)+"_E"
+                        sys.stderr.write("Empty string at line %s." % l)
+                        yield None
+                    
         else:
             for fname in os.listdir(self.dirname):
                 for line in open(os.path.join(self.dirname, fname)):
@@ -72,7 +88,8 @@ if __name__ == "__main__":
         arts = yield_line_documents(args.indir_file_name, d2v = True)
         articles = []
         for a in arts:
-            articles.append(a)
+            if a:
+                articles.append(a)
         d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)    
         d2v_model.save(args.outfile, separately = None)
     else:
