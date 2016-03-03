@@ -27,17 +27,17 @@ def clean_Ustring_fromU(string):
             range_error = 999
             normalized_string = normalize('NFKC', gClean[0:range_error].lower()) # One thousand of characters are written if available. 
         except TypeError:
-            #sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
+            sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
             try:
                 range_error = 99
                 normalized_string = normalize('NFKC', gClean[0:range_error].lower())
             except TypeError:
-                #sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
+                sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
                 try:
                     range_error = 49
                     normalized_string = normalize('NFKC', gClean[0:range_error].lower())
                 except TypeError:    
-                 #   sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
+                    sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
                     normalized_string = None
                     pass
     if normalized_string:
@@ -53,19 +53,17 @@ class yield_line_documents(object):
     def __iter__(self):
         if self.d2v:
             for fname in os.listdir(self.dirname):
-                l = -1
+                l = 0; pair = 0
                 for line in open(os.path.join(self.dirname, fname)):
                     l += 1
                     cs = clean_Ustring_fromU(line)
+                    #if (l + 1) % 2: pair = pair + 1
                     if cs:
-                        try:
-                            tag = str(l)+"_"+line[:15]
-                        except IndexError:
-                            tag = str(l)+"_"+line[:5]
-                        yield LabeledSentence(cs, ["sent_"+str(l), tag])
+                        #tag = str(pair)+"_"+str(l)+"_snippet"
+                        tag = str(l)+"_sent"
+                        yield LabeledSentence(cs, [tag])
                     else:
-                        #tag = str(l)+"_E"
-                        sys.stderr.write("Empty string at line %s." % l)
+                        sys.stderr.write("Empty string at line %s.\n" % l)
                         yield None
                     
         else:
@@ -90,8 +88,14 @@ if __name__ == "__main__":
         for a in arts:
             if a:
                 articles.append(a)
-        d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)    
-        d2v_model.save(args.outfile, separately = None)
+        sys.stderr.write("\n>> Articles generator unpacked...\n")
+        try:
+            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)    
+            d2v_model.save(args.outfile, separately = None)
+        except IOError:
+            sys.stderr.write("\n>> Error caught while model saving...\n")
+        except:
+            sys.stderr.write("\n>> Error caught while model instantiation...\n")
     else:
         articles = yield_line_documents(args.indir_file_name)
         w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
