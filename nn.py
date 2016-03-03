@@ -12,6 +12,7 @@ if len(sys.argv) < 4:
 
 hidden0 = "Tanh"#"Sigmoid"
 hidden1 = "Tanh"
+hidden2 = "Tanh"
 output = "Sigmoid"
 lrate = 0.001
 niter = 100

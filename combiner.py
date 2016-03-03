@@ -127,7 +127,7 @@ def scsis_w2v(dws, sentence, log = False):
 
     return result                
 
-def ccbsp(dws, s1, s2 = None, name="convs"):
+def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
     """ Context Convolution between Sentence Pairs
     
     Applies the T operation to the scsis vectors of the sentences
@@ -136,6 +136,9 @@ def ccbsp(dws, s1, s2 = None, name="convs"):
     dws - the db_word_space object to get the word vectors
     s1, s2 - sentences to be combined, as lists of words
     name - name of the operation, defaults to convolution. If name ends with 'l', logarithm of the output vectors will be computed
+    index - This is the 1-based index of the sentence pair (the row number in the input_file). It is needed only for doc2vec. The 
+            reason is d2v uses tags for getting sentence vectors. Notice those vectors are not needed to be constructed, as in the 
+            case of non-d2v (word-vector-based) representations. For sigle sentence by row, this index is not required.
     """
     if name.endswith('l'): # Toggles logarithm of the output
         log = True
@@ -143,19 +146,29 @@ def ccbsp(dws, s1, s2 = None, name="convs"):
         log = False
         
     if s2 != None:
-        if 'word2vec' not in str(dws.__class__):
+        if 'word2vec' in str(dws.__class__):
+            x1 = scsis_w2v(dws, s1)
+            x2 = scsis_w2v(dws, s2)
+        elif 'doc2vec' in str(dws.__class__):
+            tag_x1 = str(index)+"_"+str(index+(2*index-3))+"_snippet" # the index i, the subindex: i + (2i-3)
+            tag_x2 = str(index)+"_"+str(index+(2*index-2))+"_snippet" # the index i, the subindex: i + (2i-2)
+            sys.stderr.write("\n%s\n" % dws.docvecs.doctags[tag_x1])
+            sys.stderr.write("\n%s\n" % dws.docvecs.doctags[tag_x2])
+            x1 = dws.docvecs[tag_x1]
+            x2 = dws.docvecs[tag_x2]
+        else:        
             x1 = scsis(dws, s1, log = log)
             x2 = scsis(dws, s2, log = log)
-        else:        
-            x1 = scsis_w2v(dws, s1)         			
-            x2 = scsis_w2v(dws, s2)
         
         return T(x1, x2, name)
     else:
-        if 'word2vec' not in str(dws.__class__):
-            x = scsis(dws, s1, log = log)
-        else:
+        if 'doc2vec' in str(dws.__class__):
+            tag = str(index)+"_sent"
+            x = dws.docvecs[tag]
+        elif 'word2vec' in str(dws.__class__):
             x = scsis_w2v(dws, s1, log = log)
+        else:
+            x = scsis(dws, s1, log = log)
             
         return x
 
@@ -168,15 +181,14 @@ def read_sentence_pairs(filename, n=False):
     If n is specified, it yields only n pairs.
     """
     with open(input_file) as fin:
-        row_i = 0
-        for line in fin.readlines():
+        #row_i = 0
+        for row_i, line in enumerate(fin):
             if not n is False and row_i == n:
                 break
             ligne = line.split('\t')
             s1 = clean_Ustring_fromU(ligne[0]).split()
             s2 = clean_Ustring_fromU(ligne[1]).split()
-            row_i += 1
-            yield s1, s2    
+            yield row_i, s1, s2    
 
 def read_sentences(filename, n=False):
     """ Generator to read sentences from "filename"
@@ -185,9 +197,9 @@ def read_sentences(filename, n=False):
     If n is specified, it yields only n sentences.
     """
     with open(input_file) as fin:
-        for line in fin.readlines():
-            s = line.strip().lower().split()        
-            yield s            
+        for i, line in enumerate(fin):
+            yield i, line.strip().lower().split()        
+                        
 
 if __name__ == "__main__":
     """Command line tool to read sentence pairs and generate combined output vectors file
@@ -195,7 +207,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", help="input file name (sentence pairs)", metavar="input_file", required=True)
-    parser.add_argument("-d", help="name of the database (word space). Type '-d word2vec' instead if you are using Word2Vec. This option assumes your word2vec model is in the current work directory and it is called word2vec.model", metavar="database", required=True)
+    parser.add_argument("-d", help="name of the database (word space). Type '-d word2vec' instead if you are using Word2Vec. The default file is 'word2vec.model' in current directory. Also '-d doc2vec' can be specified. For both latter options, use -w option for specifying the model file.", metavar="database", required=True)
     parser.add_argument("-o", help="output file name (optional, defaults to output.mtx)", default="output.mtx", metavar="output_file")
     parser.add_argument("-l", help="limit to certain number of pairs (optional, defaults to whole file)", default=False, metavar="limit")
     parser.add_argument("-S", help="Toggles generation of single sentence vectors (not pairs). The input file must contain a sentence or text by line.", action="store_true")    
@@ -250,25 +262,33 @@ if __name__ == "__main__":
         invalid_rows = "invalid.txt"
         open(invalid_rows, "w").close()
         with open(output_file, "a") as fout:
-            i = 0
-            for s1, s2 in read_sentence_pairs(input_file, limit):
-                print s1, s2
-                try:
-                    v = np.array(ccbsp(dws, s1, s2, operation)).astype("float64")
+            
+            for j, s1, s2 in read_sentence_pairs(input_file, limit):
+                try:                                         # 1-based indexing
+                    v = np.array(ccbsp(dws, s1, s2, operation, j+1)).astype("float64") 
                 except IndexError:
                     with open(invalid_rows, 'a') as finv:
-                        finv.write(str(i)+"\n")
-                    sys.stderr.write("A sentence is completely absent - %s -- %s\n" % (s1, s2))
+                        finv.write(str(j+1)+"\n") # 1-based indexing
+                    sys.stderr.write("A sentence is completely absent (w2v/db) -[%s]- %s -- %s\n" % (j+1, s1, s2))
+                except KeyError:
+                    with open(invalid_rows, 'a') as finv:
+                        finv.write(str(j+1)+"\n")
+                    sys.stderr.write("A sentence is completely absent (d2v) -[%s]- %s -- %s\n" % (j+1, s1, s2))
                 savetxt(fout, v, newline=' ')
-                fout.write("\n"); i += 1
+                fout.write("\n"); 
     elif args.S:
         import os
         from numpy import savetxt
         if os.path.isfile(output_file):
             os.unlink(output_file)
         with open(output_file, "a") as fout:
-            for s in read_sentences(input_file, limit):
-                v = np.array(list(ccbsp(dws = dws, s1 = s))).astype('float32')
+            for j, s in read_sentences(input_file, limit):
+                try:
+                    v = np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
+                except KeyError:
+                    sys.stderr.write("A sentence or key is completely absent (d2v) -[%s]-- %s\n" % (j+1, s))
+                except IndexError:
+                    sys.stderr.write("A sentence is completely absent (w2v/db) -[%s]-- %s\n" % (j+1, s))
                 savetxt(fout, v, newline=' ')
                 fout.write("\n")    
     
