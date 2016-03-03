@@ -152,8 +152,10 @@ def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
         elif 'doc2vec' in str(dws.__class__):
             tag_x1 = str(index)+"_"+str(index+(2*index-3))+"_snippet" # the index i, the subindex: i + (2i-3)
             tag_x2 = str(index)+"_"+str(index+(2*index-2))+"_snippet" # the index i, the subindex: i + (2i-2)
-            sys.stderr.write("\n%s\n" % dws.docvecs.doctags[tag_x1])
-            sys.stderr.write("\n%s\n" % dws.docvecs.doctags[tag_x2])
+            print tag_x1
+            print tag_x2
+            sys.stderr.write("\n"+str(dws.docvecs.doctags[tag_x1])+"  "
+                                 +str(dws.docvecs.doctags[tag_x2])+"\n")
             x1 = dws.docvecs[tag_x1]
             x2 = dws.docvecs[tag_x2]
         else:        

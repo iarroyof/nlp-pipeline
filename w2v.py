@@ -54,12 +54,13 @@ class yield_line_documents(object):
     def __iter__(self):
         if self.d2v:
             for fname in os.listdir(self.dirname):
-                l = 0; pair = 0
+                l = -1; pair = 0
                 for line in open(os.path.join(self.dirname, fname)):
                     l += 1
                     cs = clean_Ustring_fromU(line)
-                    if (l + 1) % 2 and not self.single: 
-                        pair = pair + 1
+                    if not self.single:
+                        if (l + 1) % 2: 
+                            pair = pair + 1
                         tag = str(pair)+"_"+str(l)+"_snippet" # pair_sentence index tag
                     else:
                         tag = str(l)+"_snippet"                # sentence index tag                          
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     parser.add_argument('-H', type=int, dest = 'hidden', help='Specifies the number of hidden units the model going to have.')
     parser.add_argument('-m', type=int, dest = 'minc', help='Specifies the minimum frequency a word should have in the corpus to be considered.')
     parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
-    parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the doc2vec model, insted of the w2v one.')
+    parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
 
     args = parser.parse_args()
     if args.d2v:
