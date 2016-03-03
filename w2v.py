@@ -88,10 +88,12 @@ if __name__ == "__main__":
         for a in arts:
             if a:
                 articles.append(a)
-        sys.stderr.write("\n>> Articles generator unpacked...\n")
+        sys.stderr.write("\n>> Articles generator unpacked... Training begins.\n")
         try:
             d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)    
+            sys.stderr.write("\n>> Model successfully trained...\n")
             d2v_model.save(args.outfile, separately = None)
+            sys.stderr.write("\n>> Model successfully saved...\n")
         except IOError:
             sys.stderr.write("\n>> Error caught while model saving...\n")
         except:
