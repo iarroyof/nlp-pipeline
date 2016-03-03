@@ -226,7 +226,7 @@ if __name__ == "__main__":
     data = []
     #For sparse data a csr matrix is constructed from the coordinates
     
-    if args.d != 'word2vec':
+    if args.d != 'word2vec' and args.d != 'doc2vec':
         import db_word_space as d_ws
         if args.F:
             dws = d_ws.db_word_space(args.d, args.F)

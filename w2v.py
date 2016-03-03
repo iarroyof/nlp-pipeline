@@ -47,9 +47,10 @@ def clean_Ustring_fromU(string):
     return None
 
 class yield_line_documents(object):
-    def __init__(self, dirname, d2v=False):
+    def __init__(self, dirname, d2v=False, single=False):
         self.dirname = dirname
         self.d2v = d2v
+        self.single = single
     def __iter__(self):
         if self.d2v:
             for fname in os.listdir(self.dirname):
@@ -57,10 +58,12 @@ class yield_line_documents(object):
                 for line in open(os.path.join(self.dirname, fname)):
                     l += 1
                     cs = clean_Ustring_fromU(line)
-                    #if (l + 1) % 2: pair = pair + 1
+                    if (l + 1) % 2 and not self.single: 
+                        pair = pair + 1
+                        tag = str(pair)+"_"+str(l)+"_snippet" # pair_sentence index tag
+                    else:
+                        tag = str(l)+"_snippet"                # sentence index tag                          
                     if cs:
-                        #tag = str(pair)+"_"+str(l)+"_snippet"
-                        tag = str(l)+"_sent"
                         yield LabeledSentence(cs, [tag])
                     else:
                         sys.stderr.write("Empty string at line %s.\n" % l)
@@ -79,11 +82,12 @@ if __name__ == "__main__":
     parser.add_argument('-H', type=int, dest = 'hidden', help='Specifies the number of hidden units the model going to have.')
     parser.add_argument('-m', type=int, dest = 'minc', help='Specifies the minimum frequency a word should have in the corpus to be considered.')
     parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
+    parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the doc2vec model, insted of the w2v one.')
 
     args = parser.parse_args()
     if args.d2v:
         #articles = TaggedLineDocument(args.indir_file_name)
-        arts = yield_line_documents(args.indir_file_name, d2v = True)
+        arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single)
         articles = []
         for a in arts:
             if a:
