@@ -12,7 +12,7 @@ def T(x1, x2, name="convs"):
     x1, x2 - vectors
     name - name of the operation (sub, conc, conv, corr), defaults to convolution
     """
-    print "operating:", name
+    #print "operating:", name
     if name.startswith("sub"):
         return x1 - x2
     if name.startswith("conc"):
@@ -150,12 +150,10 @@ def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
             x1 = scsis_w2v(dws, s1)
             x2 = scsis_w2v(dws, s2)
         elif 'doc2vec' in str(dws.__class__):
-            tag_x1 = str(index)+"_"+str(index+(2*index-3))+"_snippet" # the index i, the subindex: i + (2i-3)
-            tag_x2 = str(index)+"_"+str(index+(2*index-2))+"_snippet" # the index i, the subindex: i + (2i-2)
-            print tag_x1
-            print tag_x2
-            sys.stderr.write("\n"+str(dws.docvecs.doctags[tag_x1])+"  "
-                                 +str(dws.docvecs.doctags[tag_x2])+"\n")
+            tag_x1 = str(index)+"_"+str(2*index-3+1)+"_snippet" # the index i, the subindex: 2i-3+1
+            tag_x2 = str(index)+"_"+str(2*index-2+1)+"_snippet" # the index i, the subindex: 2i-2+1
+            #sys.stderr.write("\n"+str(dws.docvecs.doctags[tag_x1])+"\n"
+            #                     +str(dws.docvecs.doctags[tag_x2])+"\n")
             x1 = dws.docvecs[tag_x1]
             x2 = dws.docvecs[tag_x2]
         else:        
