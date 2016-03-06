@@ -1,13 +1,14 @@
 #from matplotlib import *
 from numpy import loadtxt
 from scipy.signal import correlate
+from scipy.stats import pearsonr
 from matplotlib.pyplot import *
 from matplotlib import pyplot as pp
 import matplotlib.pyplot as plt
 from ast import literal_eval
 from argparse import ArgumentParser
 
-titlle = "Predictions for summary candidature of sentences"
+titlle = "Predictions for semantic similarity between sentences"
 yylabel = "Summary score"
 
 def read_results(file_name):
@@ -152,15 +153,16 @@ i = 0
 if args.number_result:
     
     try:
-        x = range(len(models[args.number_result]['weights'])); y = models[args.number_result]['weights']    
+        x = range(len(models[args.number_result]['weights'])); 
+        y = models[args.number_result]['weights']    
         f, axarr = plt.subplots(1, 3)
         model = True
     except KeyError:
         f, axarr = plt.subplots(1, 1)
         model = False
-
+    pearson = str(pearsonr(x, y)[0])
     grid(True)
-    title(titlle+"["+str(args.number_result)+"]")
+    title(titlle+" ["+str(args.number_result)+", pearson: "+pearson+"]")
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
@@ -189,7 +191,8 @@ else:
     for est_o in ordd_est_outs:
         figure()
         grid(True)
-        title(titlle+"["+str(i+1)+"]")
+        pearson = str(pearsonr(sample, true)[0])
+        title(titlle+"["+str(i+1)+", pearson: "+pearson+"]")
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
