@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from ast import literal_eval
 from argparse import ArgumentParser
 
-titlle = "Predictions for semantic similarity between sentences"
+titlle = "Prediction for sentence summary candidature"
+#titlle = "Predictions for semantic similarity between sentences"
 yylabel = "Summary score"
 
 def read_results(file_name):

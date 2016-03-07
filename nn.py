@@ -84,7 +84,7 @@ for t in xrange(N):
     y_out['best_score'] = rs.best_score_
     #y_out['learned_model'] = rs.best_estimator_ 
 #with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
-    with open("nn_output_headlines_30_w2v_conc_200_m5.txt", "a") as f:
+    with open("nn_output_headlines_30_d2v_conc_300_m5.txt", "a") as f:
     #savetxt(f, y_out)
         f.write(str(y_out)+'\n')
     
