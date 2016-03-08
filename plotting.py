@@ -1,4 +1,3 @@
-#from matplotlib import *
 from numpy import loadtxt
 from scipy.signal import correlate
 from scipy.stats import pearsonr
@@ -15,7 +14,6 @@ yylabel = "Summary score"
 def read_results(file_name):
     out = open(file_name, 'r').readlines()
     outs = []
-#    set_trace()    
 
     for res in out:
         if res.startswith('{'):
@@ -161,7 +159,7 @@ if args.number_result:
     except KeyError:
         f, axarr = plt.subplots(1, 1)
         model = False
-    pearson = str(pearsonr(x, y)[0])
+    pearson = str(pearsonr(true, ordd_est_outs[args.number_result])[0])
     grid(True)
     title(titlle+" ["+str(args.number_result)+", pearson: "+pearson+"]")
     grid(True)
@@ -192,7 +190,7 @@ else:
     for est_o in ordd_est_outs:
         figure()
         grid(True)
-        pearson = str(pearsonr(sample, true)[0])
+        pearson = str(pearsonr(est_o, true)[0])
         title(titlle+"["+str(i+1)+", pearson: "+pearson+"]")
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
