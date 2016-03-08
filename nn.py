@@ -42,18 +42,17 @@ nn = Regressor(
     learning_rate=lrate,
     n_iter=niter)
 
-rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 1, param_distributions={
+rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions={
     'learning_momentum': stats.uniform(0.1, 1.5),
     'learning_rate': stats.uniform(0.009, 0.1),
-    'learning_rule': ['sgd', 'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
+    'learning_rule': ['sgd'], #'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
     'regularize': ["L1", "L2", None],
-    'hidden0__units': stats.randint(4, 200),
+    'hidden0__units': stats.randint(2, 300),
     'hidden0__type': ["Rectifier", "Sigmoid", "Tanh"],
-    'hidden1__units': stats.randint(4, 200),
+    'hidden1__units': stats.randint(2, 300),
     'hidden1__type': ["Rectifier", "Sigmoid", "Tanh"],
-    'hidden2__units': stats.randint(4, 200),
+    'hidden2__units': stats.randint(4, 300),
     'hidden2__type': ["Rectifier", "Sigmoid", "Tanh"],
-
     'output__type': ["Linear", "Softmax"]})
     
 #rs.fit(a_in, a_out)    
@@ -68,23 +67,21 @@ for t in xrange(N):
             rs.fit(X_train, y_train)
             crash = False
         except RuntimeError:
-            sys.stderr.write("--------------------- [Crashed by RunTimeERROR] --------------------- \n")
+            sys.stderr.write("--------------------- [Crashed by RunTimeERROR. restarting] --------------------- \n")
             crash = True
-        
-    sys.stderr.write("Best Parameters: %s\n" % (str(rs.best_params_)))
-    y_valid = rs.predict(X_valid)
-
+    
+    sys.stderr.write("Best Parameters: %s, score: %s\n" % (str(rs.best_params_), str(rs.best_score_)))
+    y_ = rs.predict(X_valid)
+    y = []
+    for o in y_:
+        y.append(o[0])
+    
     input = sys.argv[3].split("/")[-1].split(".")[0]
     y_out = {}
-    y = []
-    for o in y_valid:
-        y.append(o[0])
     y_out['estimated_output'] = y
     y_out['best_params'] = rs.best_params_
     y_out['best_score'] = rs.best_score_
-    #y_out['learned_model'] = rs.best_estimator_ 
-#with open("nn_output_%s_%s%s_%s_%s_%s_%s.txt"%(input, hidden0, hidden1, units1, units2, lrate, niter), "a") as f:
-    with open("nn_output_headlines_30_d2v_conc_300_m5.txt", "a") as f:
-    #savetxt(f, y_out)
+
+    with open("nn_output_headlines_30_d2v_conv_300_m5.txt", "a") as f:
         f.write(str(y_out)+'\n')
     

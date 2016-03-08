@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.svm import SVR
 from sklearn.grid_search import RandomizedSearchCV as RS
-from scipy.stats import expon, uniform
+from scipy.stats import sp_randint
 
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
@@ -19,7 +19,7 @@ gammas = {
         'convs':expon(scale = 50, loc = 541.113519625)}
 
 param_grid = [   
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree':[1, 2, 3, 4, 5]},
+    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
     {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 for n in xrange(N):
