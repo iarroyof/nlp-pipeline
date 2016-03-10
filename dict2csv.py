@@ -1,9 +1,29 @@
 import csv
 import os
-
+import numbers
 filename = "svr_output_headlines_100_d2v_convs_300_m5.txt"
-csv_file = "svr_output_headlines_100_d2v_convs_300_m5.csv"
-columns = ['kernel','C','degree', 'gamma', 'best_score','best_params']
+csv_file = filename + ".csv"
+columns = ['kernel','C','degree', 'gamma', 'performance']
+ord = 4
+from pdb import set_trace as st
+def _finditem(obj, key):
+    if key in obj:
+        v = obj[key] 
+        if isinstance(v, numbers.Real):
+            return round(v, ord)
+        else:
+            return v
+    for k, v in obj.items():
+        if isinstance(v,dict):
+            item = _finditem(v, key)
+            if item is not None:
+                if isinstance(item, numbers.Real):
+                    return round(item, ord)
+                else:
+                    return item
+            else:
+                return "N/A"
+                    
 def WriteDictToCSV(csv_file,csv_columns,dict_data):
     try:
         with open(csv_file, 'w') as csvfile:
@@ -19,11 +39,13 @@ def WriteDictToCSV(csv_file,csv_columns,dict_data):
 csv_columns = columns
 
 dict_data = []
-from pdb import set_trace as st()
+from pdb import set_trace as st
+
 with open(filename) as f:
     for i, line in enumerate(f):
         try:
-            dict_d = { key: eval(line.strip())[key] for key in csv_columns }
+            #st()
+            dict_d = { key: _finditem(eval(line.strip()), key) for key in csv_columns }
             dict_data.append(dict_d)
         except KeyError:
             pass

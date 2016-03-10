@@ -41,7 +41,7 @@ for n in xrange(N):
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'support_vectors': rs.best_estimator_.support_.tolist(), 'alphas': rs.best_estimator_.dual_coef_[0].tolist()}
-        y_out['best_score'] = rs.best_score_
+        y_out['performance'] = rs.best_score_
 
         with open("svr_output_headlines_100_d2v_%s_300_m5.txt" % (op), "a") as f:
             f.write(str(y_out)+'\n')
