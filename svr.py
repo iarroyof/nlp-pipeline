@@ -3,9 +3,14 @@ from sklearn.svm import SVR
 from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
 from scipy.stats import expon
+from sklearn.externals import joblib
 
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
+corpus = "hearlines_100"
+representation = "d2v"
+dimensions = "300"
+min_count = "m5"
 from argparse import ArgumentParser as ap
 parser = ap(description='This script trains a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
@@ -24,7 +29,7 @@ op = args.o
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369), 
         'sub': expon(scale = 20, loc=15.1454004504), 
-        'convs':expon(scale = 50, loc = 541.113519625)}
+        'convs':expon(scale = 50, loc = 541.113519625) }
 
 param_grid = [   
     {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
@@ -40,9 +45,10 @@ for n in xrange(N):
         y_out = {}
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
-        y_out['learned_model'] = {'support_vectors': rs.best_estimator_.support_.tolist(), 'alphas': rs.best_estimator_.dual_coef_[0].tolist()}
+        y_out['learned_model'] = {'file': "svr_%s_%s_%s_%s_%s.model" % (corpus, representation, dimensions, op, min_count)}
         y_out['performance'] = rs.best_score_
 
-        with open("svr_output_headlines_100_d2v_%s_300_m5.txt" % (op), "a") as f:
+        with open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
 
+        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s.model" % (corpus, representation, dimensions, op, min_count)) 
