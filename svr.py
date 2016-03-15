@@ -56,5 +56,6 @@ for n in xrange(N):
 
         with open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
-
-        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s.model" % (corpus, representation, dimensions, op, min_count)) 
+        
+        num_lines = sum(1 for line in open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
+        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines-1, corpus, representation, dimensions, op, min_count)) 

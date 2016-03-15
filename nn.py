@@ -84,4 +84,3 @@ for t in xrange(N):
 
     with open("nn_output_headlines_30_d2v_conv_300_m5.txt", "a") as f:
         f.write(str(y_out)+'\n')
-    
