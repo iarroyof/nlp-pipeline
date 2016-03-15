@@ -127,7 +127,7 @@ def scsis_w2v(dws, sentence, log = False):
 
     return result                
 
-def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
+def ccbsp(dws, s1, s2 = None, name = "convs", index = None, infer = False):
     """ Context Convolution between Sentence Pairs
     
     Applies the T operation to the scsis vectors of the sentences
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         with open(output_file, "a") as fout:
             for j, s in read_sentences(input_file, limit):
                 try:
-                    v = ccbsp(dws = dws, s1 = s, index = j+1).astype('float64') #np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
+                    v = ccbsp(dws = dws, s1 = s, index = j+1, infer = args.i).astype('float64') #np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
                 except KeyError:
                     sys.stderr.write("A sentence or key is completely absent (d2v) -[%s]-- %s\n" % (j+1, s))
                 except IndexError:

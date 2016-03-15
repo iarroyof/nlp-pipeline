@@ -7,16 +7,17 @@ from sklearn.externals import joblib
 
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
-corpus = "hearlines_100"
+corpus = "puces_complete"
 representation = "d2v"
-dimensions = "300"
-min_count = "m5"
+dimensions = "H300"
+min_count = "m10"
+
 from argparse import ArgumentParser as ap
 parser = ap(description='This script trains a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
 parser.add_argument("-y", help="Regression  labels file.", metavar="regrLabs_file", required=True)
 parser.add_argument("-n", help="Number of tests to be performed.", metavar="tests_amount", default=1)
-parser.add_argument("-o", help="The operation the input data was derived from. Options: {'conc', 'convs', 'sub'}.", default="conc")
+parser.add_argument("-o", help="The operation the input data was derived from. Options: {'conc', 'convs', 'sub'}. In the case you want to give a precalculated center for width randomization, specify the number. e.g. '-o 123.654'.", default="conc")
 args = parser.parse_args()
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
@@ -26,10 +27,15 @@ X = np.loadtxt(args.x)
 y = np.loadtxt(args.y)
 op = args.o
 
+if op.replace('.','',1).isdigit():
+    op = 'esp'
+#from pdb import set_trace as st
+#st()
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369), 
         'sub': expon(scale = 20, loc=15.1454004504), 
-        'convs':expon(scale = 50, loc = 541.113519625) }
+        'convs':expon(scale = 50, loc = 541.113519625),
+        'esp':expon(scale = 20, loc = float(args.o)) }
 
 param_grid = [   
     {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
@@ -38,7 +44,7 @@ param_grid = [
 for n in xrange(N):
     for params in param_grid:
         svr = SVR()
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 4)
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24)
         rs.fit(X, y)
         f_x = rs.predict(X).tolist()
 
