@@ -29,8 +29,7 @@ op = args.o
 
 if op.replace('.','',1).isdigit():
     op = 'esp'
-#from pdb import set_trace as st
-#st()
+
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369), 
         'sub': expon(scale = 20, loc=15.1454004504), 
@@ -47,15 +46,15 @@ for n in xrange(N):
         rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24)
         rs.fit(X, y)
         f_x = rs.predict(X).tolist()
+        num_lines = sum(1 for line in open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
 
         y_out = {}
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
-        y_out['learned_model'] = {'file': "svr_%s_%s_%s_%s_%s.model" % (corpus, representation, dimensions, op, min_count)}
+        y_out['learned_model'] = {'file': "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines, corpus, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
 
         with open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
         
-        num_lines = sum(1 for line in open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
-        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines-1, corpus, representation, dimensions, op, min_count)) 
+        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines, corpus, representation, dimensions, op, min_count)) 
