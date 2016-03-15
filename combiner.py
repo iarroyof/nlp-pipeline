@@ -150,12 +150,14 @@ def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
             x1 = scsis_w2v(dws, s1)
             x2 = scsis_w2v(dws, s2)
         elif 'doc2vec' in str(dws.__class__):
-            tag_x1 = str(index)+"_"+str(2*index-3+1)+"_snippet" # the index i, the subindex: 2i-3+1
-            tag_x2 = str(index)+"_"+str(2*index-2+1)+"_snippet" # the index i, the subindex: 2i-2+1
-            #sys.stderr.write("\n"+str(dws.docvecs.doctags[tag_x1])+"\n"
-            #                     +str(dws.docvecs.doctags[tag_x2])+"\n")
-            x1 = dws.docvecs[tag_x1]
-            x2 = dws.docvecs[tag_x2]
+            if not infer:
+                tag_x1 = str(index)+"_"+str(2*index-3+1)+"_snippet" # the index i, the subindex: 2i-3+1
+                tag_x2 = str(index)+"_"+str(2*index-2+1)+"_snippet" # the index i, the subindex: 2i-2+1
+                x1 = dws.docvecs[tag_x1]
+                x2 = dws.docvecs[tag_x2]
+            else:
+                x1 = dws.infer_vector(s1)
+                x2 = dws.infer_vector(s2)
         else:        
             x1 = scsis(dws, s1, log = log)
             x2 = scsis(dws, s2, log = log)
@@ -163,8 +165,12 @@ def ccbsp(dws, s1, s2 = None, name = "convs", index = None):
         return T(x1, x2, name)
     else:
         if 'doc2vec' in str(dws.__class__):
-            tag = str(index)+"_sent"
-            x = dws.docvecs[tag]
+            if not infer:
+                tag_x = str(index)+"_sent"
+                x = dws.docvecs[tag_x]
+            else:
+                x = dws.infer_vector(s1)
+
         elif 'word2vec' in str(dws.__class__):
             x = scsis_w2v(dws, s1, log = log)
         else:
@@ -211,10 +217,11 @@ if __name__ == "__main__":
     parser.add_argument("-o", help="output file name (optional, defaults to output.mtx)", default="output.mtx", metavar="output_file")
     parser.add_argument("-l", help="limit to certain number of pairs (optional, defaults to whole file)", default=False, metavar="limit")
     parser.add_argument("-S", help="Toggles generation of single sentence vectors (not pairs). The input file must contain a sentence or text by line.", action="store_true")    
-    parser.add_argument("-t", help="combiner operation, can be {conc: Simple_concatenation, corr:cross_correlation_same_output_dimension, conv:large_input_convolution (dim > 500), convs:large_input_convolution_same_output_dimension, convss:short_input_convolution_same_output_dimension (dim < 500), conc:concatenation, sub:subtraction}. Place an 'l' at the end of any operation for getting output logarithmic transformation of your vectors.", metavar="operation") 
+    parser.add_argument("-t", help="combiner operation, can be {conc: Simple_concatenation, corr:cross_correlation_same_output_dimension, conv:large_input_convolution (dim > 500), convs:large_input_convolution_same_output_dimension, convss:short_input_convolution_same_output_dimension (dim < 500), sub:simple_subtraction}. Place an 'l' at the end of any operation for getting the logarithm transformation of your vectors.", metavar="operation") 
     parser.add_argument("-s", help="save as sparse", action="store_true")
     parser.add_argument("-F", help="frequency threshold", metavar="threshold")
-    parser.add_argument("-w", help="Word2vec model allocation. Default=word2vec.model", default="word2vec.model", metavar="word2vec_model")
+    parser.add_argument("-w", help="Word2vec or doc2vec model allocation. Default=/current/path/word2vec.model", default="word2vec.model", metavar="w_d_2vec_model")
+    parser.add_argument("-i", help="Tell to the combiner it must infer sentence vectors from a pretrained model, instead of retrieve them as existent in such a model. IMPORTANT: This option is only available for doc2vec models.", action="store_true")
     args = parser.parse_args()
     
     input_file = args.f
@@ -284,7 +291,7 @@ if __name__ == "__main__":
         with open(output_file, "a") as fout:
             for j, s in read_sentences(input_file, limit):
                 try:
-                    v = np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
+                    v = ccbsp(dws = dws, s1 = s, index = j+1).astype('float64') #np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
                 except KeyError:
                     sys.stderr.write("A sentence or key is completely absent (d2v) -[%s]-- %s\n" % (j+1, s))
                 except IndexError:
