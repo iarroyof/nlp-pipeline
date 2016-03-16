@@ -1,4 +1,4 @@
-#v$import numpy as np
+import numpy as np
 from sklearn.svm import SVR
 from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
@@ -24,18 +24,26 @@ args = parser.parse_args()
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
 X = np.loadtxt(args.x)
-y = np.loadtxt(args.y)
+gammas = {
+        'conc': expon(scale=10, loc=8.38049430369),
+        'sub': expon(scale = 20, loc=15.1454004504),
+        'convs':expon(scale = 50, loc = 541.113519625) }
+
+if args.y:
+    y = np.loadtxt(args.y)
+
 op = args.o
 
 if op.replace('.','',1).isdigit():
     op = 'esp'
+    gammas[op] = expon(scale = 20, loc = float(args.o))
 elif not op in gammas:
     from os.path import basename, splitext
     infile = basename(op)
-    if infile and infile != "*":
-        
+    if infile and infile != "*":        
         filename = splitext(infile)[0]+'_predict.out'
         model = joblib.load(op, 'r')
+        print ":>> Model loaded from:", op
         y_out = {}
         y_out['estimated_output'] = model.predict(X).tolist()
         # Add more metadata to the dictionary as reauired.
@@ -45,12 +53,6 @@ elif not op in gammas:
     else:
         print "Please specify a file name for loading the SVR pretrained model."            
         exit()
-
-gammas = {
-        'conc': expon(scale=10, loc=8.38049430369),
-        'sub': expon(scale = 20, loc=15.1454004504),
-        'convs':expon(scale = 50, loc = 541.113519625),
-        'esp':expon(scale = 20, loc = float(args.o)) }
 
 param_grid = [   
     {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
@@ -62,15 +64,18 @@ for n in xrange(N):
         rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24)
         rs.fit(X, y)
         f_x = rs.predict(X).tolist()
-        num_lines = sum(1 for line in open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
+        try:
+            num_lines = sum(1 for line in open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
+        except IOError:
+            num_lines = 0
 
         y_out = {}
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
-        y_out['learned_model'] = {'file': "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines, corpus, representation, dimensions, op, min_count) }
+        y_out['learned_model'] = {'file': "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
 
         with open("svr_%s_%s_%s_%s_%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
         
-        joblib.dump(svr, "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (num_lines, corpus, representation, dimensions, op, min_count)) 
+        joblib.dump(rs, "pkl/svr_%s_%s_%s_%s_%s_%s.model" % (corpus, num_lines, representation, dimensions, op, min_count)) 
