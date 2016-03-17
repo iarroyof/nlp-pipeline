@@ -29,7 +29,7 @@ N = int(args.n)
 X = np.loadtxt(args.x)
 
 # TODO: Is better to find this source mark in the contents of the file, because the name of the file is not secure.
-source = search(r"T[0-9]{2,3}_C[1-9]_[1-9]{2}", args.x, M|I).group()
+source = search(r"T[0-9]{2,3}_C[1-9]_[1-9]{2}", args.x, M|I).group() + ".txt"
 # TODO: Find marks for other input vectors derived from other corpus. It is needed to normalize the names or include source names inside the file.
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369),

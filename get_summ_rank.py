@@ -4,8 +4,8 @@ from os.path import basename, splitext
 parser = ap(description='This script converts the predictions in a dictionary of estimated outputs in to ranked sentences.')
 parser.add_argument("-s", help="Input file name of sentences.", metavar="sent_file", required=True)
 parser.add_argument("-p", help="Regression predictions file." , metavar="predictions", required=True)
-parser.add_argument("-n", help="Number of output sentences.", metavar="output_length", default=8)
-#parser.add_argument("-S", help="Output file name of the summary.", metavar="summ_file", required=True)
+parser.add_argument("-n", help="Number of output sentences.", metavar="num_sents", default=8)
+parser.add_argument("-d", action='store_false', help="Score order of the output summary. The default is ascendant. typing '-d' toggles descendant.", default=True)
 parser.add_argument('-e', action='store_true', help='Toggles printing the estimated scores in the output file if required.')
 args = parser.parse_args()
 
@@ -23,32 +23,36 @@ with open(pred_file) as f:
         if source == s['source']:
             eo = s['estimated_output']
             r = range(len(eo))
-            predictions.append(sorted(zip(r, eo), reverse = True, key = lambda tup: tup[1]))
+            predictions=sorted(zip(r, eo), reverse = args.d, key = lambda tup: tup[1])
             empty = False
+            break
                   
     if empty:
-        print "The source you specified in the input sentence file was not found in the file of results."
+        print "The source you specified in the input sentence file was not found in the file of results. %s" % (source)
         exit()
 
 with open(sent_file) as f:
     sentences = map(str.strip, f.readlines())
+    sentences = zip(r, sentences)
 
-if len(sentences) != len(predictions[0]):
-    print "Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions[0][1]))
+if len(sentences) != len(predictions):
+    print "Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions))
     exit()
 
-for r in predictions: # r =  [(j, score_1),..., (J, score_N)]
-    with open(summ_file, 'a') as f:
-        summary = []
-        if args.e:
-            for p in r:
-                summary.append("%.4f\t%s\n" % (p[1], sentences[p[0]]))
-        else:
-            for p in r:
-                summary.append("%s\n" % (sentences[p[0]]))
-
-        f.write("# Source file: %s\n" % (sent_file))
-        f.write("# Estimators file: %s\n" % (pred_file))
+#for r in predictions: # r =  [(j, score_1),..., (J, score_N)]
+with open(summ_file, 'a') as f:
+    summary = []
+    f.write("# Source file: %s\n" % (sent_file))
+    f.write("# Estimators file: %s\n" % (pred_file))
+    if args.e:
+        for p in predictions:
+            summary.append((p[1], sentences[p[0]]))
+        summary = sorted(summary, key=lambda tup:tup[1][0])
         for n in xrange(Ns):
-            f.write(summary[n])
-        
+            f.write("%.4f\t%s\n" % (summary[n][0], summary[n][1][1]))        
+    else:
+        for p in r:
+            summary.append(sentences[p[0]])
+        summary = sorted(summary, key=lambda tup:tup[0])
+        for n in xrange(Ns):
+            f.write("%s\n" % (summary[n][1]))        
