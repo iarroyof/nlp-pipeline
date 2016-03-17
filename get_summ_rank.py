@@ -14,7 +14,7 @@ source = basename(args.s)
 pred_file = args.p
 summ_file = splitext(args.s)[0]+'_summ.txt'
 Ns  = args.n
-
+from pdb import set_trace as st
 with open(pred_file) as f:
     predictions = []
     empty = True
@@ -33,11 +33,12 @@ with open(pred_file) as f:
 
 with open(sent_file) as f:
     sentences = map(str.strip, f.readlines())
-    sentences = zip(r, sentences)
 
 if len(sentences) != len(predictions):
     print "Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions))
     exit()
+st()
+predictions = sorted(predictions[:Ns], key = lambda tup: tup[0])
 
 #for r in predictions: # r =  [(j, score_1),..., (J, score_N)]
 with open(summ_file, 'a') as f:
@@ -47,12 +48,12 @@ with open(summ_file, 'a') as f:
     if args.e:
         for p in predictions:
             summary.append((p[1], sentences[p[0]]))
-        summary = sorted(summary, key=lambda tup:tup[1][0])
-        for n in xrange(Ns):
-            f.write("%.4f\t%s\n" % (summary[n][0], summary[n][1][1]))        
+        #summary = sorted(summary, key=lambda tup:tup[1][0])
+        for s in xrange(Ns):
+            f.write("%.4f\t%s\n" % (summary[s][0], summary[s][1]))        
     else:
         for p in r:
             summary.append(sentences[p[0]])
-        summary = sorted(summary, key=lambda tup:tup[0])
-        for n in xrange(Ns):
-            f.write("%s\n" % (summary[n][1]))        
+        #summary = sorted(summary, key=lambda tup:tup[0])
+        for s in xrange(Ns):
+            f.write("%s\n" % (summary[s][1]))        
