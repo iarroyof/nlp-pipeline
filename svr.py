@@ -7,7 +7,7 @@ from sklearn.externals import joblib
 from re import search, M, I
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
-corpus = "puces_complete"
+corpus = "RPM"
 representation = "d2v"
 dimensions = "H300"
 min_count = "m10"
@@ -29,7 +29,6 @@ N = int(args.n)
 X = np.loadtxt(args.x)
 
 # TODO: Is better to find this source mark in the contents of the file, because the name of the file is not secure.
-source = search(r"T[0-9]{2,3}_C[1-9]_[1-9]{2}", args.x, M|I).group() + ".txt"
 # TODO: Find marks for other input vectors derived from other corpus. It is needed to normalize the names or include source names inside the file.
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369),
@@ -46,11 +45,14 @@ if op.replace('.','',1).isdigit():
     gammas[op] = expon(scale = 20, loc = float(args.o))
 elif not op in gammas:
     from os.path import basename, splitext
-    infile = basename(op)
+    import sys
+    source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I).group()+".txt"
+    sys.stderr.write(":>> Source:"+source)
+    infile = basename(op) # SVR model file name
     if infile and infile != "*":        
         filename = splitext(infile)[0]+'_predictions.out'
         model = joblib.load(op, 'r')
-        print ":>> Model loaded from:", op
+        #print ":>> Model loaded from:", op
         y_out = {}
         y_out['estimated_output'] = model.predict(X).tolist()
         y_out['source'] = source
