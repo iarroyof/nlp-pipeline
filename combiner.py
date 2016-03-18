@@ -204,7 +204,7 @@ def read_sentences(filename, n=False):
     """
     with open(input_file) as fin:
         for i, line in enumerate(fin):
-            yield i, line.strip().lower().split()        
+            yield i, clean_Ustring_fromU(line).split()        
                         
 
 if __name__ == "__main__":
