@@ -13,7 +13,7 @@ dimensions = "H300"
 min_count = "m10"
 
 from argparse import ArgumentParser as ap
-parser = ap(description='This script trains a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
+parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
 parser.add_argument("-y", help="Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify\
                                 the SVR model to be loaded as the parameter of the option -o.", metavar="regrLabs_file")
@@ -54,7 +54,7 @@ elif not op in gammas:
         y_out = {}
         y_out['estimated_output'] = model.predict(X).tolist()
         y_out['source'] = source
-        # Add more metadata to the dictionary as reauired.
+        # Add more metadata to the dictionary as required.
         with open(filename, 'a') as f:
             f.write(str(y_out)+'\n')
         exit()

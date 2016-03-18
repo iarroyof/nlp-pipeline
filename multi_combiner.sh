@@ -1,8 +1,8 @@
 
 clear
 Dir=$1
-#model=/almac/ignacio/data/d2v_models/d2v_wikiFr_puses_H300_m10.model
-model=/home/iarroyof/w2v_models/w2v_fr_h100_m5_test.model
+model=/almac/ignacio/data/d2v_models/d2v_wikiFr_puses_H300_m10.model
+#model=/home/iarroyof/w2v_models/w2v_fr_h100_m5_test.model
 outend=_H300_m10.mtx
 out=vectors
 
