@@ -15,12 +15,12 @@ min_count = "m10"
 from argparse import ArgumentParser as ap
 parser = ap(description='This script trains a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
-parser.add_argument("-y", help="Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify\
-                                the SVR model to be loaded as the parameter of the option -o.", metavar="regrLabs_file")
+parser.add_argument("-y", help="""Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify
+                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file")
 parser.add_argument("-n", help="Number of tests to be performed.", metavar="tests_amount", default=1)
-parser.add_argument("-o", help="The operation the input data was derived from. Options: {'conc', 'convs', 'sub'}. In the case you want to give a precalculated center for\
-                                width randomization, specify the number. e.g. '-o 123.654'. A filename can be specified, which is the file where a SVR model is sotred,\ 
-                                e.g. '-o filename.model'", default="conc")
+parser.add_argument("-o", help="""The operation the input data was derived from. Options: {'conc', 'convs', 'sub'}. In the case you want to give a precalculated center for
+                                width randomization, specify the number. e.g. '-o 123.654'. A filename can be specified, which is the file where a SVR model is sotred,
+                                e.g. '-o filename.model'""", metavar="operat{or,ion}", default="conc")
 args = parser.parse_args()
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
