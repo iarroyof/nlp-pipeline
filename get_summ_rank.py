@@ -7,6 +7,7 @@ parser.add_argument("-p", help="Regression predictions file." , metavar="predict
 parser.add_argument("-n", help="Number of output sentences.", metavar="num_sents", default=8)
 parser.add_argument("-d", action='store_false', help="Score order of the output summary. The default is ascendant. typing '-d' toggles descendant.", default=True)
 parser.add_argument('-e', action='store_true', help='Toggles printing the estimated scores in the output file if required.')
+parser.add_argument('-c', action='store_true', help='Toggles printing source information comments in the output file.')
 args = parser.parse_args()
 
 sent_file = args.s
@@ -37,23 +38,24 @@ with open(sent_file) as f:
 if len(sentences) != len(predictions):
     print "Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions))
     exit()
-st()
+
 predictions = sorted(predictions[:Ns], key = lambda tup: tup[0])
 
 #for r in predictions: # r =  [(j, score_1),..., (J, score_N)]
 with open(summ_file, 'a') as f:
     summary = []
-    f.write("# Source file: %s\n" % (sent_file))
-    f.write("# Estimators file: %s\n" % (pred_file))
+    if args.c:
+        f.write("# Source file: %s\n" % (sent_file))
+        f.write("# Estimators file: %s\n" % (pred_file))
     if args.e:
         for p in predictions:
             summary.append((p[1], sentences[p[0]]))
-        #summary = sorted(summary, key=lambda tup:tup[1][0])
+
         for s in xrange(Ns):
             f.write("%.4f\t%s\n" % (summary[s][0], summary[s][1]))        
     else:
-        for p in r:
+        for p in predictions:
             summary.append(sentences[p[0]])
-        #summary = sorted(summary, key=lambda tup:tup[0])
-        for s in xrange(Ns):
-            f.write("%s\n" % (summary[s][1]))        
+        
+        for s in summary:
+            f.write("%s\n" % (s))        
