@@ -47,7 +47,7 @@ elif not op in gammas:
     from os.path import basename, splitext
     import sys
     source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I).group()+".txt"
-    sys.stderr.write(":>> Source:"+source)
+    sys.stderr.write("\n:>> Source:"+source)
     infile = basename(op) # SVR model file name
     if infile and infile != "*":        
         filename = splitext(infile)[0]+'_predictions.out'
