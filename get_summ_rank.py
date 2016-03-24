@@ -14,6 +14,7 @@ args = parser.parse_args()
 sent_file = args.s
 source = basename(args.s)
 pred_file = args.p
+assert 1 < int(args.n) <= 100 # Valid compression percentaje?
 
 if not args.d and not args.e:
     ops = '_d'
@@ -26,7 +27,7 @@ elif args.d and args.e:
 else:
     ops = ''
 
-summ_file = splitext(args.s)[0] + ops + '_summ.txt'
+summ_file = splitext(args.s)[0] + ops + '_%s_summ.txt' % args.n
 #summ_file = dirname(args.s) + "/summs/" + splitext(source)[0] + ops + '_summ.txt'
 
 with open(pred_file) as f:
@@ -41,8 +42,9 @@ with open(pred_file) as f:
             break
                   
     if empty:
-        sys.stderr.write("The source you specified in the input sentence file was not found in the file of results. %s" % (source))
+        sys.stderr.write("\nThe source you specified in the input sentence file was not found in the file of results. %s" % (source))
         exit()
+
 
 with open(sent_file) as f:
     sentences = map(str.strip, f.readlines())
@@ -51,10 +53,15 @@ if len(sentences) != len(predictions):
     sys.stderr.write("Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions)))
     exit()
 
-Ns  = int(round(len(sentences)*(args.n/100.0)))
+Ns  = int(round(len(sentences)*(float(args.n)/100.0)))
 
 if len(sentences) < Ns or Ns <= 0:
     Ns = len(sentences)
+sys.stderr.write(":>> File: %s\n :>> Document length: %d\n :>> Compression rate: %s\n :>> Taken sentences: %d\n" % (source, len(sentences), args.n, Ns))
+#print ":>> Document length: %d\n" % len(sentences)
+#print ":>> Compression rate: %s\n" % args.n
+#print ":>> Taken sentences: %d\n" % Ns
+
 
 predictions = sorted(predictions[:Ns], key = lambda tup: tup[0])
 
