@@ -36,7 +36,8 @@ X = np.loadtxt(args.x)
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369),
         'sub': expon(scale = 20, loc=15.1454004504),
-        'convss':expon(scale = 50, loc = 541.113519625) }
+        'convss':expon(scale = 50, loc = 541.113519625),
+        'corr':expon(scale = 50, loc = 631.770) }
 
 if args.y:
     y = np.loadtxt(args.y)
