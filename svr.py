@@ -82,6 +82,7 @@ if args.o:
         from os.path import basename, splitext
         import sys 
     # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
+        op = args.o
         if args.p: # pairs? : single sentences
             try:
                 source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
@@ -109,8 +110,8 @@ if args.o:
                 exit()
         else: # TODO: parse for no pairs
             source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
-        
-        sys.stderr.write("\n:>> Source: %s" % (source.group(1)))
+
+        sys.stderr.write(":>> Source: %s\n" % (source.group(1)))
         infile = basename(op) # SVR model file name
         if infile and infile != "*":       
             filename = splitext(infile)[0]+'_predictions.out'
@@ -130,7 +131,7 @@ else:
     import sys 
     # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
     from pdb import set_trace as st
-#    st()
+
     if args.p:
         try:
             source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
