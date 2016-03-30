@@ -1,12 +1,13 @@
 from numpy import loadtxt
 from scipy.signal import correlate
-from scipy.stats import pearsonr
+#from scipy.stats import pearsonr
 from matplotlib.pyplot import *
 from matplotlib import pyplot as pp
 import matplotlib.pyplot as plt
 from ast import literal_eval
 from argparse import ArgumentParser
-
+import subprocess
+from os import remove
 titlle = "Prediction for sentence summary candidature"
 #titlle = "Predictions for semantic similarity between sentences"
 yylabel = "Summary score"
@@ -107,6 +108,27 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
         if not same_figure:
             show()
 
+def pearsonr(gl, el):
+    with open("GL.txt", "w") as f:
+        for p in gl:
+            f.write("%s\n" % p)
+    with open("EL.txt", "w") as f:
+        for p in el:
+            f.write("%s\n" % p)
+    gs="GL.txt"
+    est="EL.txt"
+    
+    pipe = subprocess.Popen(["perl", "./correlation-noconfidence.pl", gs, est], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    pipe.stdin.write("%s %s" % (gs, est))
+    pearson= float(str(pipe.stdout.read()).split()[1])
+
+    remove(gs)
+    remove(est)
+    pipe.stdin.close()
+    pipe.stdout.close()
+    
+    return pearson
+
 parsed = ArgumentParser(description='Plots desired labels, predicted outputs and calculates their corss-correlation.')
 parsed.add_argument('-g', type=str, dest = 'goldStandard_file', help='Specifies the goldStandard file.')
 parsed.add_argument('-p', type=str, dest = 'predictions_file', help='Specifies the machine predictions file.')
@@ -177,7 +199,8 @@ if args.number_result:
     except KeyError:
         f, axarr = plt.subplots(1, 1)
         model = False
-    pearson = pearsonr(true, ordd_est_outs[args.number_result])[0]
+    #pearson = pearsonr(true, ordd_est_outs[args.number_result])
+    pearson = pearsonr(labs, est_outs[args.number_result])
     grid(True)
     title(titlle+" ["+str(args.number_result)+"]"+",\npearson: %.4f, " % (pearson) + "perform: %.4f" %performs[args.number_result-1])
     grid(True)
@@ -205,10 +228,13 @@ if args.number_result:
 
     show()
 else:	
+    k = 0
     for est_o in ordd_est_outs:
         figure()
         grid(True)
-        pearson = pearsonr(est_o, true)[0]
+        #pearson = pearsonr(est_o, true)
+        pearson = pearsonr(labs, est_outs[k])
+        k += 1
         title(titlle+" ["+str(i+1)+"]"+", \npearson: %.4f, " %(pearson) + "perform: %.4f" % (performs[i]))
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
