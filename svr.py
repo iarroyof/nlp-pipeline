@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.svm import SVR
+from sklearn.svm import SVR, NuSVR
 from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
 from scipy.stats import expon
@@ -24,12 +24,19 @@ parser.add_argument("-r", help="The representation type. options:={w2v, d2v, coo
 parser.add_argument("-d", help="Dimensions of the input vector set.", metavar="num_dimensions", default = None)
 parser.add_argument("-m", help="Minimun word frequency taken into account in the corpus. Type '-m m10' for a min_count of 10.", metavar="min_count", default = None)
 parser.add_argument("-p", help="Toggle if you will process pairs.", action="store_true", default = False)
+parser.add_argument("-N", help="""Toggle if NuSVR will be used. The portion of suppoort vectors with respect to the training set 
+                                  can be specified in [0,1]. If it is not specified, random values will be generated (normally 
+                                  distributed with mean 0.35).""", metavar = "Nu", default = None)
 args = parser.parse_args()
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
 X = np.loadtxt(args.x)
+if args.N != None:
+    svr_ = "nu_svr"
+else:
+    svr_ = "svr"
 
 # TODO: Is better to find this source mark in the contents of the file, because the name of the file is not secure.
 # TODO: Find marks for other input vectors derived from other corpus. It is needed to normalize the names or include source names inside the file.
@@ -171,12 +178,26 @@ param_grid = [
     {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
     {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
+if args.N == "auto":
+    for p in param_grid:
+        p['nu'] = [0.35] #expon(scale=10, loc=0.35) #exp
+elif args.N != None:
+    for p in param_grid:
+        p['nu'] = [float(args.N)]
+    
+        
+
 for n in xrange(N):
     for params in param_grid:
-        svr = SVR()
+        if args.N == None:
+            svr = SVR()
+        else:
+            svr = NuSVR()
         rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24)
         rs.fit(X, y)
+        sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
         f_x = rs.predict(X).tolist()
+        sys.stderr.write("\n:>> Predictions: %s\n" % (rs.best_score_))
         try:
             num_lines = sum(1 for line in open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
         except IOError:
@@ -185,10 +206,10 @@ for n in xrange(N):
         y_out = {}
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
-        y_out['learned_model'] = {'file': "pkl/svr_%s_%s_%s_H%s_%s_m%s.model" % (corpus, num_lines, representation, dimensions, op, min_count) }
+        y_out['learned_model'] = {'file': "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
         
-        joblib.dump(rs, "pkl/svr_%s_%s_%s_H%s_%s_m%s.model" % (corpus, num_lines, representation, dimensions, op, min_count)) 
+        joblib.dump(rs, "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
