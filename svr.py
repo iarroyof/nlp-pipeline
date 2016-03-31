@@ -111,15 +111,15 @@ if args.o:
         else: # TODO: parse for no pairs
             source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
 
-        sys.stderr.write(":>> Source: %s\n" % (source.group(1)))
+        sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
         infile = basename(op) # SVR model file name
-        if infile and infile != "*":       
-            filename = splitext(infile)[0]+'_predictions.out'
+        if infile and infile != "*": # svr_output_headlines_100_d2v_convs_300_m5.txt      
+            filename = "svr_%s_%s_H%s_predictions.out" % (corpus, representation, dimensions)
             model = joblib.load(op, 'r')
-        #print ":>> Model loaded from:", op
             y_out = {}
             y_out['estimated_output'] = model.predict(X).tolist()
             y_out['source'] = source.group()+".txt"
+            y_out['model'] = splitext(infile)[0]
         # Add more metadata to the dictionary as required.
             with open(filename, 'a') as f:
                 f.write(str(y_out)+'\n')
