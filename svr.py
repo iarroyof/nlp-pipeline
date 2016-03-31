@@ -132,7 +132,7 @@ else:
     # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
     from pdb import set_trace as st
 
-    if args.p:
+    if args.p: #pairs? or singles
         try:
             source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
             if args.c:

@@ -163,7 +163,7 @@ for est in read_results(output_file):
         try:
             performs.append(est['performance'])
         except KeyError:
-            performs = None
+            performs.append(0.0)
             pass    
 
 for out in est_outs:
