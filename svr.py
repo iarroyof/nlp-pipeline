@@ -193,7 +193,7 @@ for n in xrange(N):
             svr = SVR()
         else:
             svr = NuSVR()
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24)
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24, cv = 4)
         rs.fit(X, y)
         sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
         f_x = rs.predict(X).tolist()
