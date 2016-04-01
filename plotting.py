@@ -1,6 +1,6 @@
 from numpy import loadtxt
 from scipy.signal import correlate
-#from scipy.stats import pearsonr
+from scipy.stats import pearsonr
 from matplotlib.pyplot import *
 from matplotlib import pyplot as pp
 import matplotlib.pyplot as plt
@@ -8,9 +8,9 @@ from ast import literal_eval
 from argparse import ArgumentParser
 import subprocess
 from os import remove
-titlle = "Prediction for sentence summary candidature"
+titlle = "Prediction for sentence semantic similarity regression"
 #titlle = "Predictions for semantic similarity between sentences"
-yylabel = "Summary score"
+yylabel = "Similarity score"
 #yylabel = "Semantic similarity score"
 def read_results(file_name):
     out = open(file_name, 'r').readlines()
@@ -108,26 +108,26 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
         if not same_figure:
             show()
 
-def pearsonr(gl, el):
-    with open("GL.txt", "w") as f:
-        for p in gl:
-            f.write("%s\n" % p)
-    with open("EL.txt", "w") as f:
-        for p in el:
-            f.write("%s\n" % p)
-    gs="GL.txt"
-    est="EL.txt"
+#def pearsonr(gl, el):
+#    with open("GL.txt", "w") as f:
+#        for p in gl:
+#            f.write("%s\n" % p)
+#    with open("EL.txt", "w") as f:
+#        for p in el:
+#            f.write("%s\n" % p)
+#    gs="GL.txt"
+#    est="EL.txt"
     
-    pipe = subprocess.Popen(["perl", "./correlation-noconfidence.pl", gs, est], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    pipe.stdin.write("%s %s" % (gs, est))
-    pearson= float(str(pipe.stdout.read()).split()[1])
+#    pipe = subprocess.Popen(["perl", "./correlation-noconfidence.pl", gs, est], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+#    pipe.stdin.write("%s %s" % (gs, est))
+#    pearson= float(str(pipe.stdout.read()).split()[1])
 
-    remove(gs)
-    remove(est)
-    pipe.stdin.close()
-    pipe.stdout.close()
+#    remove(gs)
+#    remove(est)
+#    pipe.stdin.close()
+#    pipe.stdout.close()
     
-    return pearson
+#    return pearson
 
 parsed = ArgumentParser(description='Plots desired labels, predicted outputs and calculates their corss-correlation.')
 parsed.add_argument('-g', type=str, dest = 'goldStandard_file', help='Specifies the goldStandard file.')
@@ -199,25 +199,29 @@ if args.number_result:
     except KeyError:
         f, axarr = plt.subplots(1, 1)
         model = False
+    except IndexError:
+        f, axarr = plt.subplots(1, 1)
+        model = False
     #pearson = pearsonr(true, ordd_est_outs[args.number_result])
-    pearson = pearsonr(labs, est_outs[args.number_result])
+    pearson = pearsonr(labs, est_outs[args.number_result])[1]
     grid(True)
-    title(titlle+" ["+str(args.number_result)+"]"+",\npearson: %.4f, " % (pearson) + "perform: %.4f" %performs[args.number_result-1])
+    title( "%s [%s],\nPearson: %.5f, perform: %.4f" % (titlle, str(args.number_result), pearson, performs[args.number_result-1]))
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
-    p3 = Rectangle((0, 0), 1, 1, fc="g")
-    axarr[0].legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-    axarr[0].set_xlabel('GoldStandad sorted samples')
-    axarr[0].set_ylabel(yylabel)
+    #p3 = Rectangle((0, 0), 1, 1, fc="g")
+    #axarr[0].legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
+    axarr.legend((p1, p2), ["Gd_std sorted relationship", "Predicted sorted output"], loc='best')
+    axarr.set_xlabel('GoldStandad sorted samples')
+    axarr.set_ylabel(yylabel)
     if args.log_scale and model:
-        axarr[1].set_yscale('log')
-        axarr[2].set_yscale('log')
+        axarr.set_yscale('log')
+        #axarr.set_yscale('log')
     
-    axarr[0].plot(sample, true, color = 'r', linewidth=2)
-    axarr[0].plot(sample, ordd_est_outs[args.number_result], color = 'b', linewidth=2)
-    axarr[0].plot(sample, ccorrs[args.number_result], color = 'g', linewidth=2)
-    axarr[0].set_title('Predictions, goldstandard and cross correlation')
+    axarr.plot(sample, true, color = 'r', linewidth=2)
+    axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linewidth=2)
+    #axarr[0].plot(sample, ccorrs[args.number_result], color = 'g', linewidth=2)
+    #axarr.set_title('Predictions, goldstandard and cross correlation')
     if model:
         axarr[1].scatter(x, y)
         axarr[1].set_title('Learned weights')
@@ -233,21 +237,22 @@ else:
         figure()
         grid(True)
         #pearson = pearsonr(est_o, true)
-        pearson = pearsonr(labs, est_outs[k])
+        pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
-        title(titlle+" ["+str(i+1)+"]"+", \npearson: %.4f, " %(pearson) + "perform: %.4f" % (performs[i]))
+        title(titlle+" ["+str(i+1)+"]"+", \npearson: %.5f, " %(pearson) + "perform: %.4f" % (performs[i]))
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
-        p3 = Rectangle((0, 0), 1, 1, fc="g")
-        legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
+        #p3 = Rectangle((0, 0), 1, 1, fc="g")
+        #legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
+        legend((p1, p2), ["Gd_std sorted relationship", "Predicted sorted output"], loc='best')
         xlabel('GoldStandad sorted samples')
         ylabel(yylabel)
         if args.log_scale:
             yscale('log')
         plot(sample, true, color = 'r', linewidth=2)
         plot(sample, est_o, color = 'b', linewidth=2)
-        plot(sample, ccorrs[i], color = 'g', linewidth=2)
+        #plot(sample, ccorrs[i], color = 'g', linewidth=2)
         i += 1
         if args.same_figure:
             show()
