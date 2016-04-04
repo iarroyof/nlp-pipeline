@@ -108,26 +108,30 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
         if not same_figure:
             show()
 
-#def pearsonr(gl, el):
-#    with open("GL.txt", "w") as f:
-#        for p in gl:
-#            f.write("%s\n" % p)
-#    with open("EL.txt", "w") as f:
-#        for p in el:
-#            f.write("%s\n" % p)
-#    gs="GL.txt"
-#    est="EL.txt"
+def pearsons(gl, el):
+    with open("GL.txt", "w") as f:
+        for p in gl:
+            f.write("%s\n" % p)
+    with open("EL.txt", "w") as f:
+        for p in el:
+            f.write("%s\n" % p)
+    gs="GL.txt"
+    est="EL.txt"
     
-#    pipe = subprocess.Popen(["perl", "./correlation-noconfidence.pl", gs, est], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-#    pipe.stdin.write("%s %s" % (gs, est))
-#    pearson= float(str(pipe.stdout.read()).split()[1])
+    pipe = subprocess.Popen(["perl", "./correlation-noconfidence.pl", gs, est], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    pipe.stdin.write("%s %s" % (gs, est))
+    try:
+        pearson= float(str(pipe.stdout.read()).split()[1])
+    except:
+        print str(pipe.stdout.read())
+        exit()
 
-#    remove(gs)
-#    remove(est)
-#    pipe.stdin.close()
-#    pipe.stdout.close()
+    remove(gs)
+    remove(est)
+    pipe.stdin.close()
+    pipe.stdout.close()
     
-#    return pearson
+    return pearson
 
 parsed = ArgumentParser(description='Plots desired labels, predicted outputs and calculates their corss-correlation.')
 parsed.add_argument('-g', type=str, dest = 'goldStandard_file', help='Specifies the goldStandard file.')
@@ -135,11 +139,13 @@ parsed.add_argument('-p', type=str, dest = 'predictions_file', help='Specifies t
 parsed.add_argument('-l', action='store_true', dest = 'log_scale', help='Toggles log scale for plotting.')
 parsed.add_argument('-r', type=int, dest = 'number_result', help='If you know wath of all input results only to show, give it.')
 parsed.add_argument('-s', action='store_true', dest = 'same_figure', help='Toggles plotting all loaded results in the same figure or each result in a different figure.')
+parsed.add_argument('-S', action='store_true', dest = 'Sorted_outs', help='Toggles plotting sorted output and goldstandard.')
 args = parsed.parse_args()
 label_file = args.goldStandard_file #"/home/iarroyof/data/sts_test_13/STS.output.FNWN.txt"
 output_file = args.predictions_file # "/home/iarroyof/data/output_1_sub_ccbsp_topic.txt"
 
 from pdb import set_trace as st
+from sklearn.metrics import mean_squared_error as mse
 labs = loadtxt(label_file)
 sample = range(0, len(labs))
 est_outs = []       
@@ -236,23 +242,29 @@ else:
     for est_o in ordd_est_outs:
         figure()
         grid(True)
-        #pearson = pearsonr(est_o, true)
-        pearson = pearsonr(labs, est_outs[k])[1]
+        pearson = pearsons(labs, est_outs[k])
+        MSE = mse(labs, est_outs[k])
+        #pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
-        title(titlle+" ["+str(i+1)+"]"+", \npearson: %.5f, " %(pearson) + "perform: %.4f" % (performs[i]))
+        title( "%s [%s],\nPearson: %.5f, perform: %.4f" % (titlle, str(args.number_result), pearson, MSE))# performs[args.number_result-1]) )
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
+        
         #p3 = Rectangle((0, 0), 1, 1, fc="g")
-        #legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-        legend((p1, p2), ["Gd_std sorted relationship", "Predicted sorted output"], loc='best')
-        xlabel('GoldStandad sorted samples')
+        #p4 = Rectangle((0, 0), 1, 1, fc="b")
+        #legend((p1, p2, p3, p4), ["Gd_std sorted relationship", "Predicted sorted output", "Goldstandard", "Prediction"], loc="best")
+        legend((p1, p2), ["Goldstandard relationship", "Predicted output"], loc='best')
+        xlabel('Samples')
         ylabel(yylabel)
         if args.log_scale:
             yscale('log')
-        plot(sample, true, color = 'r', linewidth=2)
-        plot(sample, est_o, color = 'b', linewidth=2)
-        #plot(sample, ccorrs[i], color = 'g', linewidth=2)
+        if args.Sorted_outs:
+            plot(sample, true, color = 'r', linewidth=2)
+            plot(sample, est_o, color = 'b', linewidth=2)
+        else:
+            plot(sample, labs, color = 'r', linewidth=2)
+            plot(sample, est_outs[k-1], color = 'b', linewidth=2)
         i += 1
         if args.same_figure:
             show()

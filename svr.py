@@ -5,6 +5,7 @@ from scipy.stats import randint as sp_randint
 from scipy.stats import expon
 from sklearn.externals import joblib
 from re import search, M, I
+import load_regression as ld_reg
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
 
@@ -12,7 +13,7 @@ from argparse import ArgumentParser as ap
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
 parser.add_argument("-y", help="""Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify
-                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file")
+                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file", default = None)
 parser.add_argument("-n", help="Number of tests to be performed.", metavar="tests_amount", default=1)
 parser.add_argument("-o", help="""The operation the input data was derived from. Options: {'conc', 'convss', 'sub'}. In the case you want to give a precalculated center for
                                 width randomization, specify the number. e.g. '-o 123.654'. A filename can be specified, which is the file where a SVR model is sotred,
@@ -27,12 +28,20 @@ parser.add_argument("-p", help="Toggle if you will process pairs.", action="stor
 parser.add_argument("-N", help="""Toggle if NuSVR will be used. The portion of suppoort vectors with respect to the training set 
                                   can be specified in [0,1]. If it is not specified, random values will be generated (normally 
                                   distributed with mean 0.35).""", metavar = "Nu", default = None)
+parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
 args = parser.parse_args()
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
-X = np.loadtxt(args.x)
+if args.s:  # fileTrain = None, fileTest = None, fileLabelsTr = None, fileLabelsTs = None, sparse=False
+            # features_tr, features_ts, labels_tr, labels_ts
+   X, Xt, y, yt  = ld_reg(fileTrain = args.x, fileLabelsTr = args.y, sparse = args.s)
+else:
+    X = np.loadtxt(args.x)
+    if args.y:
+        y = np.loadtxt(args.y)
+
 if args.N != None:
     svr_ = "nu_svr"
 else:
@@ -45,11 +54,6 @@ gammas = {
         'sub': expon(scale = 20, loc=15.1454004504),
         'convss':expon(scale = 50, loc = 541.113519625),
         'corr':expon(scale = 50, loc = 631.770) }
-
-if args.y:
-    y = np.loadtxt(args.y)
-
-
 
 if args.o:
     
