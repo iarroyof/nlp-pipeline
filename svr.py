@@ -144,7 +144,7 @@ for n in xrange(N):
             svr = SVR()
         else:
             svr = NuSVR()
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8)#, cv = 4)
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8, cv = 5)
         try:
             rs.fit(X, y)
         except:

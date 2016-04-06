@@ -136,3 +136,42 @@ Dimms: 000
 F_min: 3
 Opperation: sub
 
+
+:>> Model selected: {'kernel': 'poly', 'C': 10, 'degree': 1}
+
+:>> R2: -1.70983194123
+
+:>> Model selected: {'kernel': 'rbf', 'C': 10, 'gamma': 23163137645.51668}
+
+:>> R2: -0.0626941038112
+
+:>> Model selected: {'kernel': 'poly', 'C': 1, 'degree': 1}
+
+:>> R2: -1.48589931973
+
+:>> Model selected: {'kernel': 'rbf', 'C': 1500, 'gamma': 23163137637.21476}
+
+:>> R2: -0.0626941038112
+
+:>> Finished!!
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Model selected: {'kernel': 'poly', 'C': 1, 'degree': 1}
+
+:>> R2: -0.804805475982
+
+:>> Model selected: {'kernel': 'rbf', 'C': 2000, 'gamma': 23163137684.16757}
+
+:>> R2: -0.0497821377843
+
+:>> Finished!!
