@@ -1,0 +1,138 @@
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+  File "svr.py", line 151
+    sys.stderr.write("\n:>> Fitting Error:\n" )
+      ^
+IndentationError: expected an indented block
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 810, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 763, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 326, in _handle_workers
+    pool._maintain_pool()
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 230, in _maintain_pool
+    self._repopulate_pool()
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 223, in _repopulate_pool
+    w.start()
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 130, in start
+    self._popen = Popen(self)
+  File "/usr/lib/python2.7/multiprocessing/forking.py", line 121, in __init__
+    self.pid = os.fork()
+OSError: [Errno 12] Cannot allocate memory
+
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 810, in __bootstrap_inner
+    self.run()
+  File "/usr/lib/python2.7/threading.py", line 763, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 326, in _handle_workers
+    pool._maintain_pool()
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 230, in _maintain_pool
+    self._repopulate_pool()
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 223, in _repopulate_pool
+    w.start()
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 130, in start
+    self._popen = Popen(self)
+  File "/usr/lib/python2.7/multiprocessing/forking.py", line 121, in __init__
+    self.pid = os.fork()
+OSError: [Errno 12] Cannot allocate memory
+
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+
+
+:>> Model selected: {'kernel': 'poly', 'C': 100, 'degree': 1}
+
+:>> R2: -1.70983194123
+
+:>> Model selected: {'kernel': 'rbf', 'C': 100, 'gamma': 23163137640.127434}
+
+:>> R2: -0.0626941038112
+
+:>> Finished!!
+
+:>> Source: fnwn13
+
+:>> Training settings are OK
+Output file: svr_fnwn13_docS_H000_esp_m3.out
+Corpus: fnwn13
+Repr: docS
+Dimms: 000
+F_min: 3
+Opperation: sub
+

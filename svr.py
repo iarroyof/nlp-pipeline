@@ -5,7 +5,8 @@ from scipy.stats import randint as sp_randint
 from scipy.stats import expon
 from sklearn.externals import joblib
 from re import search, M, I
-import load_regression as ld_reg
+from load_regression import load_regression_data as lr
+import sys
 #inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
 
@@ -34,9 +35,41 @@ args = parser.parse_args()
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
+
+if args.p:
+    try:
+        source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
+            # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc' s.group(5) '5'
+        if args.c:
+            corpus = args.c
+        else:
+            corpus = source.group(1)
+        if args.r:
+            representation = args.r
+        else:
+            representation = source.group(2)
+        if args.d:
+            dimensions = args.d
+        else:
+            dimensions = source.group(3)[1:]
+        if args.m:
+            min_count = args.m
+        else:
+            min_count = source.group(5)
+    except IndexError:
+        print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+        exit()
+    except AttributeError:
+        print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+        exit()
+    print "\nCorpus: %s\nRepr: %s\nDimms: %s\nF_min: %s\nOpperation: %s\n" % (corpus, representation, dimensions, min_count, source.group(4))
+else:
+    # TODO: modify the regep for single sentences X file
+    source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
+
 if args.s:  # fileTrain = None, fileTest = None, fileLabelsTr = None, fileLabelsTs = None, sparse=False
             # features_tr, features_ts, labels_tr, labels_ts
-   X, Xt, y, yt  = ld_reg(fileTrain = args.x, fileLabelsTr = args.y, sparse = args.s)
+   X, Xt, y, yt  = lr(fileTrain = args.x, fileLabelsTr = args.y, sparse = args.s)
 else:
     X = np.loadtxt(args.x)
     if args.y:
@@ -56,71 +89,14 @@ gammas = {
         'corr':expon(scale = 50, loc = 631.770) }
 
 if args.o:
-    
     if args.o.replace('.','',1).isdigit():
         op = 'esp'
         gammas[op] = expon(scale = 20, loc = float(args.o))
-        if args.p:
-            try:
-                source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", x, M|I)
-            # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc' s.group(5) '5'
-                if args.c:
-                    corpus = args.c
-                else:
-                    corpus = source.group(1)
-                if args.r:
-                    representation = args.r
-                else:
-                    representation = source.group(2)
-                if args.d:
-                    dimensions = args.d
-                else:
-                    dimensions = source.group(3)[1:]
-                if args.m:
-                    min_count = args.m
-                else:
-                    min_count = source.group(5)
-            except IndexError:
-                print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-                exit()
-            except AttributeError:
-                print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-                exit()
-            print "\nCorpus: %s \nRepr: %s \nDimms: %s \n F_min: %s\n" % (corpus, representation, dimensions, min_count)
-        else:
-            source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
+
     elif not args.o in gammas: # then it is a SVR model location
-        from os.path import basename, splitext
-        import sys 
-    # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
+        from os.path import basename, splitext 
+        # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
         op = args.o
-        if args.p: # pairs? : single sentences
-            try:
-                source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
-                if args.c:
-                    corpus = args.c
-                else:
-                    corpus = source.group(1)
-                if args.r:
-                    representation = args.r
-                else:
-                    representation = source.group(2)
-                if args.d:
-                    dimensions = args.d
-                else:
-                    dimensions = source.group(3)[1:]
-                if args.m:
-                    min_count = args.m
-                else:
-                    min_count = source.group(5)
-            except IndexError:
-                print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-                exit()
-            except AttributeError:
-                print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-                exit()
-        else: # TODO: parse for no pairs
-            source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
 
         sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
         infile = basename(op) # SVR model file name
@@ -139,43 +115,14 @@ if args.o:
             print "Please specify a file name for loading the SVR pretrained model."            
             exit()
 else:
-    import sys 
     # example filename: 'pairs_headlines13_d2v_H300_conc_m5.mtx'
-    from pdb import set_trace as st
-
-    if args.p: #pairs? or singles
-        try:
-            source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
-            if args.c:
-                corpus = args.c
-            else:
-                corpus = source.group(1)
-            if args.r:
-                representation = args.r
-            else:
-                representation = source.group(2)
-            if args.d:
-                dimensions = args.d
-            else:
-                dimensions = source.group(3)[1:]
-            if args.d:
-                op = args.o
-            else:
-                op = source.group(4)
-            if args.m:
-                min_count = args.m
-            else:
-                min_count = source.group(5)
-        except IndexError:
-            print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-            exit()
-        except AttributeError:
-            print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-            exit()
-    else: # TODO: Parse single sentences x file
-        source = search(r"T[0-9]{2}_C[1-9]_[0-9]{2}", args.x, M|I)
+    try:
+        op = source.group(4)
+    except:
+        print "Please specify an operation type or give it in the correct way at the filename."
+        exit()
         
-    sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
+sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
 
 param_grid = [   
@@ -188,20 +135,24 @@ if args.N == "auto":
 elif args.N != None:
     for p in param_grid:
         p['nu'] = [float(args.N)]
-    
-        
 
+sys.stderr.write("\n:>> Training settings are OK\n")
+sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count))
 for n in xrange(N):
     for params in param_grid:
         if args.N == None:
             svr = SVR()
         else:
             svr = NuSVR()
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24, cv = 4)
-        rs.fit(X, y)
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8)#, cv = 4)
+        try:
+            rs.fit(X, y)
+        except:
+            sys.stderr.write("\n:>> Fitting Error:\n" )
+
         sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
         f_x = rs.predict(X).tolist()
-        sys.stderr.write("\n:>> Predictions: %s\n" % (rs.best_score_))
+        sys.stderr.write("\n:>> R2: %s\n" % (rs.best_score_))
         try:
             num_lines = sum(1 for line in open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
         except IOError:
@@ -217,3 +168,5 @@ for n in xrange(N):
             f.write(str(y_out)+'\n')
         
         joblib.dump(rs, "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
+
+sys.stderr.write("\n:>> Finished!!\n" )

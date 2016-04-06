@@ -18,9 +18,9 @@ def load_regression_data(fileTrain = None, fileTest = None, fileLabelsTr = None,
 
     #lm = LoadMatrix()
     if sparse:  
-        features_tr = mmread(fileTrain).asformat('csr').astype('float64').T
+        features_tr = mmread(fileTrain).asformat('csr').astype('int16')
         if fileTest:
-            features_ts = mmread(fileTest).asformat('csr').astype('float64').T    # compatibility with SparseRealFeatures
+            features_ts = mmread(fileTest).asformat('csr').astype('int16')   
         else:
             features_ts = None
     else:
@@ -36,5 +36,10 @@ def load_regression_data(fileTrain = None, fileTest = None, fileLabelsTr = None,
         labels_tr = loadtxt(fileLabelsTr)
     else:
         labels_tr = None
+
+    if fileTest and fileLabelsTs:
+        labels_ts = loadtxt(fileLabelsTs)
+    else:
+        labels_ts = None
 
     return features_tr, features_ts, labels_tr, labels_ts
