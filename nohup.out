@@ -1,177 +1,51 @@
 
-:>> Source: fnwn13
+:>> Source: headlines13
 
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
+Corpus: headlines13
 Repr: docS
 Dimms: 000
 F_min: 3
 Opperation: sub
 
-  File "svr.py", line 151
-    sys.stderr.write("\n:>> Fitting Error:\n" )
-      ^
-IndentationError: expected an indented block
-
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
-Repr: docS
-Dimms: 000
-F_min: 3
-Opperation: sub
-
-Exception in thread Thread-1:
 Traceback (most recent call last):
-  File "/usr/lib/python2.7/threading.py", line 810, in __bootstrap_inner
-    self.run()
-  File "/usr/lib/python2.7/threading.py", line 763, in run
-    self.__target(*self.__args, **self.__kwargs)
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 326, in _handle_workers
-    pool._maintain_pool()
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 230, in _maintain_pool
-    self._repopulate_pool()
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 223, in _repopulate_pool
-    w.start()
-  File "/usr/lib/python2.7/multiprocessing/process.py", line 130, in start
-    self._popen = Popen(self)
-  File "/usr/lib/python2.7/multiprocessing/forking.py", line 121, in __init__
-    self.pid = os.fork()
-OSError: [Errno 12] Cannot allocate memory
+  File "svr.py", line 105, in <module>
+    model = joblib.load(op, 'r')
+  File "/usr/local/lib/python2.7/dist-packages/sklearn/externals/joblib/numpy_pickle.py", line 446, in load
+    with open(filename, 'rb') as file_handle:
+IOError: [Errno 2] No such file or directory: '/almac/ignacio/data/svr_models/svr_fnwn13_{0,1,2,3,4,5,6,7}_docS_H000_esp_m3.model'
 
-Exception in thread Thread-1:
-Traceback (most recent call last):
-  File "/usr/lib/python2.7/threading.py", line 810, in __bootstrap_inner
-    self.run()
-  File "/usr/lib/python2.7/threading.py", line 763, in run
-    self.__target(*self.__args, **self.__kwargs)
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 326, in _handle_workers
-    pool._maintain_pool()
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 230, in _maintain_pool
-    self._repopulate_pool()
-  File "/usr/lib/python2.7/multiprocessing/pool.py", line 223, in _repopulate_pool
-    w.start()
-  File "/usr/lib/python2.7/multiprocessing/process.py", line 130, in start
-    self._popen = Popen(self)
-  File "/usr/lib/python2.7/multiprocessing/forking.py", line 121, in __init__
-    self.pid = os.fork()
-OSError: [Errno 12] Cannot allocate memory
+:>> Source: headlines13
 
+:>> Source: headlines13
 
-:>> Source: fnwn13
+:>> Source: headlines13
 
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
+:>> Source: headlines13
+
+Corpus: headlines13
 Repr: docS
 Dimms: 000
 F_min: 3
 Opperation: sub
 
 
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
+Corpus: headlines13
 Repr: docS
 Dimms: 000
 F_min: 3
 Opperation: sub
 
 
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
+Corpus: headlines13
 Repr: docS
 Dimms: 000
 F_min: 3
 Opperation: sub
 
 
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
+Corpus: headlines13
 Repr: docS
 Dimms: 000
 F_min: 3
 Opperation: sub
 
-
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
-Repr: docS
-Dimms: 000
-F_min: 3
-Opperation: sub
-
-
-:>> Model selected: {'kernel': 'poly', 'C': 100, 'degree': 1}
-
-:>> R2: -1.70983194123
-
-:>> Model selected: {'kernel': 'rbf', 'C': 100, 'gamma': 23163137640.127434}
-
-:>> R2: -0.0626941038112
-
-:>> Finished!!
-
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
-Repr: docS
-Dimms: 000
-F_min: 3
-Opperation: sub
-
-
-:>> Model selected: {'kernel': 'poly', 'C': 10, 'degree': 1}
-
-:>> R2: -1.70983194123
-
-:>> Model selected: {'kernel': 'rbf', 'C': 10, 'gamma': 23163137645.51668}
-
-:>> R2: -0.0626941038112
-
-:>> Model selected: {'kernel': 'poly', 'C': 1, 'degree': 1}
-
-:>> R2: -1.48589931973
-
-:>> Model selected: {'kernel': 'rbf', 'C': 1500, 'gamma': 23163137637.21476}
-
-:>> R2: -0.0626941038112
-
-:>> Finished!!
-
-:>> Source: fnwn13
-
-:>> Training settings are OK
-Output file: svr_fnwn13_docS_H000_esp_m3.out
-Corpus: fnwn13
-Repr: docS
-Dimms: 000
-F_min: 3
-Opperation: sub
-
-
-:>> Model selected: {'kernel': 'poly', 'C': 1, 'degree': 1}
-
-:>> R2: -0.804805475982
-
-:>> Model selected: {'kernel': 'rbf', 'C': 2000, 'gamma': 23163137684.16757}
-
-:>> R2: -0.0497821377843
-
-:>> Finished!!
