@@ -30,6 +30,7 @@ parser.add_argument("-N", help="""Toggle if NuSVR will be used. The portion of s
                                   can be specified in [0,1]. If it is not specified, random values will be generated (normally 
                                   distributed with mean 0.35).""", metavar = "Nu", default = None)
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
+parser.add_argument("-k", help="k-fold cross validation for the randomized search.", metavar="k-fold_cv", default=None)
 args = parser.parse_args()
 #inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
 #gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
@@ -38,7 +39,7 @@ N = int(args.n)
 
 if args.p:
     try:
-        source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3})", args.x, M|I)
+        source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_?([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}_?[0-9]{0,3})", args.x, M|I)
             # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc' s.group(5) '5'
         if args.c:
             corpus = args.c
@@ -144,7 +145,11 @@ for n in xrange(N):
             svr = SVR()
         else:
             svr = NuSVR()
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8, cv = 5)
+        if args.k:
+            k = int(args.k)
+        else:
+            k = args.k
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8, cv = k)
         try:
             rs.fit(X, y)
         except:
