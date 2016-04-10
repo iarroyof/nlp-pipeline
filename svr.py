@@ -39,7 +39,7 @@ N = int(args.n)
 
 if args.p:
     try:
-        source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_?([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}_?[0-9]{0,3})", args.x, M|I)
+        source = search(r"[vectors|pairs]+_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
             # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc' s.group(5) '5'
         if args.c:
             corpus = args.c
@@ -139,6 +139,11 @@ elif args.N != None:
 
 sys.stderr.write("\n:>> Training settings are OK\n")
 sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count))
+# Sorted training set:
+D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
+X = np.array([list(a) for a in D[0]])
+y = D[1]
+del D
 for n in xrange(N):
     for params in param_grid:
         if args.N == None:
@@ -168,6 +173,7 @@ for n in xrange(N):
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'file': "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
+        y_out['sorted_labels'] = y
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
