@@ -173,11 +173,13 @@ for n in xrange(N):
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'file': "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
-        y_out['sorted_labels'] = y
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
         
         joblib.dump(rs, "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
+with open("sorted_gs_%s.txt" % (corpus), "w") as f:
+    for i in y:
+        f.write(str(i)+'\n')
 
 sys.stderr.write("\n:>> Finished!!\n" )
