@@ -17,12 +17,12 @@ pred_file = args.p
 assert 1 < int(args.n) <= 100 # Valid compression percentaje?
 
 if not args.d and not args.e:
-    ops = '_d'
+    ops = ''
 elif not args.d and args.e:
-    ops = '_de'
+    ops = '_e'
     doc_index = splitext(source)[0][-2:] # 01, 02,..,10
 elif args.d and args.e:
-    ops = '_e'
+    ops = '_de'
     doc_index = splitext(source)[0][-2:] # 01, 02,..,10
 else:
     ops = ''
@@ -50,7 +50,7 @@ with open(sent_file) as f:
     sentences = map(str.strip, f.readlines())
 
 if len(sentences) != len(predictions):
-    sys.stderr.write("Length of predictions and number of sentences does not match. %s /= %s" % (len(sentences), len(predictions)))
+    sys.stderr.write("Length of predictions and number of sentences does not match. %s != %s" % (len(sentences), len(predictions)))
     exit()
 
 Ns  = int(round(len(sentences)*(float(args.n)/100.0)))
