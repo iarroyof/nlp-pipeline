@@ -45,19 +45,19 @@ for d in "$directory"/*/;
 do 
     ./multi_ranker.sh "$d" "$per"; # Multiranker in descent and metadata printing mode (option -e activated)
 done                               # A 25% compression rate is used. This is the default. You can modify this parameter inside multi_ranker.sh
-
+set -x
 # T12_C1_e_10_summ.txt
-for i in {01..20}; # Print all by-document summaries (with printed metadata) into a single multidocument summary.
-do 
-    cat "$directory"/"$i"/T"$i"_C1_*_e_"$per"_summ* > "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt; 
-done
+#for i in {01..20}; # Print all by-document summaries (with printed metadata) into a single multidocument summary.
+#do 
+#    cat "$directory"/"$i"/T"$i"_C1_*_e_"$per"_summ* > "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt; 
+#done
 
 for i in {01..20}; # Sort the multidocumment summary; firstly by sentence index (k1) and after by source document index (k2)
 do 
-    sort -k1 -n "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt | sort -k2 -n > "$directory"/"$i"/T"$i"_C1_ed_tout_"$per"_summ.txt; 
+    sort -k1 -n "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt | sort -k2 -n > "$directory"/"$i"/T"$i"_C1_es_"$per"_summ.txt; # 's' means "sort"
 done
 
 for i in {01..20}; # Print the sorted summary without metadata (filters the first 3 columns).
 do 
-    awk '{$1=$2=$3=""; print $0}' "$directory"/"$i"/T"$i"_C1_ed_tout_"$per"_summ.txt > "$directory"/"$i"/T"$i"_C1_d_tout_"$per"_summ.txt; 
+    awk '{$1=$2=$3=""; print $0}' "$directory"/"$i"/T"$i"_C1_es_"$per"_summ.txt > "$directory"/"$i"/T"$i"_C1_s_"$per"_summ.txt; 
 done

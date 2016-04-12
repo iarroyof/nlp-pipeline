@@ -27,10 +27,10 @@ elif args.d and args.e:
 else:
     ops = ''
 
-summ_file = splitext(args.s)[0] + ops + '_%s_summ.txt' % args.n
+summ_file = "%s/%s%s_%s_summ.txt" % (dirname(args.s), splitext(args.s)[0], ops, args.n) # Percentaje
 #summ_file = dirname(args.s) + "/summs/" + splitext(source)[0] + ops + '_summ.txt'
 
-with open(pred_file) as f:
+with open(pred_file) as f: # open predictions file
     empty = True
     for p in f.readlines():
         s = eval(p.strip())
@@ -55,13 +55,10 @@ if len(sentences) != len(predictions):
 
 Ns  = int(round(len(sentences)*(float(args.n)/100.0)))
 
-if len(sentences) < Ns or Ns <= 0:
-    Ns = len(sentences)
-sys.stderr.write(":>> File: %s\n :>> Document length: %d\n :>> Compression rate: %s\n :>> Taken sentences: %d\n" % (source, len(sentences), args.n, Ns))
-#print ":>> Document length: %d\n" % len(sentences)
-#print ":>> Compression rate: %s\n" % args.n
-#print ":>> Taken sentences: %d\n" % Ns
+if Ns < 1:
+    Ns = 1
 
+sys.stderr.write(":>> Input file: %s\n:>> Output file: %s\n:>> Document length: %d\n:>> Compression rate: %s\n:>> Taken sentences: %d\n" % (source, summ_file, len(sentences), args.n, Ns))
 
 predictions = sorted(predictions[:Ns], key = lambda tup: tup[0])
 
