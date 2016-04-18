@@ -7,7 +7,6 @@ outend=_H300_m10.mtx
 out=vectors
 
 echo "Combiner for multimple sentence files contained inside a directory"
-echo "Version 0.001 juan-manuel.torres@univ-avignon.fr"
 echo "Los directorios deben estar en : $Dir"
 
 mkdir -p "$Dir"/"$out"
@@ -18,5 +17,5 @@ do
     name="${bname%.*}"
     echo "input filename: $name"    
     echo "Repertoire... $doc"
-	(python combiner.py -Si -f "$doc" -d doc2vec -w "$model" -o "$Dir"/"$out"/vectors_d2v_RPM_"$name""$outend") &
+	python combiner.py -Si -f "$doc" -d doc2vec -w "$model" -o "$Dir"/"$out"/vectors_d2v_RPM_"$name""$outend"
 done

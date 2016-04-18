@@ -15,6 +15,7 @@ sent_file = args.s
 source = basename(args.s)
 pred_file = args.p
 assert 1 < int(args.n) <= 100 # Valid compression percentaje?
+LME = 10 # Longueur Moyenne des l'Enonces
 
 if not args.d and not args.e:
     ops = ''
@@ -27,7 +28,7 @@ elif args.d and args.e:
 else:
     ops = ''
 
-summ_file = "%s/%s%s_%s_summ.txt" % (dirname(args.s), splitext(args.s)[0], ops, args.n) # Percentaje
+summ_file = "%s%s_%s_summ.txt" % (splitext(args.s)[0], ops, args.n) # Percentaje
 #summ_file = dirname(args.s) + "/summs/" + splitext(source)[0] + ops + '_summ.txt'
 
 with open(pred_file) as f: # open predictions file
@@ -37,7 +38,7 @@ with open(pred_file) as f: # open predictions file
         if source == s['source']:
             eo = s['estimated_output']
             r = range(len(eo))
-            predictions=sorted(zip(r, eo), reverse = args.d, key = lambda tup: tup[1])
+            predictions=sorted(zip(r, eo), reverse = args.d, key = lambda tup: tup[1]) # Sort by predicted score
             empty = False
             break
                   
@@ -60,23 +61,31 @@ if Ns < 1:
 
 sys.stderr.write(":>> Input file: %s\n:>> Output file: %s\n:>> Document length: %d\n:>> Compression rate: %s\n:>> Taken sentences: %d\n" % (source, summ_file, len(sentences), args.n, Ns))
 
-predictions = sorted(predictions[:Ns], key = lambda tup: tup[0])
-
-#for r in predictions: # r =  [(j, score_1),..., (J, score_N)]
+predictions = sorted(predictions[:Ns], key = lambda tup: tup[0]) # sort by index [(index, score),...] where score is previously sorted
+                                                                 # and the Ns first scores are taken, so some sentence indexes can be missing.
 with open(summ_file, 'w') as f:
     summary = []
     if args.c:
         f.write("# Source file: %s\n" % (sent_file))
         f.write("# Estimators file: %s\n" % (pred_file))
+
     if args.e:
-        for i, p in enumerate(predictions):
-            summary.append((i, p[1], sentences[p[0]]))
+        i = 1
+        for p in predictions:
+            sentence = sentences[p[0]]
+            if len(sentence.split()) > LME:
+                summary.append((i, p[1], sentence)) # 'i' is the index in the resulting summarized document.
+                i += 1
 
         for s in xrange(Ns):
             f.write("%03d\t%s\t%.4f\t%s\n" % (summary[s][0], doc_index, summary[s][1], summary[s][2]))        
     else:
+        i = 1
         for p in predictions:
-            summary.append(sentences[p[0]])
+            sentence = sentences[p[0]]
+            if len(sentence.split()) > LME:
+                summary.append(sentence)
+                i += 1
         
         for s in summary:
             f.write("%s\n" % (s))        

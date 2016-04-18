@@ -37,7 +37,8 @@ args = parser.parse_args()
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
 
-
+#from pdb import set_trace as st
+#st()
 try:
     if args.p:
         source = search(r"pairs_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
@@ -47,10 +48,10 @@ try:
     if args.c:
         corpus = args.c
     else:
-        if args.p:
-            corpus = source.group(1)
-        else:
-            corpus = source.group(2)
+        #if args.p:
+        corpus = source.group(1)
+        #else:
+        #    corpus = source.group(2)
     if args.r:
         representation = args.r
     else:
@@ -74,6 +75,12 @@ except IndexError:
     exit()
 except AttributeError:
     print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+    for i in range(5):
+        try:
+            print source.group(i)
+        except AttributeError:
+            print ":>> Unparsed: %s" % (i)
+            pass            
     exit()
 
 print "\nCorpus: %s\nRepr: %s\nDimms: %s\nF_min: %s\nOpperation: %s\n" % (corpus, representation, dimensions, min_count, source.group(4))
@@ -118,11 +125,15 @@ if args.o:
             model = joblib.load(op, 'r')
             y_out = {}
             y_out['estimated_output'] = model.predict(X).tolist()
-            y_out['source'] = source.group()+".txt"
+            if args.p:
+                y_out['source'] = source.group()+".txt"
+            else:
+                y_out['source'] = source.group(2)+".txt"
             y_out['model'] = splitext(infile)[0]
         # Add more metadata to the dictionary as required.
             with open(filename, 'a') as f:
                 f.write(str(y_out)+'\n')
+            sys.stderr.write("\n:>> Output predictions: %s\n" % (filename))
             exit()
         else:
             print "Please specify a file name for loading the SVR pretrained model."            
