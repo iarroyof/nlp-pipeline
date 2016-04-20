@@ -12,5 +12,5 @@ echo "Los directorios deben estar en : $Dir"
 for doc in `ls $Dir$ext`;
 do
     echo "Repertoire... $doc"
-	(python get_summ_rank.py -e -s "$doc" -p "$preds" -n "$percent") &
+	(python get_summ_rank.py -ed -s "$doc" -p "$preds" -n "$percent") &
 done
