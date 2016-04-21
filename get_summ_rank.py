@@ -23,7 +23,7 @@ sent_file = args.s
 source = basename(args.s)
 pred_file = args.p
 assert 1 < int(args.n) <= 100 # Valid compression percentaje?
-LME = 18 # Longueur Moyenne des l'Enonces
+LME = 0 # Longueur Moyenne des l'Enonces
 
 if not args.d and not args.e:
     ops = ''

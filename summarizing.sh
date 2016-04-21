@@ -6,6 +6,8 @@
 new=$1          # Start from scratch
 directory=$2    # Directrory text data is stored as a subdirectory by theme.
 per=$3          # Compression rate in percentaje e.g. {5, 10, 20, 30}
+dis=$4
+
 svrModel=/almac/ignacio/data/svr_models/svr_puces_complete_2_d2v_H300_esp_m10.model
 
 if [ "$new" ==  "yes" ]
@@ -33,13 +35,13 @@ then
     do                 # This procedure can take a couple of minutes by iteration. You can modify the loop control for generating vectors for two directories (topics) as maximun, due to memory constraints.
         ./multi_combiner.sh "$directory"/"$i";
     done
-fi
 
-for i in {01..20}; # 20 themes.
-do
-    ./multi_svr.sh "$directory"/"$i"/all/vectors "$svrModel"; # Generate predictions file from sentence vectors with svr.py in prediction mode.
-done                                                           # Predictions are stored in the work directory with the same name than $model plus '_predictions.out' suffix.
-#fi
+
+    for i in {01..20}; # 20 themes.
+    do
+        ./multi_svr.sh "$directory"/"$i"/all/vectors "$svrModel"; # Generate predictions file from sentence vectors with svr.py in prediction mode.
+    done                                                           # Predictions are stored in the work directory with the same name than $model plus '_predictions.out' suffix.
+fi
 ######## Run from this line to obtain other summaries from the same dataset #########
 
 for d in {01..20}; 
@@ -55,10 +57,10 @@ done        # A 25% compression rate is used. This is the default. You can modif
 
 for i in {01..20}; # Sort the multidocumment summary; firstly by sentence index (k1) and after by source document index (k2)
 do 
-    sort -k1 -n "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt | sort -k2 -n > "$directory"/"$i"/T"$i"_C1_es_"$per"_summ.txt; # 's' means "sort"
+    sort -k1 -n "$directory"/"$i"/T"$i"_C1_00_de_"$per"_summ.txt | sort -k2 -n > "$directory"/"$i"/T"$i"_C1_des_"$per"_summ.txt; # 's' means "sort"
 done
 
 for i in {01..20}; # Print the sorted summary without metadata (filters the first 3 columns).
 do 
-    awk '{$1=$2=$3=""; print $0}' "$directory"/"$i"/T"$i"_C1_e_"$per"_summ.txt > "$directory"/"$i"/T"$i"_C1_s_"$per"_summ.txt; 
+    awk '{$1=$2=$3=""; print $0}' "$directory"/"$i"/T"$i"_C1_des_"$per"_summ.txt > "$directory"/"$i"/T"$i"_C1_kernel_"$per"_"$dis"_summ.txt; 
 done
