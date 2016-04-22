@@ -7,7 +7,9 @@ new=$1          # Start from scratch
 directory=$2    # Directrory text data is stored as a subdirectory by theme.
 per=$3          # Compression rate in percentaje e.g. {5, 10, 20, 30}
 dis=$4
+dims=$4
 
+d2vModel=/almac/ignacio/data/d2v_models/d2v_wikiFr_puses_H200_m10.model
 svrModel=/almac/ignacio/data/svr_models/svr_puces_complete_2_d2v_H300_esp_m10.model
 
 if [ "$new" ==  "yes" ]
@@ -31,15 +33,18 @@ then
 # outend=_H300_m10.mtx
 # out=vectors
 # combiner.py -Si -f $doc -d doc2vec -w $model -o $Dir/$out/vectors_d2v_RPM_$name$outend
+fi
+if [ "$new" ==  "1" ] then
     for i in {01..20}; # Generate sentence vectors by inferring them from doc2vec wiki-trained model. for 20 themes.
     do                 # This procedure can take a couple of minutes by iteration. You can modify the loop control for generating vectors for two directories (topics) as maximun, due to memory constraints.
-        ./multi_combiner.sh "$directory"/"$i";
+        ./multi_combiner.sh "$directory"/"$i" "$d2vModel" "$dims";
     done
-
+fi
+if [ "$new" ==  "2" ] then
 
     for i in {01..20}; # 20 themes.
     do
-        ./multi_svr.sh "$directory"/"$i"/all/vectors "$svrModel"; # Generate predictions file from sentence vectors with svr.py in prediction mode.
+        ./multi_svr.sh "$directory"/"$i"/vectors "$svrModel"; # Generate predictions file from sentence vectors with svr.py in prediction mode.
     done                                                           # Predictions are stored in the work directory with the same name than $model plus '_predictions.out' suffix.
 fi
 ######## Run from this line to obtain other summaries from the same dataset #########

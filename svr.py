@@ -43,7 +43,8 @@ try:
     if args.p:
         source = search(r"pairs_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
     else:
-        source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_(T[0-9]{2,3}[_|-]C[1-9][_|-][0-9]{2})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)            
+        #source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_(T[0-9]{2,3}[_|-]C[1-9][_|-][0-9]{2})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)            
+        source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
             # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc'? s.group(5) '5'
     if args.c:
         corpus = args.c
@@ -65,17 +66,25 @@ try:
         if args.d:
             dimensions = source.group(3)[1:]
         else:
-            dimensions = source.group(4)[1:]
+            #dimensions = source.group(4)[1:]
+            dimensions = source.group(3)[1:]
     if args.m:
         min_count = args.m
     else:
-        min_count = source.group(5)
+        #min_count = source.group(5)
+        min_count = source.group(4)
 except IndexError:
     print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+    for i in range(6):
+        try:
+            print source.group(i)
+        except IndexError:
+            print ":>> Unparsed: %s" % (i)
+            pass
     exit()
 except AttributeError:
     print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
-    for i in range(5):
+    for i in range(6):
         try:
             print source.group(i)
         except AttributeError:

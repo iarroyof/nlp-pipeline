@@ -9,7 +9,7 @@ echo "Version 0.001 juan-manuel.torres@univ-avignon.fr"
 echo "Los directorios deben estar en : $Dir"
 
 echo "Output directory: $Dir/$out"
-for matrix in `ls "$Dir"/*v_H*mtx`;
+for matrix in `ls "$Dir"/*mtx`;
 do
     echo "Repertoire... $doc"
 	(python svr.py -x "$matrix" -o "$model") &
