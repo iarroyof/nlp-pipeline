@@ -14,16 +14,18 @@ parser = ap(description='This script converts the predictions in a dictionary of
 parser.add_argument("-s", help="Input file name of sentences.", metavar="sent_file", required=True)
 parser.add_argument("-p", help="Regression predictions file." , metavar="predictions", required=True)
 parser.add_argument("-n", help="Percentage of output sentences.", metavar="per_sents", default=25)
+parser.add_argument("-m", help="Minimum sentence length.", metavar="min_length", default=0)
 parser.add_argument("-d", action='store_true', help="Score order of the output summary. The default is ascendant. typing '-d' toggles descendant.", default=False)
 parser.add_argument('-e', action='store_true', help='Toggles printing the estimated scores in the output file if required.')
 parser.add_argument('-c', action='store_true', help='Toggles printing source information comments in the output file.')
+parser.add_argument('-l', action='store_true', help='Toggles if logical order is required.')
 args = parser.parse_args()
 
 sent_file = args.s
 source = basename(args.s)
 pred_file = args.p
 assert 1 < int(args.n) <= 100 # Valid compression percentaje?
-LME = 0 # Longueur Moyenne des l'Enonces
+LME = int(args.m) # Longueur Moyenne des l'Enonces (0 := all lengths allowed)
 
 if not args.d and not args.e:
     ops = ''
@@ -72,8 +74,13 @@ if Ns < 1:
 sys.stderr.write("""\n:>> Input file: %s\n:>> Output file: %s\n:>> Document length: %d\n:>> Compression rate: %s\n:>> Taken sentences: %d\n:>> Max score: %f.3\n:>> Min score: %f.3\n""" % (source, summ_file, len(sentences), args.n, Ns, mxeo, mneo))
 
 predictions = [(s, p) for s, p in zip(sentences, predictions) if len(s.split()) > LME]  # Filter sentences by length.
-predictions=sorted(predictions, reverse = args.d, key = lambda tup: tup[1][1])
-sentences = sorted(predictions[:Ns], key = lambda tup: tup[1][0]) # sort by index in origin document [(index, score),...] where score is previously sorted.
+predictions=sorted(predictions, reverse = args.d, key = lambda tup: tup[1][1]) # Sort by ranking scores
+
+if args.l:
+    sentences = sorted(predictions[:Ns], key = lambda tup: tup[1][0]) # sort by index in origin document for keeping logical order [(index, score),...] where score is previously sorted.
+else:
+    sentences = predictions[:Ns]    # No logical oreder required
+
 sentences, predictions = list(zip(*sentences))                    # The Ns first scores are taken, so several origin indexes will be missing.          
 
 with open(summ_file, 'w') as f:

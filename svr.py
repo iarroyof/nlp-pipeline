@@ -26,7 +26,7 @@ parser.add_argument("-r", help="The representation type. options:={w2v, d2v, coo
 parser.add_argument("-d", help="Dimensions of the input vector set.", metavar="num_dimensions", default = None)
 parser.add_argument("-m", help="Minimun word frequency taken into account in the corpus. Type '-m m10' for a min_count of 10.", metavar="min_count", default = None)
 parser.add_argument("-p", help="Toggle if you will process pairs.", action="store_true", default = False)
-parser.add_argument("-N", help="""Toggle if NuSVR will be used. The portion of suppoort vectors with respect to the training set 
+parser.add_argument("-N", help="""Toggle if NuSVR (valid only for NuSVR) will be used. The portion of suppoort vectors with respect to the training set 
                                   can be specified in [0,1]. If it is not specified, random values will be generated (normally 
                                   distributed with mean 0.35).""", metavar = "Nu", default = None)
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
@@ -41,10 +41,10 @@ N = int(args.n)
 #st()
 try:
     if args.p:
-        source = search(r"pairs_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
+        source = search(r"pairs_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
     else:
-        #source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_(T[0-9]{2,3}[_|-]C[1-9][_|-][0-9]{2})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)            
-        source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
+        source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_(T[0-9]{2,3}[_|-]C[1-9][_|-][0-9]{2})_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)            
+        #source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
             # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc'? s.group(5) '5'
     if args.c:
         corpus = args.c
@@ -52,7 +52,7 @@ try:
         #if args.p:
         corpus = source.group(1)
         #else:
-        #    corpus = source.group(2)
+            #corpus = source.group(2)
     if args.r:
         representation = args.r
     else:
@@ -66,13 +66,13 @@ try:
         if args.d:
             dimensions = source.group(3)[1:]
         else:
-            #dimensions = source.group(4)[1:]
-            dimensions = source.group(3)[1:]
+            dimensions = source.group(4)[1:]
+            #dimensions = source.group(3)[1:]
     if args.m:
         min_count = args.m
     else:
-        #min_count = source.group(5)
-        min_count = source.group(4)
+        min_count = source.group(5)
+        #min_count = source.group(4)
 except IndexError:
     print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
     for i in range(6):
@@ -159,7 +159,7 @@ sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
 
 param_grid = [   
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly'], 'degree': sp_randint(1, 5)},
+    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear'], 'degree': sp_randint(1, 16)},
     {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
