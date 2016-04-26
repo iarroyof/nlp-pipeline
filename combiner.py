@@ -272,7 +272,7 @@ if __name__ == "__main__":
             
             for j, s1, s2 in read_sentence_pairs(input_file, limit):
                 try:                                         # 1-based indexing
-                    v = np.array(ccbsp(dws, s1, s2, operation, j+1)).astype("float64") 
+                    v = np.array(ccbsp(dws, s1, s2, operation, j+1, infer = args.i)).astype("float64") 
                 except IndexError:
                     with open(invalid_rows, 'a') as finv:
                         finv.write(str(j+1)+"\n") # 1-based indexing

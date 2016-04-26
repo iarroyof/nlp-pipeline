@@ -159,7 +159,7 @@ sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
 
 param_grid = [   
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear'], 'degree': sp_randint(1, 16)},
+    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear'], 'degree': sp_randint(1, 32)},
     {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
