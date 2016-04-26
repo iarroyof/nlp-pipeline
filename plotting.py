@@ -8,10 +8,10 @@ from ast import literal_eval
 from argparse import ArgumentParser
 import subprocess
 from os import remove
-titlle = "Prediction for sentence semantic similarity regression"
-#titlle = "Predictions for semantic similarity between sentences"
-yylabel = "Similarity score"
-#yylabel = "Semantic similarity score"
+#titlle = "Prediction for sentence semantic similarity regression"
+titlle = "Sentence summary candidature"
+#yylabel = "Similarity score"
+yylabel = "Average candidature score"
 def read_results(file_name):
     out = open(file_name, 'r').readlines()
     outs = []
@@ -211,13 +211,13 @@ if args.number_result:
     #pearson = pearsonr(true, ordd_est_outs[args.number_result])
     pearson = pearsonr(labs, est_outs[args.number_result])[1]
     grid(True)
-    title( "%s [%s],\nPearson: %.5f, perform: %.4f" % (titlle, str(args.number_result), pearson, performs[args.number_result-1]))
+    title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, args.number_result, pearson, performs[args.number_result-1]))
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
     #p3 = Rectangle((0, 0), 1, 1, fc="g")
     #axarr[0].legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-    axarr.legend((p1, p2), ["Gd_std sorted relationship", "Predicted sorted output"], loc='best')
+    axarr.legend((p1, p2), ["Gd_std sorted relationship", "Regression estimation"], loc='best')
     axarr.set_xlabel('GoldStandad sorted samples')
     axarr.set_ylabel(yylabel)
     if args.log_scale and model:
@@ -246,7 +246,7 @@ else:
         MSE = mse(labs, est_outs[k])
         #pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
-        title( "%s [%s],\nPearson: %.5f, perform: %.4f" % (titlle, str(args.number_result), pearson, MSE))# performs[args.number_result-1]) )
+        title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, k, pearson, MSE))# performs[args.number_result-1]) )
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
@@ -254,7 +254,7 @@ else:
         #p3 = Rectangle((0, 0), 1, 1, fc="g")
         #p4 = Rectangle((0, 0), 1, 1, fc="b")
         #legend((p1, p2, p3, p4), ["Gd_std sorted relationship", "Predicted sorted output", "Goldstandard", "Prediction"], loc="best")
-        legend((p1, p2), ["Goldstandard relationship", "Predicted output"], loc='best')
+        legend((p1, p2), ["Goldstandard relationship", "Regression estimation"], loc='best')
         xlabel('Samples')
         ylabel(yylabel)
         if args.log_scale:
