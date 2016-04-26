@@ -63,7 +63,7 @@ try:
     if args.d:
         dimensions = args.d
     else:
-        if args.d:
+        if args.p:
             dimensions = source.group(3)[1:]
         else:
             dimensions = source.group(4)[1:]
