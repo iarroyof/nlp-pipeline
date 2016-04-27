@@ -37,15 +37,8 @@ args = parser.parse_args()
 #outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
 N = int(args.n)
 
-#from pdb import set_trace as st
-#st()
 try:
-    #if args.p:
     source = search(r"(?:vectors|pairs)_([A-Za-z\-]+[0-9]{0,4})_?(T[0-9]{2,3}_C[1-9]_[0-9]{2})?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
-        #source = search(r"pairs_(\w+(?:[-|_]\w+)*[0-9]{2,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_([sub|co[nvs{0,2}|rr|nc]+]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
-    #else:
-        #source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})([_T[0-9]{2,3}[_|-]C[1-9][_|-][0-9]{2}]?)_([d2v|w2v|coocc\w*|doc\w*]+)_([H[0-9]{1,4}]?)_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)            
-        #source = search(r"vectors_(\w+(?:[-|_]\w+)*[0-9]{0,4})_([d2v|w2v|coocc\w*|doc\w*]+)_(H[0-9]{1,4})_m([0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
             # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc'? s.group(5) '5'
     if args.c:
         corpus = args.c
@@ -149,7 +142,7 @@ sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
 
 param_grid = [   
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear'], 'degree': sp_randint(1, 32)},
+    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5)},
     {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
