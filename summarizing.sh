@@ -6,11 +6,11 @@
 new=$1          # Start from scratch
 directory=$2    # Directrory text data is stored as a subdirectory by theme.
 per=$3          # Compression rate in percentaje e.g. {5, 10, 20, 30}
-dis=$4
-dims=$4
+dis=$4          # Output file distinction
+dims=$4         # Dimensions
 
 d2vModel=/almac/ignacio/data/d2v_models/d2v_wikiFr_puses_H200_m10.model
-svrModel=/almac/ignacio/data/svr_models/svr_puces_complete_2_d2v_H300_esp_m10.model
+svrModel=/almac/ignacio/data/svr_models/svr_puces_1_d2v_H25_esp_mm10.model
 
 if [ "$new" ==  "yes" ]
 then
