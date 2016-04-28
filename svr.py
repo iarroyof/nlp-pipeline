@@ -142,8 +142,8 @@ sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
 
 param_grid = [   
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5)},
-    {'C': [1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op],},
+    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
     for p in param_grid:
