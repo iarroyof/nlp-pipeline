@@ -32,14 +32,12 @@ parser.add_argument("-N", help="""Toggle if NuSVR (valid only for NuSVR) will be
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
 parser.add_argument("-k", help="k-fold cross validation for the randomized search.", metavar="k-fold_cv", default=None)
 args = parser.parse_args()
-#inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_convss_m5.mtx"
-#gsfile = "/home/iarroyof/data/STS.gs.headlines.txt"
-#outputfile = "/home/iarroyof/sem_outputs/svr_output_headlines_100_d2v_conc_300_m5.txt"
+
 N = int(args.n)
 
 try:
     source = search(r"(?:vectors|pairs)_([A-Za-z\-]+[0-9]{0,4})_?(T[0-9]{2,3}_C[1-9]_[0-9]{2})?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
-            # s.group(1) 'headlines13'  s.group(2) 'd2v' s.group(3) 'H300' s.group(4) 'conc'? s.group(5) '5'
+# example filename: 'pairs_headlines13_T01.._d2v_H300_conc_m5.mtx'
     if args.c:
         corpus = args.c
     else:
@@ -55,7 +53,7 @@ try:
     if args.m:
         min_count = args.m
     else:
-        min_count = source.group(6)
+        min_count = source.group(6)[1:]
 except IndexError:
     print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
     for i in range(6):
@@ -186,13 +184,13 @@ for n in xrange(N):
         y_out = {}
         y_out['estimated_output'] = f_x
         y_out['best_params'] = rs.best_params_
-        y_out['learned_model'] = {'file': "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
+        y_out['learned_model'] = {'file': "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
         
-        joblib.dump(rs, "pkl/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
+        joblib.dump(rs, "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
 with open("sorted_gs_%s.txt" % (corpus), "w") as f:
     for i in y:
         f.write(str(i)+'\n')
