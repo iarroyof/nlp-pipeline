@@ -7,8 +7,6 @@ from sklearn.externals import joblib
 from re import search, M, I
 from load_regression import load_regression_data as lr
 import sys
-#inputfile = "/home/ignacio/data/vectors/pairs_headlines_d2v_H300_sub_m5.mtx"
-#inputfile = "/home/iarroyof/data/pairs_headlines_d2v_H300_sub_m5.mtx"
 
 from argparse import ArgumentParser as ap
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
@@ -38,7 +36,7 @@ N = int(args.n)
 try:
     source = search(r"(?:vectors|pairs)_([A-Za-z\-]+[0-9]{0,4})_?(T[0-9]{2,3}_C[1-9]_[0-9]{2})?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
 # example filename: 'pairs_headlines13_T01.._d2v_H300_conc_m5.mtx'
-    if args.c:
+    if args.c:     #           1        2*    3    4   5*  6  
         corpus = args.c
     else:
         corpus = source.group(1)
@@ -55,7 +53,7 @@ try:
     else:
         min_count = source.group(6)[1:]
 except IndexError:
-    print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+    print "\nError in the filename. One or more indicators are missing. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<dimendions>_<operation>*_<minimum_count>.mtx\n"
     for i in range(6):
         try:
             print source.group(i)
@@ -64,7 +62,7 @@ except IndexError:
             pass
     exit()
 except AttributeError:
-    print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<Hdimendions>_<''|operation>_<mminimum_count>.mtx\n"
+    print "\nFatal Error in the filename. Notation: <vectors|pairs>_<source_corpus>_<model_representation>_<dimendions>_<operation>*_<mminimum_count>.mtx\n"
     for i in range(6):
         try:
             print source.group(i)
@@ -74,8 +72,6 @@ except AttributeError:
     exit()
 
 print "\nCorpus: %s\nRepr: %s\nDimms: %s\nF_min: %s\nOpperation: %s\n" % (corpus, representation, dimensions, min_count, source.group(5))
-    # TODO: modify the regep for single sentences X file: vectors_d2v_RPM_T17_C1_08_H300_m10.mtx
-    
 
 if args.s:  # fileTrain = None, fileTest = None, fileLabelsTr = None, fileLabelsTs = None, sparse=False
             # features_tr, features_ts, labels_tr, labels_ts
@@ -90,8 +86,6 @@ if args.N != None:
 else:
     svr_ = "svr"
 
-# TODO: Is better to find this source mark in the contents of the file, because the name of the file is not secure.
-# TODO: Find marks for other input vectors derived from other corpus. It is needed to normalize the names or include source names inside the file.
 gammas = {
         'conc': expon(scale=10, loc=8.38049430369),
         'sub': expon(scale = 20, loc=15.1454004504),
@@ -120,7 +114,7 @@ if args.o:
             else:
                 y_out['source'] = corpus
             y_out['model'] = splitext(infile)[0]
-        # Add more metadata to the dictionary as required.
+        # Add more metadata to the dictionary as being required.
             with open(filename, 'a') as f:
                 f.write(str(y_out)+'\n')
             sys.stderr.write("\n:>> Output predictions: %s\n" % (filename))
@@ -138,6 +132,12 @@ else:
         
 sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
 
+#if args.u:
+#    kind = {'Cr': search(r"C:\d_\d", args.u, I|M), 'Cu': search(r"C:\d", args.u, I|M), 'Gr': }
+#    mydict.keys()[mydict.values().index(True)] 
+#    if kind['range']:
+#    sp_randint(1, 32)
+#    param_grid = ['C': kind['range'], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 param_grid = [   
     {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op],},
@@ -167,7 +167,7 @@ for n in xrange(N):
             k = int(args.k)
         else:
             k = args.k
-        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 8, cv = k)
+        rs = RS(svr, param_distributions = params, n_iter = 10, n_jobs = 24, cv = k)
         try:
             rs.fit(X, y)
         except:
