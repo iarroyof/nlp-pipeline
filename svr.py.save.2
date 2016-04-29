@@ -22,13 +22,11 @@ parser.add_argument("-c", help="Sentence corpus over wich the learning will be p
 parser.add_argument("-r", help="The representation type. options:={w2v, d2v, coocc, doc, docLog, docLogSvd, coocPMI, cooccLogSVD, cooccPMIsvd}.", 
                     metavar="repr_name", default = None)
 parser.add_argument("-d", help="Dimensions of the input vector set.", metavar="num_dimensions", default = None)
-parser.add_argument("-u", help="Especify C regulazation parameter. For a list '-u C:a_b', for a value '-u C:a'.", metavar="fixed_params", default = None)
 parser.add_argument("-m", help="Minimun word frequency taken into account in the corpus. Type '-m m10' for a min_count of 10.", metavar="min_count", default = None)
 parser.add_argument("-p", help="Toggle if you will process pairs.", action="store_true", default = False)
 parser.add_argument("-N", help="""Toggle if NuSVR (valid only for NuSVR) will be used. The portion of suppoort vectors with respect to the training set 
                                   can be specified in [0,1]. If it is not specified, random values will be generated (normally 
                                   distributed with mean 0.35).""", metavar = "Nu", default = None)
-parser.add_argument("-K", help="Kernel type custom specification. Uniquely valid if -u is not none.  Options: gaussian, linear, sigmoid.", metavar="kernel", default = None)
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
 parser.add_argument("-k", help="k-fold cross validation for the randomized search.", metavar="k-fold_cv", default=None)
 args = parser.parse_args()
@@ -133,34 +131,23 @@ else:
         exit()
         
 sys.stderr.write("\n:>> Source: %s\n" % (source.group(1)))
-
+#####################################"
 if args.u:
-    kd = {'Cr': search(r"C:([+-]?\d+(\.\d+)?)_(\d+(\.\d+)?)", args.u, I|M), 'Cu': search(r"C:([-+]?([^_aA-zZ]*$))", args.u, I|M) }
-    if args.K:
-        kernel = args.K
-    else:
-        kernel = 'rbf'
-
-    if kd['Cr'] and not kd['Cu']: # For a specified range of C's
-        a = float(kd['Cr'].group(1))
-        b = float(kd['Cr'].group(3))
-        assert 0 < a <= b and args.o.replace('.','',1).isdigit() # Badly specified range or gamma
-        param_grid = [{'C': list(np.random.uniform(low=a, high=b, size=(10,))), 'gamma': [float(args.o)], 'kernel': [kernel]}]
-    elif kd['Cu'] and not kd['Cr']: # For an unique C
-        assert 0 < float(kd['Cu'].group(1)) and args.o.replace('.','',1).isdigit() # Badly specified range or gamma
-        #gamms = [float(args.o)-float(args.o)*0.2, float(args.o), float(args.o)+float(args.o)*0.2]
-        #gamms = [float(args.o)]
-        gamms = expon(scale=2, loc=float(float(args.o)))
-        #param_grid = [{'C': [float(kd['Cu'].group(1))], 'gamma': gamms, 'kernel': [kernel]}]
-        param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel]}]
-    else:
-        print "Error specifying C (range) or gamma. Syntax: 'C:5', 'C:5.1', 'C:5_6', 'C:5.1_6.2'."
-        exit()
-    print param_grid    
-else: # For Random search over many grid parameters
-    param_grid = [   
-    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
-    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+    kind = {'Cr': search(r"C:(\d)_(\d)", args.u, I|M), 'Cu': search(r"C:\d", args.u, I|M) }
+#    mydict.keys()[mydict.values().index(True)] 
+#    if kind['range']:
+#    sp_randint(1, 32)
+#    param_grid = ['C': kind['range'], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+####################################"
+#param_grid = [   
+#    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op],},
+#    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+if kind['Cr']:
+    a = kind['Cr'].group(1)
+    b = kind['Cr'].group(2)
+    param_grid = ['C': sp_randint(a, b), 'gamma': gammas[op], 'kernel': ['rbf']} ]
+elis  kind['Cu']:
+    param_grid = ['C': sp_randint(1, 32), 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
     for p in param_grid:
@@ -213,7 +200,5 @@ for n in xrange(N):
 with open("sorted_gs_%s.txt" % (corpus), "w") as f:
     for i in y:
         f.write(str(i)+'\n')
-
-#sys.stderr.write("\n:>> kernel: %s \n:>> C: %f.4 \n:>> Gamma: %f.4 \n:>> C: %f.4" % (args.K, rs.best_estimator. ))
 
 sys.stderr.write("\n:>> Finished!!\n" )
