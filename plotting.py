@@ -146,6 +146,7 @@ output_file = args.predictions_file # "/home/iarroyof/data/output_1_sub_ccbsp_to
 
 from pdb import set_trace as st
 from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import r2_score
 labs = loadtxt(label_file)
 sample = range(0, len(labs))
 est_outs = []       
@@ -209,9 +210,10 @@ if args.number_result:
         f, axarr = plt.subplots(1, 1)
         model = False
     #pearson = pearsonr(true, ordd_est_outs[args.number_result])
-    pearson = pearsonr(labs, est_outs[args.number_result])[1]
+    r2 = r2_score(labs, est_outs[args.number_result])
+    pearson = pearsons(labs, est_outs[args.number_result])
     grid(True)
-    title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, args.number_result, pearson, performs[args.number_result-1]))
+    title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, args.number_result, pearson, r2)) #performs[args.number_result]))
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
