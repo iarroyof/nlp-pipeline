@@ -216,7 +216,7 @@ for n in xrange(N):
         
         joblib.dump(rs, "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
 with open("sorted_gs_%s.txt" % (corpus), "w") as f:
-    for i in y:
+    for i in map(detener, y):
         f.write(str(i)+'\n')
 
 #sys.stderr.write("\n:>> kernel: %s \n:>> C: %f.4 \n:>> Gamma: %f.4 \n:>> C: %f.4" % (args.K, rs.best_estimator. ))
