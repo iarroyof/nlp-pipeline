@@ -172,10 +172,14 @@ elif args.N != None:
 
 sys.stderr.write("\n:>> Training settings are OK\n")
 sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count))
+def tener(x):
+    return x * 10
+def detener(x):
+    return x / 10
 # Sorted training set:
 D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
 X = np.array([list(a) for a in D[0]])
-y = D[1]
+y = map(tener, D[1])
 del D
 for n in xrange(N):
     for params in param_grid:
@@ -202,7 +206,7 @@ for n in xrange(N):
             num_lines = 0
 
         y_out = {}
-        y_out['estimated_output'] = f_x
+        y_out['estimated_output'] = map(detener, f_x)
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'file': "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
         y_out['performance'] = rs.best_score_
