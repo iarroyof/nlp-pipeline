@@ -8,6 +8,11 @@ from re import search, M, I
 from load_regression import load_regression_data as lr
 import sys
 
+def tener(x):
+    return x * 10
+def detener(x):
+    return x / 10
+
 from argparse import ArgumentParser as ap
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
@@ -111,7 +116,7 @@ if args.o:
             filename = "svr_idx%s_%s_%s_H%s_predictions.out" % (model_idx, corpus, representation, dimensions)
             model = joblib.load(op, 'r')
             y_out = {}
-            y_out['estimated_output'] = model.predict(X).tolist()
+            y_out['estimated_output'] = map(detener, model.predict(X).tolist()) # Get back rescalling
             if source.group(2):
                 y_out['source'] = source.group(2)+".txt"
             else:
@@ -172,10 +177,6 @@ elif args.N != None:
 
 sys.stderr.write("\n:>> Training settings are OK\n")
 sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count))
-def tener(x):
-    return x * 10
-def detener(x):
-    return x / 10
 # Sorted training set:
 D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
 X = np.array([list(a) for a in D[0]])
