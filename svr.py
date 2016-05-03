@@ -4,6 +4,7 @@ from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
 from scipy.stats import expon
 from sklearn.externals import joblib
+from sklearn.metrics import r2_score
 from re import search, M, I
 from load_regression import load_regression_data as lr
 import sys
@@ -210,7 +211,7 @@ for n in xrange(N):
         y_out['estimated_output'] = map(detener, f_x)
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'file': "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
-        y_out['performance'] = rs.best_score_
+        y_out['performance'] = r2_score(map(detener, y), map(detener, f_x)) 
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
