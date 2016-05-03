@@ -121,7 +121,7 @@ if args.o:
                 y_out['source'] = source.group(2)+".txt"
             else:
                 y_out['source'] = corpus
-            y_out['model'] = splitext(infile)[0]
+            y_out['model'] = op
         # Add more metadata to the dictionary as being required.
             with open(filename, 'a') as f:
                 f.write(str(y_out)+'\n')
