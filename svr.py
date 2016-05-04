@@ -36,6 +36,7 @@ parser.add_argument("-N", help="""Toggle if NuSVR (valid only for NuSVR) will be
                                   distributed with mean 0.35).""", metavar = "Nu", default = None)
 parser.add_argument("-K", help="Kernel type custom specification. Uniquely valid if -u is not none.  Options: gaussian, linear, sigmoid.", metavar="kernel", default = None)
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
+parser.add_argument("-t", help="Toggle if you want multiply by 10 the regression labels for training.", action="store_true", default = False)
 parser.add_argument("-k", help="k-fold cross validation for the randomized search.", metavar="k-fold_cv", default=None)
 args = parser.parse_args()
 
@@ -117,7 +118,10 @@ if args.o:
             filename = "svr_idx%s_%s_%s_H%s_predictions.out" % (model_idx, corpus, representation, dimensions)
             model = joblib.load(op, 'r')
             y_out = {}
-            y_out['estimated_output'] = map(detener, model.predict(X).tolist()) # Get back rescalling
+            if args.t:
+                y_out['estimated_output'] = map(detener, model.predict(X).tolist()) # Get back rescalling
+            else:
+                y_out['estimated_output'] = model.predict(X).tolist()
             if source.group(2):
                 y_out['source'] = source.group(2)+".txt"
             else:
@@ -181,7 +185,11 @@ sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representati
 # Sorted training set:
 D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
 X = np.array([list(a) for a in D[0]])
-y = map(tener, D[1])
+if args.t:
+    y = map(tener, D[1])
+else:
+    y = D[1]
+
 del D
 for n in xrange(N):
     for params in param_grid:
@@ -201,17 +209,24 @@ for n in xrange(N):
 
         sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
         f_x = rs.predict(X).tolist()
-        sys.stderr.write("\n:>> R2: %s\n" % (rs.best_score_))
+        sys.stderr.write("\n:>> R2: %s\n" % (r2_score(y, f_x)))
         try:
             num_lines = sum(1 for line in open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
         except IOError:
             num_lines = 0
 
         y_out = {}
-        y_out['estimated_output'] = map(detener, f_x)
+        if args.t:
+            y_out['estimated_output'] = map(detener, f_x)
+        else:
+            y_out['estimated_output'] =  f_x
+
         y_out['best_params'] = rs.best_params_
         y_out['learned_model'] = {'file': "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count) }
-        y_out['performance'] = r2_score(map(detener, y), map(detener, f_x)) 
+        if args.t:
+            y_out['performance'] = r2_score(map(detener, y), map(detener, f_x)) 
+        else:
+            y_out['performance'] = r2_score(y, f_x)
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
