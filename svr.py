@@ -104,7 +104,7 @@ gammas = {
 if args.o:
     if args.o.replace('.','',1).isdigit():
         op = 'esp'
-        gammas[op] = expon(scale = 20, loc = float(args.o))
+        gammas[op] = expon(scale = 50, loc = float(args.o))
 
     elif not args.o in gammas: # then it is a SVR model location
         from os.path import basename, splitext 
@@ -170,8 +170,8 @@ if args.u:
     print param_grid    
 else: # For Random search over many grid parameters
     param_grid = [   
-    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
-    {'C': [0.5, 1, 10, 100, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 20), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
     for p in param_grid:
