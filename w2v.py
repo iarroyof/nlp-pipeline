@@ -87,6 +87,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
 
     args = parser.parse_args()
+    sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
     if args.d2v:
         #articles = TaggedLineDocument(args.indir_file_name)
         arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single)
