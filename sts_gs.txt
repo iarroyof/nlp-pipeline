@@ -1,0 +1,108 @@
+np13 STS updated corpus:
+
+/almac/ignacio/data/sts_all/STS2016-cross-lingual-test:
+STS.gs.multisource.txt
+STS.gs.news.txt
+STS.input.multisource.txt (limpiar enlace, 2do Tab)
+STS.input.news.txt
+
+/almac/ignacio/data/sts_all/STS2016-Crosslingual-Trial:
+STS.gs.crosslingual-trial.txt
+STS.input.crosslingual-trial.txt
+
+/almac/ignacio/data/sts_all/sts2016-english-with-gs-v1.0:
+STS2016.gs.answer-answer.txt
+STS2016.gs.headlines.txt
+STS2016.gs.plagiarism.txt
+STS2016.gs.postediting.txt
+STS2016.gs.question-question.txt
+STS2016.input.answer-answer.ascii
+STS2016.input.answer-answer.txt
+STS2016.input.headlines.ascii
+STS2016.input.headlines.txt
+STS2016.input.plagiarism.ascii
+STS2016.input.plagiarism.txt
+STS2016.input.postediting.ascii
+STS2016.input.postediting.txt
+STS2016.input.question-question.ascii
+STS2016.input.question-question.txt
+(Extension ascii y txt son los mismos. Cambia la codificacion del archivo, preferible usar *.txt)
+
+/almac/ignacio/data/sts_all/test-2012:
+STS.gs.MSRpar.txt
+STS.gs.MSRvid.txt
+STS.gs.SMTeuroparl.txt
+STS.gs.surprise.OnWN.txt
+STS.gs.surprise.SMTnews.txt
+STS.input.MSRpar.txt
+STS.input.MSRvid.txt
+STS.input.SMTeuroparl.txt
+STS.input.surprise.OnWN.txt
+STS.input.surprise.SMTnews.txt
+
+/almac/ignacio/data/sts_all/test-2014:
+STS.gs.deft-forum.txt
+STS.gs.deft-news.txt
+STS.gs.headlines.txt
+STS.gs.images.txt
+STS.gs.OnWN.txt
+STS.gs.tweet-news.txt
+STS.input.deft-forum.txt
+STS.input.deft-news.txt
+STS.input.headlines.txt
+STS.input.images.txt
+STS.input.OnWN.txt
+STS.input.tweet-news.txt
+
+/almac/ignacio/data/sts_all/test-2015:
+STS.gs.answers-forums.txt
+STS.gs.answers-students.txt
+STS.gs.belief.txt
+STS.gs.headlines.txt
+STS.gs.images.txt
+STS.input.answers-forums.txt
+STS.input.answers-students.txt
+STS.input.belief.txt
+STS.input.headlines.txt
+STS.input.images.txt
+
+/almac/ignacio/data/sts_all/train-2012:
+STS.gs.MSRpar.txt
+STS.gs.MSRvid.txt
+STS.gs.SMTeuroparl.txt
+STS.input.MSRpar.txt
+STS.input.MSRvid.txt
+STS.input.SMTeuroparl.txt
+
+/almac/ignacio/data/sts_all/train-2013:
+STS.gs.FNWN.txt
+STS.gs.headlines.txt
+STS.gs.OnWN.txt
+STS.input.FNWN.txt
+STS.input.headlines.txt
+STS.input.OnWN.txt
+
+Vectores ya generados y combinados (sólo a partir de /almac/ignacio/data/sts_all/train-2013):
+
+/almac/ignacio/data/pairs*d2v*
+pairs_fnwn13_d2v_H100_convss_m5.mtx     pairs_f-onwn13_d2v_H100_corr_m5_70.mtx    pairs_onwn13_d2v_H100_convss_m5.mtx
+pairs_fnwn13_d2v_H100_corr_m5.mtx       pairs_f-onwn13_d2v_H100_sub_m5_70.mtx     pairs_onwn13_d2v_H100_corr_m5.mtx
+pairs_fnwn13_d2v_H100_sub_m5.mtx        pairs_f-onwn13_d2v_H50_sub_m5_30.mtx      pairs_onwn13_d2v_H100_sub_m5.mtx
+pairs_fnwn13_d2v_H50_sub_m5.mtx         pairs_f-onwn13_d2v_H50_sub_m5_70.mtx      pairs_onwn13_d2v_H50_sub_m5.mtx
+pairs_f-onwn13_d2v_H100_corr_m5_30.mtx  pairs_headlines13_d2v_H100_convss_m5.mtx
+
+d2vH300_fnwn:
+pairs_fnwn13_d2v_H300_conc_m5.mtx    pairs_fnwn13_d2v_H300_corr_m5.mtx
+pairs_fnwn13_d2v_H300_convss_m5.mtx  pairs_fnwn13_d2v_H300_sub_m5.mtx
+
+d2vH300_hls:
+pairs_headlines13_d2v_H300_conc_m5_30.mtx  pairs_headlines13_d2v_H300_conc_m5.mtx    pairs_headlines13_d2v_H300_corr_m5.mtx
+pairs_headlines13_d2v_H300_conc_m5_70.mtx  pairs_headlines13_d2v_H300_convss_m5.mtx  pairs_headlines13_d2v_H300_sub_m5.mtx
+
+d2vH300_onwn:
+pairs_onwn13_d2v_H300_conc_m5.mtx    pairs_onwn13_d2v_H300_corr_m5.mtx
+pairs_onwn13_d2v_H300_convss_m5.mtx  pairs_onwn13_d2v_H300_sub_m5.mtx
+
+Notas:
+1. los "f-onwn" son la unión de FNWN y OnWN
+2. ya estan hechos todos los 300dimensiones (H300) para el 2013 (/almac/ignacio/data/sts_all/train-2013)
