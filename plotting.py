@@ -245,7 +245,8 @@ else:
         figure()
         grid(True)
         pearson = pearsons(labs, est_outs[k])
-        MSE = mse(labs, est_outs[k])
+        #MSE = mse(labs, est_outs[k])
+        MSE = r2_score(labs, est_outs[k])
         #pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
         title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, k, pearson, MSE))# performs[args.number_result-1]) )
