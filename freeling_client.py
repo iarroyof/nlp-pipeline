@@ -18,4 +18,4 @@ url = "http://www.corpus.unam.mx/servicio-freeling/analyze.php"
 r = requests.post(url, files=files, params=params)
 r.encoding  = "utf-8"
 #Imprimir respuesta, de aquí se puede guardar en otro archivo
-print r.text
+print (r.text)
