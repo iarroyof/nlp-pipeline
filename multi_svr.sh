@@ -12,5 +12,5 @@ echo "Output directory: $Dir/$out"
 for matrix in `ls "$Dir"/*mtx`;
 do
     echo "Repertoire... $doc"
-	(python svr.py -x "$matrix" -o "$svrModel") &
+	python svr.py -x "$matrix" -o "$svrModel"
 done

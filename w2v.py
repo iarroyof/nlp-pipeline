@@ -5,6 +5,7 @@ from gensim.models.doc2vec import TaggedLineDocument, LabeledSentence
 import os
 from argparse import ArgumentParser as ap
 import sys
+from time import gmtime, strftime
 
 def clean_Ustring_fromU(string):
   if string:      
@@ -86,6 +87,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
 
     args = parser.parse_args()
+    sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
     if args.d2v:
         #articles = TaggedLineDocument(args.indir_file_name)
         arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single)
@@ -93,16 +95,17 @@ if __name__ == "__main__":
         for a in arts:
             if a:
                 articles.append(a)
-        sys.stderr.write("\n>> Articles generator unpacked... Training begins.\n")
+        sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+        #sys.stderr.write("\n>> [%s] Parameters: %s.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         try:
             d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)#, window = 5)    
-            sys.stderr.write("\n>> Model successfully trained...\n")
+            sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
             d2v_model.save(args.outfile, separately = None)
-            sys.stderr.write("\n>> Model successfully saved...\n")
+            sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         except IOError:
-            sys.stderr.write("\n>> Error caught while model saving...\n")
+            sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         except:
-            sys.stderr.write("\n>> Error caught while model instantiation...\n")
+            sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
     else:
         articles = yield_line_documents(args.indir_file_name)
         w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
@@ -110,5 +113,5 @@ if __name__ == "__main__":
     
     model = Doc2Vec.load(args.outfile)
     del(model)
-    sys.stderr.write("\n>> Finished !!\n")
+    sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         

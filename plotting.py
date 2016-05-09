@@ -153,13 +153,18 @@ est_outs = []
 models = []
 weights = []
 performs = []
+params = []
 
-for est in read_results(output_file):
+results = read_results(output_file)
+if not args.number_result:
+    results = sorted(results, key = lambda k: k['performance'], reverse = True)
+
+for est in results:
     est_outs.append(est['estimated_output'])
     try:
         models.append(est['learned_model'])
-        if 'file' in est['learned_model']:
-            model = False # Es solo en tanto no se decodifique aqui el modelo desde un pickle (svr)
+        #if 'file' in est['learned_model']:
+        #    model = False # Es solo en tanto no se decodifique aqui el modelo desde un pickle (svr)
     except KeyError:
         model = False
         pass
@@ -171,8 +176,13 @@ for est in read_results(output_file):
             performs.append(est['performance'])
         except KeyError:
             performs.append(0.0)
-            pass    
-
+            pass 
+    try:   
+        params.append(est['best_params'])
+    except:
+        params.append("none")
+        pass 
+        
 for out in est_outs:
     if len(labs) != len(out):
         print "Compared predicitons and goldStandard are not of the same length"
@@ -209,9 +219,13 @@ if args.number_result:
     except IndexError:
         f, axarr = plt.subplots(1, 1)
         model = False
+    
+    MSE = mse(labs, est_outs[int(args.number_result)])
+    print  "%d:" % args.number_result, params[int(args.number_result)], "perform: %f, %f" % (performs[int(args.number_result)], MSE)
+    print models[int(args.number_result)],"\n"
     #pearson = pearsonr(true, ordd_est_outs[args.number_result])
-    r2 = r2_score(labs, est_outs[args.number_result])
-    pearson = pearsons(labs, est_outs[args.number_result])
+    r2 = r2_score(labs, est_outs[int(args.number_result)])
+    pearson = pearsons(labs, est_outs[int(args.number_result)])
     grid(True)
     title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, args.number_result, pearson, r2)) #performs[args.number_result]))
     grid(True)
@@ -249,7 +263,9 @@ else:
         MSE = r2_score(labs, est_outs[k])
         #pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
-        title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, k, pearson, MSE))# performs[args.number_result-1]) )
+        print  "%d:" % k, params[k-1], "perform: %f, %f" % (performs[k-1], MSE)
+        print models[k-1],"\n"
+        title( "%s [%d],\npearson: %.5f, perform: %.4f" % (titlle, k, pearson, performs[k-1]) )
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
