@@ -5,7 +5,7 @@ from gensim.models.doc2vec import TaggedLineDocument, LabeledSentence
 import os
 from argparse import ArgumentParser as ap
 import sys
-from time import gmtime, strftime
+from time import localtime, strftime
 
 def clean_Ustring_fromU(string):
   if string:      
@@ -48,17 +48,20 @@ def clean_Ustring_fromU(string):
     return None
 
 class yield_line_documents(object):
-    def __init__(self, dirname, d2v=False, single=False):
+    def __init__(self, dirname, d2v=False, single=False, dirty=None):
         self.dirname = dirname
         self.d2v = d2v
         self.single = single
+        self.dirty = dirty
+        self.get_string = {True: str.split, False: clean_Ustring_fromU}
     def __iter__(self):
         if self.d2v:
             for fname in os.listdir(self.dirname):
                 l = -1; pair = 0
                 for line in open(os.path.join(self.dirname, fname)):
                     l += 1
-                    cs = clean_Ustring_fromU(line)
+                    #cs = clean_Ustring_fromU(line)
+                    cs = self.get_string[self.dirty](line)
                     if not self.single:
                         if (l + 1) % 2: 
                             pair = pair + 1
@@ -74,7 +77,8 @@ class yield_line_documents(object):
         else:
             for fname in os.listdir(self.dirname):
                 for line in open(os.path.join(self.dirname, fname)):
-                    yield clean_Ustring_fromU(line)
+                    #yield clean_Ustring_fromU(line)
+                    yield self.get_string[self.dirty](line)
 
 if __name__ == "__main__":
     parser = ap(description='Trains and saves a word2vec model into a file for mmap\'ing. Tokenization is performed un utf-8 an for Python 2.7. Non-latin characters are replaced by spaces. The model is saved into a given directory. All options are needed.')    
@@ -85,27 +89,28 @@ if __name__ == "__main__":
     parser.add_argument('-m', type=int, dest = 'minc', help='Specifies the minimum frequency a word should have in the corpus to be considered.')
     parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
     parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
+    parser.add_argument('-D', default=False, action="store_true", dest = 'dirty', help='Toggles if you do not want to process clean strings (i.e. raw file, including any symbol).')
 
     args = parser.parse_args()
-    sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+    sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
     if args.d2v:
         #articles = TaggedLineDocument(args.indir_file_name)
-        arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single)
+        arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
         articles = []
         for a in arts:
             if a:
                 articles.append(a)
-        sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+        sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         #sys.stderr.write("\n>> [%s] Parameters: %s.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         try:
             d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)#, window = 5)    
-            sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+            sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
             d2v_model.save(args.outfile, separately = None)
-            sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+            sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         except IOError:
-            sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+            sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         except:
-            sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+            sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
     else:
         articles = yield_line_documents(args.indir_file_name)
         w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
@@ -113,5 +118,5 @@ if __name__ == "__main__":
     
     model = Doc2Vec.load(args.outfile)
     del(model)
-    sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+    sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         
