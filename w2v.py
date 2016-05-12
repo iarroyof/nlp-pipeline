@@ -103,7 +103,7 @@ if __name__ == "__main__":
         sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         #sys.stderr.write("\n>> [%s] Parameters: %s.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         try:
-            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)#, window = 5)    
+            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = 4)    
             sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
             d2v_model.save(args.outfile, separately = None)
             sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))

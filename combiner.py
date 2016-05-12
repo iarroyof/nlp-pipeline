@@ -59,7 +59,7 @@ def clean_Ustring_fromU(string):
                     sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file')
                     normalized_string = '# Fatally bad File\n'
                     pass
-    return  normalized_string # Return the unicode normalized document.
+    return  normalized_string.split() # Return the unicode normalized document.
 
 def scsis(dws, sentence, log = False):
     """ Single Context summation inside a sentence
@@ -178,7 +178,7 @@ def ccbsp(dws, s1, s2 = None, name = "convs", index = None, infer = False):
             
         return x
 
-def read_sentence_pairs(filename, n=False):
+def read_sentence_pairs(filename, n=False, dirty=False):
     """ Generator to read sentence pairs from "filename"
     
     Pairs must be separated by tab (\t). Yields a 3-tuple consisting of:
@@ -186,26 +186,28 @@ def read_sentence_pairs(filename, n=False):
     The sentences are returned as list of words.
     If n is specified, it yields only n pairs.
     """
+    get_string = {False: clean_Ustring_fromU, True: str.split}
     with open(input_file) as fin:
         #row_i = 0
         for row_i, line in enumerate(fin):
             if not n is False and row_i == n:
                 break
             ligne = line.split('\t')
-            s1 = clean_Ustring_fromU(ligne[0]).split()
-            s2 = clean_Ustring_fromU(ligne[1]).split()
+            s1 = get_string[dirty](ligne[0])
+            s2 = get_string[dirty](ligne[1])
             yield row_i, s1, s2    
 
-def read_sentences(filename, n=False):
+def read_sentences(filename, n=False, dirty=False):
     """ Generator to read sentences from "filename"
     
     The sentences are returned as a list of words each.
     If n is specified, it yields only n sentences.
     """
+    get_string = {False: clean_Ustring_fromU, True: str.split}
     with open(input_file) as fin:
         for i, line in enumerate(fin):
-            yield i, clean_Ustring_fromU(line).split()        
-                        
+            #yield i, clean_Ustring_fromU(line).split()
+            yield i, get_string[dirty](line)
 
 if __name__ == "__main__":
     """Command line tool to read sentence pairs and generate combined output vectors file
@@ -222,6 +224,8 @@ if __name__ == "__main__":
     parser.add_argument("-F", help="frequency threshold", metavar="threshold")
     parser.add_argument("-w", help="Word2vec or doc2vec model allocation. Default=/current/path/word2vec.model", default="word2vec.model", metavar="w_d_2vec_model")
     parser.add_argument("-i", help="Tell to the combiner it must infer sentence vectors from a pretrained model, instead of retrieve them as existent in such a model. IMPORTANT: This option is only available for doc2vec models.", action="store_true")
+    parser.add_argument("-D", help="Toggles cleaning input strings. If unactivated cleaning is performed. If not, only spliting is performed (dirty).", action="store_true")
+
     args = parser.parse_args()
     
     input_file = args.f
@@ -246,7 +250,7 @@ if __name__ == "__main__":
         if not args.t: 
             print '-t argument is required.'
             exit()
-        for row_i, s1, s2 in read_sentence_pairs(input_file, limit):
+        for row_i, s1, s2 in read_sentence_pairs(input_file, limit, args.D):
             v = ccbsp(dws, s1, s2, operation)
             for col_i in range(0,len(v)):
                 if v[col_i]:
@@ -270,7 +274,7 @@ if __name__ == "__main__":
         open(invalid_rows, "w").close()
         with open(output_file, "a") as fout:
             
-            for j, s1, s2 in read_sentence_pairs(input_file, limit):
+            for j, s1, s2 in read_sentence_pairs(input_file, limit, args.D):
                 try:                                         # 1-based indexing
                     v = np.array(ccbsp(dws, s1, s2, operation, j+1, infer = args.i)).astype("float64") 
                 except IndexError:
@@ -289,7 +293,7 @@ if __name__ == "__main__":
         if os.path.isfile(output_file):
             os.unlink(output_file)
         with open(output_file, "a") as fout:
-            for j, s in read_sentences(input_file, limit):
+            for j, s in read_sentences(input_file, limit, args.D):
                 try:
                     v = ccbsp(dws = dws, s1 = s, index = j+1, infer = args.i).astype('float64') #np.array(list(ccbsp(dws = dws, s1 = s, index = j+1))).astype('float64')
                 except KeyError:
