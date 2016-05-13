@@ -260,10 +260,10 @@ else:
         grid(True)
         pearson = pearsons(labs, est_outs[k])
         #MSE = mse(labs, est_outs[k])
-        MSE = r2_score(labs, est_outs[k])
+        #MSE = r2_score(labs, est_outs[k])
         #pearson = pearsonr(labs, est_outs[k])[1]
         k += 1
-        print  "%d:" % k, params[k-1], "perform: %f, %f" % (performs[k-1], MSE)
+        print  "%d:" % k, params[k-1], "perform: %f, %f" % (performs[k-1], pearson)
         print models[k-1],"\n"
         title( "%s [%d],\npearson: %.5f, perform: %.4f" % (titlle, k, pearson, performs[k-1]) )
         grid(True)
