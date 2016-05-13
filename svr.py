@@ -43,7 +43,7 @@ args = parser.parse_args()
 N = int(args.n)
 
 try:
-    source = search(r"(?:vectors|pairs)_([A-Za-z\-]+[0-9]{0,4})_?(T[0-9]{2,3}_C[1-9]_[0-9]{2})?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_[0-9]{0,3}]?)", args.x, M|I)
+    source = search(r"(?:vectors|pairs)_([A-Za-z\-]+[0-9]{0,4})_?(T[0-9]{2,3}_C[1-9]_[0-9]{2})?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_w?[0-9]{0,3}]?)", args.x, M|I)
 # example filename: 'pairs_headlines13_T01.._d2v_H300_conc_m5.mtx'
     if args.c:     #           1        2*    3    4   5*  6  
         corpus = args.c
@@ -126,6 +126,7 @@ if args.o:
                 y_out['source'] = source.group(2)+".txt"
             else:
                 y_out['source'] = corpus
+            y_out['info'] = min_count
             y_out['model'] = op
         # Add more metadata to the dictionary as being required.
             with open(filename, 'a') as f:
@@ -170,7 +171,7 @@ if args.u:
     print param_grid    
 else: # For Random search over many grid parameters
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 20), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
