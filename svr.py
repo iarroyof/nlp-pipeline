@@ -164,7 +164,7 @@ if args.u:
         #gamms = [float(args.o)]
         gamms = expon(scale=2, loc=float(float(args.o)))
         #param_grid = [{'C': [float(kd['Cu'].group(1))], 'gamma': gamms, 'kernel': [kernel]}]
-        param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel]}]
+        param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]}]
     else:
         print "Error specifying C (range) or gamma. Syntax: 'C:5', 'C:5.1', 'C:5_6', 'C:5.1_6.2'."
         exit()
