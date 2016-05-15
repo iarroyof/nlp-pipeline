@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import preprocessing
 from sklearn.svm import SVR, NuSVR
 from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
@@ -87,6 +88,7 @@ if args.s:  # fileTrain = None, fileTest = None, fileLabelsTr = None, fileLabels
    X, Xt, y, yt  = lr(fileTrain = args.x, fileLabelsTr = args.y, sparse = args.s)
 else:
     X = np.loadtxt(args.x)
+    X = preprocessing.scale(X)
     if args.y:
         y = np.loadtxt(args.y)
 
@@ -170,8 +172,12 @@ if args.u:
         exit()
     print param_grid    
 else: # For Random search over many grid parameters
+    if args.K:
+        kernel = [args.K]
+    else:
+        kernel =  ['sigmoid', 'poly', 'linear']
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
