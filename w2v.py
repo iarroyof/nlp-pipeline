@@ -90,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
     parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
     parser.add_argument('-D', default=False, action="store_true", dest = 'dirty', help='Toggles if you do not want to process clean strings (i.e. raw file, including any symbol).')
-
+    parser.add_argument('-w', type=int, dest = 'window', default=8, help='Specifies the number of words in the cooccurrence window.')
     args = parser.parse_args()
     sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
     if args.d2v:
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         #sys.stderr.write("\n>> [%s] Parameters: %s.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
         try:
-            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = 4)    
+            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = int(args.window))    
             sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
             d2v_model.save(args.outfile, separately = None)
             sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
