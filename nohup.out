@@ -34,3 +34,35 @@
 >> [2016-05-15 16:57:34] Articles generator unpacking...
 Empty string at line 53384.
 Empty string at line 54466.
+Empty string at line 110860.
+Empty string at line 132572.
+Empty string at line 519036.
+Empty string at line 744274.
+Empty string at line 783474.
+Empty string at line 922065.
+Empty string at line 989034.
+Traceback (most recent call last):
+  File "w2v.py", line 100, in <module>
+    for a in arts:
+  File "w2v.py", line 61, in __iter__
+    for line in open(os.path.join(self.dirname, fname)):
+IOError: [Errno 21] Is a directory: '/almac/ignacio/data/puses_plus_wikiFr/tags_all'
+
+>> [2016-05-15 18:09:49] Articles generator unpacking...
+Empty string at line 53384.
+Empty string at line 54466.
+Empty string at line 110860.
+Empty string at line 132572.
+Empty string at line 519036.
+Empty string at line 744274.
+Empty string at line 783474.
+Empty string at line 922065.
+Empty string at line 989034.
+
+>> [2016-05-15 19:19:57] Articles generator unpacked... Training begins.
+
+>> [2016-05-15 20:13:27] Model successfully trained...
+
+>> [2016-05-15 20:14:00] Model successfully saved...
+
+>> [2016-05-15 20:14:07] Finished !!
