@@ -116,8 +116,8 @@ if args.o:
         sys.stderr.write("\n:>> Source: %s\n" % (source.group()))
         infile = basename(op) # SVR model file name
         model_idx = search(r"_(\d{1,3})_[d|w]2v_H",infile, I|M).group(1)
-        if infile and infile != "*": # svr_output_headlines100_d2v_convs_300_m5.txt      
-            filename = "svr_idx%s_%s_%s_H%s_predictions.out" % (model_idx, corpus, representation, dimensions)
+        if infile and infile != "*": # svr_output_headlines100_d2v_convs_300_m5w8.txt      
+            filename = "svr_idx%s_%s_%s_H%s_m%s_predictions.out" % (model_idx, corpus, representation, dimensions, min_count)
             model = joblib.load(op, 'r')
             y_out = {}
             if args.t:
