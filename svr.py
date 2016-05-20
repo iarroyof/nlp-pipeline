@@ -177,7 +177,7 @@ else: # For Random search over many grid parameters
     else:
         kernel =  ['poly', 'linear']
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 28), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
