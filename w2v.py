@@ -116,6 +116,7 @@ if __name__ == "__main__":
         else:
             try:
                 d2v_model = Doc2Vec.load(args.outfile)
+                d2v_model.workers = args.threads
                 sys.stderr.write("\n>> [%s] Model successfully loaded...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 d2v_model.train(articles)
                 sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
