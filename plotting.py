@@ -72,7 +72,6 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
         grid(True)
         p1 = Rectangle((0, 0), 1, 1, fc="r")
         p2 = Rectangle((0, 0), 1, 1, fc="b")
-        p3 = Rectangle((0, 0), 1, 1, fc="g")
         legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
         xlabel('GoldStandad-sorted samples')
         ylabel(yylabel)
@@ -81,7 +80,6 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
         
         plot(sample, true, color = 'r', linewidth=2)
         plot(sample, ordd_est_outs[number_result], color = 'b', linewidth=2)
-        plot(sample, ccorrs[number_result], color = 'g', linewidth=2)
         show()
     else:	
         for est_o in ordd_est_outs:
@@ -91,9 +89,9 @@ def plotter(goldStandard_file, predictions_file, log_scale=False, number_result=
             grid(True)
             p1 = Rectangle((0, 0), 1, 1, fc="r")
             p2 = Rectangle((0, 0), 1, 1, fc="b")
-            p3 = Rectangle((0, 0), 1, 1, fc="g")
-            legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-            xlabel('GoldStandad sorted samples')
+            #p3 = Rectangle((0, 0), 1, 1, fc="g")
+            legend((p1, p2), ["GS candidatures", "Predicted candidatures"], loc=4)
+            xlabel('Sorted samples')
             ylabel(yylabel)
             if log_scale:
                 yscale('log')
@@ -227,23 +225,18 @@ if args.number_result:
     r2 = r2_score(labs, est_outs[int(args.number_result)])
     pearson = pearsons(labs, est_outs[int(args.number_result)])
     grid(True)
-    title( "%s [%d],\nPearson: %.5f, perform: %.4f" % (titlle, args.number_result, pearson, r2)) #performs[args.number_result]))
+    title( "%s [%d],\nPearson: %.5f, R^2: %.4f" % (titlle, args.number_result, pearson, r2)) #performs[args.number_result]))
     grid(True)
     p1 = Rectangle((0, 0), 1, 1, fc="r")
     p2 = Rectangle((0, 0), 1, 1, fc="b")
-    #p3 = Rectangle((0, 0), 1, 1, fc="g")
-    #axarr[0].legend((p1, p2, p3), ["Gd_std sorted relationship", "Predicted sorted output", "Cross correlation"], loc=4)
-    axarr.legend((p1, p2), ["Gd_std sorted relationship", "Regression estimation"], loc='best')
-    axarr.set_xlabel('GoldStandad sorted samples')
+    axarr.legend((p1, p2), ["Gd_std human candidatures", "Predicted candidatures"], loc='best')
+    axarr.set_xlabel('Sorted samples')
     axarr.set_ylabel(yylabel)
     if args.log_scale and model:
         axarr.set_yscale('log')
-        #axarr.set_yscale('log')
     
     axarr.plot(sample, true, color = 'r', linewidth=2)
     axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linewidth=2)
-    #axarr[0].plot(sample, ccorrs[args.number_result], color = 'g', linewidth=2)
-    #axarr.set_title('Predictions, goldstandard and cross correlation')
     if model:
         axarr[1].scatter(x, y)
         axarr[1].set_title('Learned weights')
