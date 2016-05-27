@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import preprocessing
 from sklearn.svm import SVR, NuSVR
 from sklearn.grid_search import RandomizedSearchCV as RS
 from scipy.stats import randint as sp_randint
@@ -7,7 +8,7 @@ from sklearn.externals import joblib
 from sklearn.metrics import r2_score
 from re import search, M, I
 from load_regression import load_regression_data as lr
-import sys
+import sys, pickle
 
 def tener(x):
     return x * 10
@@ -87,6 +88,7 @@ if args.s:  # fileTrain = None, fileTest = None, fileLabelsTr = None, fileLabels
    X, Xt, y, yt  = lr(fileTrain = args.x, fileLabelsTr = args.y, sparse = args.s)
 else:
     X = np.loadtxt(args.x)
+    #X = preprocessing.scale(X)
     if args.y:
         y = np.loadtxt(args.y)
 
@@ -114,9 +116,14 @@ if args.o:
         sys.stderr.write("\n:>> Source: %s\n" % (source.group()))
         infile = basename(op) # SVR model file name
         model_idx = search(r"_(\d{1,3})_[d|w]2v_H",infile, I|M).group(1)
-        if infile and infile != "*": # svr_output_headlines100_d2v_convs_300_m5.txt      
-            filename = "svr_idx%s_%s_%s_H%s_predictions.out" % (model_idx, corpus, representation, dimensions)
-            model = joblib.load(op, 'r')
+        if infile and infile != "*": # svr_output_headlines100_d2v_convs_300_m5w8.txt      
+            filename = "svr_idx%s_%s_%s_H%s_m%s_predictions.out" % (model_idx, corpus, representation, dimensions, min_count)
+            try:
+                model = joblib.load(op, 'r')
+            except pickle.PicklingError:
+                with open(op,'r') as f:
+                    pickle.load(model, f)
+
             y_out = {}
             if args.t:
                 y_out['estimated_output'] = map(detener, model.predict(X).tolist()) # Get back rescalling
@@ -170,8 +177,12 @@ if args.u:
         exit()
     print param_grid    
 else: # For Random search over many grid parameters
+    if args.K:
+        kernel = [args.K]
+    else:
+        kernel =  ['poly', 'linear']
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': ['poly', 'linear', 'sigmoid'], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
@@ -231,8 +242,12 @@ for n in xrange(N):
 
         with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
             f.write(str(y_out)+'\n')
-        
-        joblib.dump(rs, "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
+        try:
+            joblib.dump(rs, "/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count)) 
+        except pickle.PicklingError:
+            with open("/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count), 'wb') as f:
+                pickle.dump(rs.best_estimator_, f)
+
 with open("sorted_gs_%s.txt" % (corpus), "w") as f:
     if args.t:
         for i in map(detener, y):

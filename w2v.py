@@ -23,22 +23,22 @@ def clean_Ustring_fromU(string):
     try: # Trying different cases for bad input documents.
         normalized_string = normalize('NFKC', gClean.lower())
     except TypeError:
-        sys.stderr.write("\nBadly formed string at the first attempt\n-- Document sample: '"+gClean[0:49]+"'\n")
+        #sys.stderr.write("\nBadly formed string at the first attempt\n-- Document sample: '"+gClean[0:49]+"'\n")
         try:
             range_error = 999
             normalized_string = normalize('NFKC', gClean[0:range_error].lower()) # One thousand of characters are written if available. 
         except TypeError:
-            sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
+            #sys.stderr.write('\nThe wrong string at the second attempt: before %s words\n' % range_error)
             try:
                 range_error = 99
                 normalized_string = normalize('NFKC', gClean[0:range_error].lower())
             except TypeError:
-                sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
+                #sys.stderr.write('\nThe wrong string at the third attempt: before %s words' % range_error)
                 try:
                     range_error = 49
                     normalized_string = normalize('NFKC', gClean[0:range_error].lower())
                 except TypeError:    
-                    sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
+                 #   sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
                     normalized_string = None
                     pass
     if normalized_string:
@@ -71,7 +71,7 @@ class yield_line_documents(object):
                     if cs:
                         yield LabeledSentence(cs, [tag])
                     else:
-                        sys.stderr.write("Empty string at line %s.\n" % l)
+                        #sys.stderr.write("Empty string at line %s.\n" % l)
                         yield None
                     
         else:
@@ -89,34 +89,96 @@ if __name__ == "__main__":
     parser.add_argument('-m', type=int, dest = 'minc', help='Specifies the minimum frequency a word should have in the corpus to be considered.')
     parser.add_argument('-d', default=False, action="store_true", dest = 'd2v', help='Toggles the doc2vec model, insted of the w2v one.')
     parser.add_argument('-s', default=False, action="store_true", dest = 'single', help='Toggles the pair or single tags.')
+    parser.add_argument('-c', default=False, action="store_true", dest = 'update', help='Toggles if you want loading a pretrained model and continue training it with new input files.')
     parser.add_argument('-D', default=False, action="store_true", dest = 'dirty', help='Toggles if you do not want to process clean strings (i.e. raw file, including any symbol).')
-
+    parser.add_argument('-w', type=int, dest = 'window', default=8, help='Specifies the number of words in the cooccurrence window.')
     args = parser.parse_args()
-    sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+
     if args.d2v:
-        #articles = TaggedLineDocument(args.indir_file_name)
-        arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
-        articles = []
-        for a in arts:
-            if a:
-                articles.append(a)
-        sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
-        #sys.stderr.write("\n>> [%s] Parameters: %s.\n" % (strftime("%Y-%m-%d %H:%M:%S", gmtime())))
-        try:
-            d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = 4)    
-            sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
-            d2v_model.save(args.outfile, separately = None)
-            sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
-        except IOError:
-            sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
-        except:
-            sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+        if not args.update:
+            sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+            arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
+            articles = []
+            for a in arts:
+                if a:
+                    articles.append(a)
+            sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+
+            try:
+                d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = int(args.window))    
+                sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                d2v_model.save(args.outfile, separately = None)
+                sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+            except IOError:
+                sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                exit()
+            #except:
+                #sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                #exit()
+        else: ## If args.update:
+            from os.path import exists
+            from os import makedirs, getcwd, remove
+            from time import sleep
+
+            try:
+                trials = 10; to = 0
+                while(exists("%s/blocked" % getcwd()) and to < trials):
+                    if to > 0: sleep(1)
+                    to += 1
+                if not to < trials:
+                    sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
+                    exit()
+                
+                makedirs("%s/blocked" % getcwd())
+                d2v_model = Doc2Vec.load(args.outfile)
+                remove("%s/blocked" % getcwd())
+                d2v_model.workers = args.threads
+                sys.stderr.write("\n>> [%s] Model successfully loaded...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
+                articles = []
+                for a in arts:
+                    if a:
+                        articles.append(a)
+
+                sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+
+                d2v_model.train(articles)
+                sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                
+                to = 0
+                while(exists("%s/blocked" % getcwd()) and to < trials):
+                    if to > 0: sleep(1)
+                    to += 1
+                if not to < trials:
+                    sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
+                    exit()
+                
+                makedirs("%s/blocked" % getcwd())
+                d2v_model.save(args.outfile, separately = None)
+                remove("%s/blocked" % getcwd())
+
+                sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+            except IOError:
+                sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                exit()
+            #except:
+                #sys.stderr.write("\n>> [%s] Error caught while model instantiation...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                #exit()
+        if not args.update:
+            model = Doc2Vec.load(args.outfile)
+            del(model)
+        sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
     else:
+        sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))        
         articles = yield_line_documents(args.indir_file_name)
+        sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
+        sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         w2v_model.save(args.outfile, separately = None)
+        sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+        model = Word2Vec.load(args.outfile)
+        del(model)
+        sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
     
-    model = Doc2Vec.load(args.outfile)
-    del(model)
-    sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         
