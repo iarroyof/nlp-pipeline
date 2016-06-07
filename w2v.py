@@ -121,25 +121,29 @@ if __name__ == "__main__":
             from time import sleep
 
             try:
-                trials = 10; to = 0
-                while(exists("%s/blocked" % getcwd()) and to < trials):
-                    if to > 0: sleep(1)
-                    to += 1
-                if not to < trials:
-                    sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
-                    exit()
+                #trials = 10; to = 0
+                #while(exists("%s/blocked" % getcwd()) and to < trials):
+                #    if to > 0: sleep(1)
+                #    to += 1
+                #if not to < trials:
+                #    sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
+                #    exit()
                 
-                makedirs("%s/blocked" % getcwd())
+                #makedirs("%s/blocked" % getcwd())
                 d2v_model = Doc2Vec.load(args.outfile)
-                remove("%s/blocked" % getcwd())
+                #try:
+                #    remove("%s/blocked" % getcwd())
+                #except:
+                #    pass
                 d2v_model.workers = args.threads
                 sys.stderr.write("\n>> [%s] Model successfully loaded...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
                 articles = []
-                for a in arts:
-                    if a:
-                        articles.append(a)
+                
+                articles = [a for a in arts if a]
+                    #if a:
+                    #    articles.append(a)
 
                 sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
 
