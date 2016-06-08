@@ -150,17 +150,17 @@ if __name__ == "__main__":
                 d2v_model.train(articles)
                 sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 
-                to = 0
-                while(exists("%s/blocked" % getcwd()) and to < trials):
-                    if to > 0: sleep(1)
-                    to += 1
-                if not to < trials:
-                    sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
-                    exit()
+                #to = 0
+                #while(exists("%s/blocked" % getcwd()) and to < trials):
+                 #   if to > 0: sleep(1)
+                 #   to += 1
+                #if not to < trials:
+                 #   sys.stderr.write("\n>> [%s] ERROR -- Unlearned: %s...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.indir_file_name))
+                 #   exit()
                 
-                makedirs("%s/blocked" % getcwd())
+                #makedirs("%s/blocked" % getcwd())
                 d2v_model.save(args.outfile, separately = None)
-                remove("%s/blocked" % getcwd())
+                #remove("%s/blocked" % getcwd())
 
                 sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
             except IOError:
