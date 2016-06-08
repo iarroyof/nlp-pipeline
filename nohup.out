@@ -604,3 +604,5 @@ Traceback (most recent call last):
   File "w2v.py", line 175, in <module>
     sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())), args.outfile)
 TypeError: not enough arguments for format string
+
+>> [2016-06-08 14:58:03] Articles generator unpacking...

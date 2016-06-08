@@ -98,14 +98,14 @@ if __name__ == "__main__":
         if not args.update:
             sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
             arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
-            articles = []
-            for a in arts:
-                if a:
-                    articles.append(a)
+            #articles = []
+            #for a in arts:
+            #    if a:
+            #        articles.append(a)
             sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
 
             try:
-                d2v_model = Doc2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden, window = int(args.window))    
+                d2v_model = Doc2Vec([a for a in arts if a], min_count = args.minc, workers = args.threads, size = args.hidden, window = int(args.window))    
                 sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 d2v_model.save(args.outfile, separately = None)
                 sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
