@@ -584,3 +584,23 @@ NameError: name 'trials' is not defined
 >> [2016-06-08 09:14:04] Model successfully loaded...
 
 >> [2016-06-08 09:14:04] Articles generator unpacking...
+
+>> [2016-06-08 10:18:42] Articles generator unpacked... Training begins.
+
+>> [2016-06-08 10:33:45] Model successfully trained...
+
+>> [2016-06-08 10:34:33] Model successfully saved...
+
+>> [2016-06-08 10:34:33] Successful reload and Finished !!
+
+>> [2016-06-08 11:20:08] Articles generator unpacking...
+
+>> [2016-06-08 12:32:18] Articles generator unpacked... Training begins.
+
+>> [2016-06-08 12:59:27] Model successfully trained...
+
+>> [2016-06-08 13:00:13] Model successfully saved...
+Traceback (most recent call last):
+  File "w2v.py", line 175, in <module>
+    sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())), args.outfile)
+TypeError: not enough arguments for format string

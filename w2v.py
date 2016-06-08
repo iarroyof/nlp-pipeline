@@ -162,7 +162,7 @@ if __name__ == "__main__":
                 d2v_model.save(args.outfile, separately = None)
                 #remove("%s/blocked" % getcwd())
 
-                sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                sys.stderr.write("\n>> [%s] Model successfully saved...\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())), args.outfile)
             except IOError:
                 sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 exit()
@@ -172,7 +172,7 @@ if __name__ == "__main__":
         if not args.update:
             model = Doc2Vec.load(args.outfile)
             del(model)
-        sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+        sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
     else:
         sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))        
         articles = yield_line_documents(args.indir_file_name)
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         w2v_model = Word2Vec(articles, min_count = args.minc, workers = args.threads, size = args.hidden)
         sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         w2v_model.save(args.outfile, separately = None)
-        sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+        sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
         model = Word2Vec.load(args.outfile)
         del(model)
         sys.stderr.write("\n>> [%s] Finished !!\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
