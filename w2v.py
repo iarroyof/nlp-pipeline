@@ -96,19 +96,15 @@ if __name__ == "__main__":
 
     if args.d2v:
         if not args.update:
-            sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+            sys.stderr.write("\n>> [%s] Articles generator unpacking... %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
             arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
-            #articles = []
-            #for a in arts:
-            #    if a:
-            #        articles.append(a)
             sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
 
             try:
                 d2v_model = Doc2Vec([a for a in arts if a], min_count = args.minc, workers = args.threads, size = args.hidden, window = int(args.window))    
                 sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 d2v_model.save(args.outfile, separately = None)
-                sys.stderr.write("\n>> [%s] Model successfully saved...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                sys.stderr.write("\n>> [%s] Model successfully saved... %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()),args.outfile))
             except IOError:
                 sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 exit()
@@ -137,17 +133,12 @@ if __name__ == "__main__":
                 #    pass
                 d2v_model.workers = args.threads
                 sys.stderr.write("\n>> [%s] Model successfully loaded...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
-                sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+                sys.stderr.write("\n>> [%s] Articles generator unpacking... %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
                 arts = yield_line_documents(args.indir_file_name, d2v = True, single = args.single, dirty=args.dirty)
-                articles = []
-                
-                articles = [a for a in arts if a]
-                    #if a:
-                    #    articles.append(a)
 
                 sys.stderr.write("\n>> [%s] Articles generator unpacked... Training begins.\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
 
-                d2v_model.train(articles)
+                d2v_model.train([a for a in arts if a])
                 sys.stderr.write("\n>> [%s] Model successfully trained...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 
                 #to = 0
@@ -162,7 +153,7 @@ if __name__ == "__main__":
                 d2v_model.save(args.outfile, separately = None)
                 #remove("%s/blocked" % getcwd())
 
-                sys.stderr.write("\n>> [%s] Model successfully saved...\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())), args.outfile)
+                sys.stderr.write("\n>> [%s] Model successfully saved... %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
             except IOError:
                 sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 exit()
@@ -172,7 +163,7 @@ if __name__ == "__main__":
         if not args.update:
             model = Doc2Vec.load(args.outfile)
             del(model)
-        sys.stderr.write("\n>> [%s] Successful reload and Finished !!\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
+        sys.stderr.write("\n>> [%s] Successful reload and Finished !! %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
     else:
         sys.stderr.write("\n>> [%s] Articles generator unpacking...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))        
         articles = yield_line_documents(args.indir_file_name)
