@@ -182,7 +182,7 @@ else: # For Random search over many grid parameters
     else:
         kernel =  ['poly', 'linear']
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]},
+    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
@@ -218,8 +218,22 @@ for n in xrange(N):
             rs.fit(X, y)
         except:
             sys.stderr.write("\n:>> Fitting Error:\n" )
+        try:
+            sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
+        except:
+            try:
+                num_lines = sum(1 for line in open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "r"))        
+            except IOError:
+                num_lines = 0
+            y_out = {}
+            y_out['estimated_output'] = range(0,len(y))
+            y_out['best_params'] = "Non converged model..."
+            y_out['learned_model'] = "Nonconverged_model_%d" % num_lines
+            y_out['performance'] = 0.0 
+            with open("svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count), "a") as f:
+                f.write(str(y_out)+'\n')
+            continue
 
-        sys.stderr.write("\n:>> Model selected: %s\n" % (rs.best_params_))        
         f_x = rs.predict(X).tolist()
         sys.stderr.write("\n:>> R2: %s\n" % (r2_score(y, f_x)))
         try:

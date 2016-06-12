@@ -8,11 +8,11 @@ parser.add_argument("-o", help="Output file name (sentence by row)", metavar="ou
 args = parser.parse_args()
 
 punkt_param = PunktParameters()
-punkt_param.abbrev_types = set(['jr', 'dr', 'vs', 'mr', 'mrs', 'prof', 'inc','e.g', 'i.e', 'gen', 'al', 'ph', 'd', 'c', 'd', 'h', 'k', 'm', 'mme', 'ms', 'msc', 'vol', 'cit', 'pp', 'ed', 'cap', 'p', 'r', 's', 'w', 'cf', 'l', 'n', 'e', 'v', 'chap', 'ch', 'i', 'no', 'st', 't', 'j', 'f', '1o', '2o', 'phd'])
+punkt_param.abbrev_types = set(['jr', 'dr', 'vs', 'mr', 'mrs', 'prof', 'inc','e.g', 'i.e', 'gen', 'al', 'ph', 'd', 'c', 'd', 'h', 'k', 'm', 'mme', 'ms', 'msc', 'vol', 'cit', 'pp', 'ed', 'cap', 'p', 'r', 's', 'w', 'cf', 'l', 'n', 'e', 'g', 'i', 'v', 'chap', 'ch', 'i', 'no', 'st', 't', 'j', 'f', '1o', '2o', 'phd'])
 sent_tokenize = PunktSentenceTokenizer(punkt_param)
 
 with open(args.i) as f:
-    lines = map(lambda str : str.replace('. »', '.»').replace('. "', '."').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines())
+    lines = map(lambda str : str.replace('. »', '.»').replace('. "', '."').replace('? "', '?"').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines())
 
 with open(args.o,"w") as f:
     for line in lines:

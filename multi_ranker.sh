@@ -4,6 +4,7 @@ percent=$2
 #model=/home/iarroyof/data/svr_puces_model/svr_puces_complete_2_d2v_H300_esp_m10.model
 #preds=svr_RPM_d2v_H300_predictions.out
 preds=$3 #svr_RPM_d2v_H10_predictions.out
+msl=$4 # the minimum sentence length (0 for no no limit).
 ext=*txt
 
 echo "Summary generation for multiple source documents and a regression predicitons file."
@@ -13,5 +14,5 @@ echo "Los directorios deben estar en : $Dir"
 for doc in `ls $Dir$ext`;
 do
     echo "Repertoire... $doc"
-	python get_summ_rank.py -ed -s "$doc" -p "$preds" -n "$percent" -m 26 #) &
+	python get_summ_rank.py -ed -s "$doc" -p "$preds" -n "$percent" -m "$msl" #) &
 done

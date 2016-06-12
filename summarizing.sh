@@ -40,6 +40,11 @@ if [ "$new" ==  "1" ] then
         ./multi_combiner.sh "$directory"/"$i" "$d2vModel" "$dims";
     done
 fi
+
+# Command for adding linenumbers to vectors:
+paste -d' ' <(awk '$0=" "NR".0  "NF".0  "' /almac/ignacio/data/summer/RPM_C2_phrases/01/T01_C2_00.txt) <(cat /almac/ignacio/data/summer/vectors_RPM-C_T01_C2_00_d2v_H10_m5w8.mtx) > /almac/ignacio/data/summer/vectors_RPM-CLP_T01_C2_00_d2v_H10_m5w8.mtx
+
+
 if [ "$new" ==  "2" ] then
 
     for i in {01..20}; # 20 themes.
@@ -51,7 +56,7 @@ fi
 
 for d in {01..20}; 
 do 
-    ./multi_ranker.sh "$directory"/"$d"/ "$per"; # Multiranker in descent and metadata printing mode (option -e activated)
+    ./multi_ranker.sh "$directory"/"$d"/ "$per" "$predictions" "$Lmin"; # Multiranker in descent and metadata printing mode (option -e activated)
 done        # A 25% compression rate is used. This is the default. You can modify this parameter inside multi_ranker.sh
 
 # T12_C1_e_10_summ.txt

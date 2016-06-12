@@ -153,11 +153,8 @@ if __name__ == "__main__":
                 d2v_model.save(args.outfile, separately = None)
                 #remove("%s/blocked" % getcwd())
 
-<<<<<<< HEAD
                 sys.stderr.write("\n>> [%s] Model successfully saved... %s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
-=======
                 sys.stderr.write("\n>> [%s] Model successfully saved...\n%s\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime()), args.outfile))
->>>>>>> 39d18b034ed4581e5fac18e60d0eac307cca2b6f
             except IOError:
                 sys.stderr.write("\n>> [%s] Error caught while model saving...\n" % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
                 exit()
