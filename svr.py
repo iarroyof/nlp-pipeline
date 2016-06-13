@@ -169,7 +169,7 @@ if args.u:
         assert 0 < float(kd['Cu'].group(1)) and args.o.replace('.','',1).isdigit() # Badly specified range or gamma
         #gamms = [float(args.o)-float(args.o)*0.2, float(args.o), float(args.o)+float(args.o)*0.2]
         #gamms = [float(args.o)]
-        gamms = expon(scale=2, loc=float(float(args.o)))
+        gamms = expon(scale=2, loc=float(args.o))
         #param_grid = [{'C': [float(kd['Cu'].group(1))], 'gamma': gamms, 'kernel': [kernel]}]
         param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]}]
     else:
@@ -182,7 +182,7 @@ else: # For Random search over many grid parameters
     else:
         kernel =  ['poly', 'linear']
     param_grid = [   
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
+    {'C': expon(scale=100, loc=5), 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
     {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
