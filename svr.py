@@ -39,6 +39,7 @@ parser.add_argument("-K", help="Kernel type custom specification. Uniquely valid
 parser.add_argument("-s", help="Toggle if you will process sparse input format.", action="store_true", default = False)
 parser.add_argument("-t", help="Toggle if you want multiply by 10 the regression labels for training.", action="store_true", default = False)
 parser.add_argument("-k", help="k-fold cross validation for the randomized search.", metavar="k-fold_cv", default=None)
+parser.add_argument("-S", help="Toggle if you want to sort training set according to regression labels.", action="store_true", default = False)
 args = parser.parse_args()
 
 N = int(args.n)
@@ -169,9 +170,9 @@ if args.u:
         assert 0 < float(kd['Cu'].group(1)) and args.o.replace('.','',1).isdigit() # Badly specified range or gamma
         #gamms = [float(args.o)-float(args.o)*0.2, float(args.o), float(args.o)+float(args.o)*0.2]
         #gamms = [float(args.o)]
-        gamms = expon(scale=2, loc=float(args.o))
+        gamms = expon(scale=1.0, loc=float(args.o))
         #param_grid = [{'C': [float(kd['Cu'].group(1))], 'gamma': gamms, 'kernel': [kernel]}]
-        param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10), 'gamma': gammas[op]}]
+        param_grid = [{'C': expon(scale=2, loc=float(kd['Cu'].group(1))), 'gamma': gamms, 'kernel': [kernel], 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 10)}]#, 'gamma': gammas[op]}]
     else:
         print "Error specifying C (range) or gamma. Syntax: 'C:5', 'C:5.1', 'C:5_6', 'C:5.1_6.2'."
         exit()
@@ -183,7 +184,7 @@ else: # For Random search over many grid parameters
         kernel =  ['poly', 'linear']
     param_grid = [   
     {'C': expon(scale=100, loc=5), 'kernel': kernel, 'degree': sp_randint(1, 32), 'coef0':sp_randint(1, 5), 'gamma': gammas[op]},
-    {'C': [0.5, 1, 5, 10, 50, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
+    {'C': [0.5, 1, 5, 10, 20, 50, 80, 100, 500, 1000, 1500, 2000], 'gamma': gammas[op], 'kernel': ['rbf']} ]
 
 if args.N == "auto":
     for p in param_grid:
@@ -194,15 +195,15 @@ elif args.N != None:
 
 sys.stderr.write("\n:>> Training settings are OK\n")
 sys.stderr.write("Output file: svr_%s_%s_H%s_%s_m%s.out" % (corpus, representation, dimensions, op, min_count))
-# Sorted training set:
-D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
-X = np.array([list(a) for a in D[0]])
-if args.t:
-    y = map(tener, D[1])
-else:
-    y = D[1]
+if args.S: # Sorted training set:
+    D = map(list, zip(*sorted(zip(X, y), key=lambda tup:tup[1])))
+    y =  D[1]
+    X = np.array([list(a) for a in D[0]])
+    del D
 
-del D
+if args.t:
+    y = map(tener, y)
+
 for n in xrange(N):
     for params in param_grid:
         if args.N == None:
@@ -262,13 +263,14 @@ for n in xrange(N):
             with open("/almac/ignacio/data/svr_models/%s_%s_%s_%s_H%s_%s_m%s.model" % (svr_, corpus, num_lines, representation, dimensions, op, min_count), 'wb') as f:
                 pickle.dump(rs.best_estimator_, f)
 
-with open("sorted_gs_%s.txt" % (corpus), "w") as f:
-    if args.t:
-        for i in map(detener, y):
-            f.write(str(i)+'\n')
-    else:
-        for i in y:
-            f.write(str(i)+'\n')
+if args.S or args.t:
+    with open("sorted_gs_%s.txt" % (corpus), "w") as f:
+        if args.t:
+            for i in map(detener, y):
+               f.write(str(i)+'\n')
+        else:
+            for i in y:
+                f.write(str(i)+'\n')
 
 #sys.stderr.write("\n:>> kernel: %s \n:>> C: %f.4 \n:>> Gamma: %f.4 \n:>> C: %f.4" % (args.K, rs.best_estimator. ))
 
