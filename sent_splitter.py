@@ -1,6 +1,11 @@
 from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
 from nltk.data import load
 import argparse
+#from pdb import set_trace as st
+
+def add_nl(string):
+    return string+"\n"
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", help="Input file name (taw text)", metavar="input_file", required=True)
@@ -14,9 +19,9 @@ args = parser.parse_args()
 sent_tokenize = load("tokenizers/punkt/english.pickle")
 
 with open(args.i) as f:
-    lines = map(lambda str : str.replace('\t', ' ').replace('\n', ' ').replace('. »', '.»').replace('. "', '."').replace('? "', '?"').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines())
-
+    lines = "".join(map(lambda str : str.replace('\t', ' ').replace('\n', ' ').replace('. »', '.»').replace('. "', '."').replace('? "', '?"').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines()[1:]))
+#st()
 with open(args.o,"w") as f:
-    for line in lines:
-        sent = "\r".join(sent_tokenize.tokenize(line))
+    lines = map(add_nl, sent_tokenize.tokenize(lines))
+    for sent in lines:
         f.write (sent)
