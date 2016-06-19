@@ -75,7 +75,7 @@ Ns  = int(Round(len(sentences)*(float(args.n)/100.0)))
 if Ns < 1:
     Ns = 1
 
-sys.stderr.write("""\n:>> Input file: %s\n:>> Output file: %s\n:>> Document length: %d\n:>> Compression rate: %s\n:>> Taken sentences: %d\n:>> Max score: %f.3\n:>> Min score: %f.3\n""" % (source, summ_file, len(sentences), args.n, Ns, mxeo, mneo))
+sys.stderr.write("""\n:>> Input file: %s\n:>> Output file: %s\n:>> Document length: %d\n:>> Compression rate: %s\n:>> Taken sentences: %d\n:>> Max score: %f\n:>> Min score: %f\n""" % (source, summ_file, len(sentences), args.n, Ns, mxeo, mneo))
 
 predictions = [(s, p) for s, p in zip(sentences, predictions) if len(s.split()) > LME]  # Filter sentences by length.
 predictions=sorted(predictions, reverse = args.d, key = lambda tup: tup[1][1]) # Sort by ranking scores
