@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 route = "/almac/ignacio/data/describe_corpus/txt/"
 #num_clusters = 5
-min_show_length = 50
+min_show_length = 100
 
 def cleaner(line): # The default is the average sentence length in English
     return line.strip()[:min_show_length]
