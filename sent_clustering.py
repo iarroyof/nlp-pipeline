@@ -3,8 +3,10 @@ from scipy.cluster.hierarchy import ward, dendrogram
 from sklearn.metrics.pairwise import cosine_similarity
 from re import search, M, I
 import logging
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
 import sys
 import numpy as np
 from argparse import ArgumentParser as ap
@@ -87,5 +89,6 @@ plt.tick_params(\
 
 plt.tight_layout() #show plot with tight layout
 #uncomment below to save figure
-plt.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimension), dpi=200) #save figure as ward_clusters
-plt.close()
+#plt.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimension), dpi=200) #save figure as ward_clusters
+fig.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
+#plt.close()
