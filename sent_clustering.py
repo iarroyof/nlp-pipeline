@@ -23,7 +23,7 @@ route = "/almac/ignacio/data/describe_corpus/txt/"
 min_show_length = 100
 
 def cleaner(line): # The default is the average sentence length in English
-    return line.strip()[:min_show_length]
+    return line.strip()#[:min_show_length]
 
 try:
     source = search(r"(?:vectors|pairs)_([A-Za-z]+[\-A-Za-z0-9]+)_?(T[0-9]{2,3}_C[1-9]_[0-9]{2}|d\d+t|\w+)?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_w?[0-9]{0,3}]?)", args.x, M|I)
