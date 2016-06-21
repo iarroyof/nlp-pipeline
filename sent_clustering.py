@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 route = "/almac/ignacio/data/describe_corpus/txt/"
 #num_clusters = 5
-min_show_length = 11
+min_show_length = 50
 
 def cleaner(line): # The default is the average sentence length in English
     return line.strip()[:min_show_length]
@@ -89,6 +89,6 @@ plt.tick_params(\
 
 plt.tight_layout() #show plot with tight layout
 #uncomment below to save figure
-#plt.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimension), dpi=200) #save figure as ward_clusters
-fig.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
+plt.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
+#fig.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
 #plt.close()
