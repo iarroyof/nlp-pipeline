@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 from argparse import ArgumentParser as ap
-from pdb import set_trace as st
+import os
 
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
@@ -18,7 +18,6 @@ parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file"
 #                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file", default = None)
 args = parser.parse_args()
 
-route = "/almac/ignacio/data/describe_corpus/"
 #num_clusters = 5
 min_show_length = 100
 
@@ -53,8 +52,9 @@ except AttributeError:
             pass
     exit()
 
+route = os.path.dirname(args.x)
 ## Loading files
-with open("%s%s.txt" % (route, term_name)) as f:
+with open("%s/%s.txt" % (route, term_name)) as f:
     snippets = map(cleaner, f.readlines())
 #TODO: Parse the snippets wit correct vectors file.
 X = np.loadtxt(args.x)
