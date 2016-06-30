@@ -18,7 +18,7 @@ parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file"
 #                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file", default = None)
 args = parser.parse_args()
 
-route = "/almac/ignacio/data/describe_corpus/txt/"
+route = "/almac/ignacio/data/describe_corpus/"
 #num_clusters = 5
 min_show_length = 100
 
