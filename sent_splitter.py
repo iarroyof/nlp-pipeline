@@ -19,7 +19,7 @@ args = parser.parse_args()
 sent_tokenize = load("tokenizers/punkt/english.pickle")
 
 with open(args.i) as f:
-    lines = "".join(map(lambda str : str.replace('\t', ' ').replace('\n', ' ').replace('. »', '.»').replace('. "', '."').replace('? "', '?"').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines()[1:]))
+    lines = "".join(map(lambda str : str.replace('\t', ' ').replace('\n', ' ').replace('. »', '.»').replace('. "', '."').replace('? "', '?"').replace('? »', '?»').replace('! "', '!"').replace('! »', '!»'), f.readlines()))
 #st()
 with open(args.o,"w") as f:
     lines = map(add_nl, sent_tokenize.tokenize(lines))
