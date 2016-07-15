@@ -14,6 +14,7 @@ import os
 
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
+parser.add_argument("-t", help="Toggle if labels are PoS tags instead of snippets.")
 #parser.add_argument("-y", help="""Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify
 #                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file", default = None)
 args = parser.parse_args()
@@ -54,8 +55,14 @@ except AttributeError:
 
 route = os.path.dirname(args.x)
 ## Loading files
-with open("%s/%s.txt" % (route, term_name)) as f:
-    snippets = map(cleaner, f.readlines())
+if not args.t:
+    with open("%s/%s.txt" % (route, term_name)) as f:
+        snippets = map(cleaner, f.readlines())
+        t = ""
+else:
+    with open("%s/%s.tags" % (route, term_name)) as f:
+        snippets = map(cleaner, f.readlines())
+        t = "_tags"
 #TODO: Parse the snippets wit correct vectors file.
 X = np.loadtxt(args.x)
 
@@ -89,6 +96,6 @@ plt.tick_params(\
 
 plt.tight_layout() #show plot with tight layout
 #uncomment below to save figure
-plt.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
+plt.savefig("ward_clusters_%s%s_%s_H%s.png" % (term_name, t, corpus, dimensions), dpi=200) #save figure as ward_clusters
 #fig.savefig("ward_clusters_%s_%s_H%s.png" % (term_name, corpus, dimensions), dpi=200) #save figure as ward_clusters
 #plt.close()
