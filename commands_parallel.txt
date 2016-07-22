@@ -1,0 +1,5 @@
+
+14/07/16 04:14:20 printf "%s\n" `ls /almac/ignacio/data/summer/DUC04_phrases/jm/docs/`| parallel --gnu -j+0 --eta python combiner.py -Si -f /almac/ignacio/data/summer/DUC04_phrases/jm/docs/{} -d doc2vec -w $D2V/d2v_wikiEn-pucesEn-2e6_H10_m5w8.model -o /almac/ignacio/data/summer/DUC04_phrases/jm/vectors_H10/vectors_DUC04_{}_d2v_H10_m5w8.mtx
+14/07/16 05:35:03 printf "%s\n" `ls $DATA/summer/DUC04_phrases/jm/vectors_H10/*` | parallel --gnu -j+0 --eta python svr.py -x {} -o $SVR/svr_pucesEn_81_d2v_H10_esp_m5w8.model
+
+13/07/16 11:36:45 python gridGen.py -f gridParameterDicD2VH10puces.txt -t 5 | parallel --gnu -j+0 --eta python mklCall.py -p {} '>>' mkl.out && python mklReducer.py -f mkl.out -rpecl > MKL.out && rm mkl.out

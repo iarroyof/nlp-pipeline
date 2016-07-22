@@ -235,8 +235,12 @@ if args.number_result:
     r2 = r2_score(labs, est_outs[int(args.number_result)])
     pearson = pearsons(labs, est_outs[int(args.number_result)])
     grid(True)
+<<<<<<< HEAD
     #title( "%s [%d],\nPearson: %.5f, R^2: %.4f" % (titlle, args.number_result, pearson, r2)) #performs[args.number_result]))
     title( "%s,\n weighted Pearson: %.5f, R^2: %.4f" % (titlle, pearson, r2))
+=======
+    title( "%s,\nPearson: %.5f, R^2: %.4f" % (titlle, pearson, r2)) #args.number_result, pearson, r2)) #performs[args.number_result]))
+>>>>>>> 0a4873a28115c3408c8d785bb71ceba473f54443
     grid(True)
     #p1 = Rectangle((0, 0), 1, 1, fc="r")
     #p2 = Rectangle((0, 0), 1, 1, fc="b")
@@ -247,7 +251,11 @@ if args.number_result:
         axarr.set_yscale('log')
     
     axarr.plot(sample, true, color = 'r', linewidth=3)
+<<<<<<< HEAD
     axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linestyle="--", linewidth=3)
+=======
+    axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linestyle = "--" , linewidth=3)
+>>>>>>> 0a4873a28115c3408c8d785bb71ceba473f54443
     if model:
         axarr[1].scatter(x, y)
         axarr[1].set_title('Learned weights')
