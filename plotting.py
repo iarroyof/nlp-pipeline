@@ -242,9 +242,21 @@ if args.number_result:
     axarr.set_ylabel(yylabel)
     if args.log_scale and model:
         axarr.set_yscale('log')
-    
-    axarr.plot(sample, true, color = 'r', linewidth=3)
-    axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linestyle = "--" , linewidth=3)
+# -------------------------------------------
+#if args.Sorted_outs:
+#            plot(sample, true, color = 'r', linewidth=2)
+#            plot(sample, est_o, color = 'b', linewidth=2)
+#        else:
+#            plot(sample, labs, color = 'r', linewidth=2)
+#            plot(sample, est_outs[k-1], color = 'b', linewidth=2)
+#-------------------
+    if args.Sorted_outs:
+        axarr.plot(sample, labs, color = 'r', linewidth=3)
+        axarr.plot(sample, ordd_est_outs[args.number_result], color = 'b', linestyle = "--" , linewidth=3)
+    else:
+        axarr.plot(sample, true, color = 'r', linewidth=3)
+        axarr.plot(sample, est_outs[args.number_result], color = 'b', linestyle = "--" , linewidth=3)
+
     if model:
         axarr[1].scatter(x, y)
         axarr[1].set_title('Learned weights')
