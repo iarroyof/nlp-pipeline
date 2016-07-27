@@ -13,4 +13,3 @@ with open(args.f) as f:
 
     for i, line in enumerate(f):
         length = len(line.split())
-        

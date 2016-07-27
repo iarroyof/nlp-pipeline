@@ -1,5 +1,12 @@
-
+# para varios combiner en paralelo y sólo para una dimensionalidad (oraciones, DUC, H10):
 14/07/16 04:14:20 printf "%s\n" `ls /almac/ignacio/data/summer/DUC04_phrases/jm/docs/`| parallel --gnu -j+0 --eta python combiner.py -Si -f /almac/ignacio/data/summer/DUC04_phrases/jm/docs/{} -d doc2vec -w $D2V/d2v_wikiEn-pucesEn-2e6_H10_m5w8.model -o /almac/ignacio/data/summer/DUC04_phrases/jm/vectors_H10/vectors_DUC04_{}_d2v_H10_m5w8.mtx
+
+# Para varios combiner en parallelo para varias dimensionalidades (pares de oraciones, STS, H{10,20,30,40,50}). 
+                                                             # Cada dimensionalidad # Cada archivo de pares  # x := El nombre de archivo del sub corpus                                                                                                                                                # El nombre del sub corpu        # lista de dimensionalidades  # lista archivos a vectorizar
+parallel --gnu -j+0 --eta --header : 'mkdir -p $DATA/sts_all/pairs-NO/vectors_H{dim}; x={file}; x=(`basename $x`); x=${x%.txt}; python combiner.py -i -t sub -f {file} -d doc2vec -w $D2V/d2v_wikiEn-pucesEn-2e6_H{dim}_m5w8.model -o $DATA/sts_all/pairs-NO/vectors_H{dim}/pairs_eng-NO-test-2e6-nonempty_${x##*-}_d2v_H{dim}_sub_m5w8.mtx' ::: dim 10 20 30 40 50 ::: file `ls $DATA/sts_all/pairs-NO/*`
+
+# Predicción de resúmen con SVR sobre varios archivos fuente en paralelo. 
 14/07/16 05:35:03 printf "%s\n" `ls $DATA/summer/DUC04_phrases/jm/vectors_H10/*` | parallel --gnu -j+0 --eta python svr.py -x {} -o $SVR/svr_pucesEn_81_d2v_H10_esp_m5w8.model
 
+# Entrenamiento de MKL para 5 paths en paralelo.
 13/07/16 11:36:45 python gridGen.py -f gridParameterDicD2VH10puces.txt -t 5 | parallel --gnu -j+0 --eta python mklCall.py -p {} '>>' mkl.out && python mklReducer.py -f mkl.out -rpecl > MKL.out && rm mkl.out
