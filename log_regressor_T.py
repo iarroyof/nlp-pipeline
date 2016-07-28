@@ -1,3 +1,4 @@
+# Example from Theano tutorial: http://deeplearning.net/software/theano/tutorial/examples.html#a-real-example-logistic-regression
 import numpy
 import theano
 import theano.tensor as T
