@@ -2,8 +2,8 @@ from sknn.platform import cpu64, threading
 from scipy import stats
 from sklearn.grid_search import RandomizedSearchCV
 
-from sknn.mlp import Regressor, Layer
-from numpy import  sqrt, loadtxt, savetxt, array
+from sklearn.neural_network import MLPRegressor
+from numpy import  sqrt, loadtxt, savetxt, array, logspace
 import sys
 
 if len(sys.argv) < 4:
@@ -33,31 +33,18 @@ try:
     N = int(sys.argv[5]) # The number of searches
 except IndexError:
     N = 1
-#print "X_train: %s"%(str(X_train.shape))
-#print "y_train: %s"%(str(y_train.shape))
-#print "X_test: %s"%(str(X_valid.shape))
+print "X_train: %s"%(str(X_train.shape))
+print "y_train: %s"%(str(y_train.shape))
+print "X_test: %s"%(str(X_valid.shape))
 
 params = {
-    'learning_momentum': stats.uniform(0.01, 1.5),
-    'learning_rate': stats.uniform(0.001, 0.05),
-    'learning_rule': ['sgd', 'adagrad', 'rmsprop'], #'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
-    'regularize': ["L1", "L2", None],
-    'hidden0__units': stats.randint(2, 20),
-    'hidden0__type': ["Rectifier", "Sigmoid", "Tanh"],
-    'hidden1__units': stats.randint(2, 20),
-    'hidden1__type': ["Rectifier", "Sigmoid", "Tanh"],
-    'hidden2__units': stats.randint(2, 20),
-    'hidden2__type': ["Rectifier", "Sigmoid", "Tanh"],
-    'output__type': ["Linear"] }
-
-nn = Regressor(
-    layers=[
-        Layer(hidden0, units=1),
-        Layer(hidden1, units=1),
-        Layer(hidden2, units=1),
-        Layer(output, units=1)],
-    learning_rate=lrate,
-    n_iter=niter)
+    'hidden_layer_sizes' : [(stats.randint(2, 20),)],
+    'momentum': stats.uniform(0.001, 1.5),
+    'learning_rate': ['constant'],
+    'learning_rule': ['sgd'], #'momentum', 'nesterov', 'adadelta', 'adagrad', 'rmsprop'],
+    'alpha': logspace(-5, 3, 5),
+    'activation' : ['logistic', 'tanh', 'relu']}
+nn = MLPRegressor()
 
 parameter_grid = []
 for i in xrange(N):
@@ -67,12 +54,12 @@ if len(X_train) != len(y_train):
     sys.stderr.write("Number of samples and number of labels do not match.")
     exit()
 
-from /home/ignacio/distributionalSemanticStabilityThesis/mkl_regressor import test_predict
+from mkl_regressor import test_predict
 
 for params in parameter_grid:
     crash = True
     try:
-        rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions=params, scoring="mean_squared_error")
+        rs = RandomizedSearchCV(nn, n_iter = 10, n_jobs = 4, param_distributions=params, scoring="r2")
         rs.fit(X_train, y_train)
         crash = False
     except RuntimeError:
