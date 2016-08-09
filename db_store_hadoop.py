@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Script for storing the sparse data into a database. 
 # Dependencies: MRjob, psycopg2, postgresql and/or Hadoop.
+# Verify if the same task can be done by simpy usong gnu parallel.
 
 # Authors: Julián Solórzano Soto, Ignacio Arroyo-Fernández, Carlos Francisco Méndez Cruz.
 import psycopg2
