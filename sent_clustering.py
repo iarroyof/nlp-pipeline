@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #from sklearn.cluster import KMeans
 from scipy.cluster.hierarchy import ward, dendrogram
 from sklearn.metrics.pairwise import cosine_similarity
@@ -14,7 +15,8 @@ import os
 
 parser = ap(description='This script trains/applies a SVR over any input dataset of numerical representations. The main aim is to determine a set of learning parameters')
 parser.add_argument("-x", help="Input file name (vectors)", metavar="input_file", required=True)
-parser.add_argument("-t", help="Toggle if labels are PoS tags instead of snippets.")
+parser.add_argument("-t", default=False, action="store_true", help="Toggle if labels are PoS tags instead of snippets.")
+parser.add_argument("-n", default=False, action="store_true", help="Toggle if labels are NounPhrases instead of snippets.")
 #parser.add_argument("-y", help="""Regression labels file. Do not specify this argument if you want to uniauely predict over any test set. In this case, you must to specify
 #                                the SVR model to be loaded as the parameter of the option -o.""", metavar="regrLabs_file", default = None)
 args = parser.parse_args()
@@ -26,7 +28,7 @@ def cleaner(line): # The default is the average sentence length in English
     return line.strip()#[:min_show_length]
 
 try:
-    source = search(r"(?:vectors|pairs)_([A-Za-z]+[\-A-Za-z0-9]+)_?(T[0-9]{2,3}_C[1-9]_[0-9]{2}|d\d+t|\w+)?_([d2v|w2v|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_w?[0-9]{0,3}]?)", args.x, M|I)
+    source = search(r"(?:vectors|pairs)_([A-Za-z]+[\-A-Za-z0-9]+)_?(T[0-9]{2,3}_C[1-9]_[0-9]{2}|d\d+t|\w+)?_([d2v|w2v|fstx|coocc\w*|doc\w*]*)_(H[0-9]{1,4})_?([sub|co[nvs{0,2}|rr|nc]+]?)?_(m[0-9]{1,3}[_w?[0-9]{0,3}]?)", args.x, M|I)
 
     corpus = source.group(1)
     representation = source.group(3)
@@ -55,10 +57,14 @@ except AttributeError:
 
 route = os.path.dirname(args.x)
 ## Loading files
-if not args.t:
+if not args.t and not args.n:
     with open("%s/%s.txt" % (route, term_name)) as f:
         snippets = map(cleaner, f.readlines())
         t = ""
+elif args.n:
+    with open("%s/%s.arg2.phr" % (route, term_name)) as f:
+        snippets = map(cleaner, f.readlines())
+        t = "_phr"
 else:
     with open("%s/%s.tags" % (route, term_name)) as f:
         snippets = map(cleaner, f.readlines())
