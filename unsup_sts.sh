@@ -15,8 +15,15 @@ if [ -z $ST ] || [ -z $FT ] || [ -z $DATA ]; then
     exit 111;
 fi
 
-AV=$NLP
+cpus=10 # Assign number of cpus
 if [ ! -z "$v" ]; then
+    if [ ! "$v" == "verbo" ]; then
+        let "cpus=$v"
+    fi
+fi
+
+AV=$NLP
+if [ "$v" == "verbo" ]; then
     echo "Directories >>"
     echo "Stanford: $ST"
     echo "FastText: $FT"
@@ -68,14 +75,16 @@ if [[ ("$ver" == "vec") || ("$ver" == "all") ]]; then
 
     export mod
     export AV
-    parallel --noswap --gnu -j10 --eta --header : 'bash $AV/arg22vec.sh {filea} "$mod" w' ::: filea `ls "$stsdir"/split_sts/a_*.txt.out`
-    parallel --noswap --gnu -j10 --eta --header : 'bash $AV/arg22vec.sh {fileb} "$mod" w' ::: fileb `ls "$stsdir"/split_sts/b_*.txt.out`
+    parallel --noswap --gnu -j"$cpus" --eta --header : 'bash $AV/arg22vec.sh {filea} "$mod" w' ::: filea `ls "$stsdir"/split_sts/a_*.txt.out`
+    parallel --noswap --gnu -j"$cpus" --eta --header : 'bash $AV/arg22vec.sh {fileb} "$mod" w' ::: fileb `ls "$stsdir"/split_sts/b_*.txt.out`
 fi
 
-if [ -z "$v" ]; then
+if [ "$v" == "verbo" ]; then
     export AV
     parallel -k --noswap --gnu -j+0 --eta --header : 'python $AV/trip_comp.py -A {filea}' ::: filea `ls "$stsdir"/split_sts/a_*.txt.out`
 else
     export AV
     parallel -k --noswap --gnu -j+0 --eta --header : 'python $AV/trip_comp.py -A {filea} -v' ::: filea `ls "$stsdir"/split_sts/a_*.txt.out`
 fi
+
+(>&2 echo "C'est fini.")
