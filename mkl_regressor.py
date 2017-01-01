@@ -9,6 +9,12 @@ import sys, os
 import Gnuplot, Gnuplot.funcutils
 
 class mkl_regressor():
+""" This is a Multiple Kernel Learning (MKL) for sklearn (scikit-learn) Python library. This MKL object is only for 
+regression for now. One can instantiate this object within CrossValidation, GridSearch or RandomizedSearch objects 
+for sklearn model selection. The MKL implementation used in this object is that from Shogun Machine learning tool.
+There are some issues regarding to the selection of kernel bandwidths. They are randomly generated without any control
+for now, so any contribution is welcome.
+"""
 
     def __init__(self, widths = None, kernel_weights = None, svm_c = 0.01, mkl_c = 1.0, svm_norm = 1, mkl_norm = 1, degree = 2, 
                     median_width = None, width_scale = None, min_size=2, max_size = 10, kernel_size = None):
