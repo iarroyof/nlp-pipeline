@@ -23,7 +23,6 @@ from __future__ import print_function
 
 __docformat__ = 'restructedtext en'
 
-__op = "conc"
 
 import os
 import sys
@@ -229,15 +228,15 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
 
    """
-    dim = dataset
+    
     path = "/almac/ignacio/data/sts_all/"
-    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    tr_px = path + "pairs-SI/vectors_H50/pairs_eng-SI-test-2e6-nonempty_d2v_H50_sub_m5w8.mtx"
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    ts_px = path + "pairs-NO/vectors_H50/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H50_sub_m5w8.mtx"
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    vl_px = path + "pairs-NO/vectors_H50/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H50_sub_m5w8.mtx"
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-    print ("%s\n%s\n%s\n%s\n%s\n%s\n" % (tr_px,tr_py,ts_px,ts_py,vl_px,vl_py))
+    
     #tr_px = path + "pairs-NO_2013/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_OnWN_d2v_H"+ dataset+"_sub_m5w8.mtx"
     #tr_py = path + "pairs-NO_2013/STS.gs.OnWN.txt"
     #ts_px = path + "pairs-SI_2014/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_deft-news_d2v_H"+ dataset+"_sub_m5w8.mtx"
@@ -428,20 +427,20 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     end_time = timeit.default_timer()
     return best_iter + 1, best_validation_loss * 100.0, test_score * 100.0, classifier
 
-def predict(model, dim):
+def predict(model):
     """
     An example of how to load a trained model and use it
     to predict labels.
     """
     # We can test it on some examples from test test
     path = "/almac/ignacio/data/sts_all/"
-    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    tr_px = path + "pairs-SI/vectors_H50/pairs_eng-SI-test-2e6-nonempty_d2v_H50_sub_m5w8.mtx"
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    ts_px = path + "pairs-NO/vectors_H50/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H50_sub_m5w8.mtx"
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    vl_px = path + "pairs-NO/vectors_H50/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H50_sub_m5w8.mtx"
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-    # /almac/ignacio/data/sts_all/pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt
+    # /almac/ignacio/data/sts_all/pairs-NO/vectors_H50/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H50_sub_m5w8.mtx
     # load the saved model
     with open(model, 'rb') as f:
         classifier = dill.load(f)
@@ -469,16 +468,14 @@ if __name__ == '__main__':
     parser.add_argument("--dims", help="Size of the input layer", metavar="dims", default=2)
     parser.add_argument("--lrate", help="The learning rate", metavar="lrate", default=0.01)
     parser.add_argument("--predict", help="Predict by loading an existent mode or train a new model (specify the file name of the trained model)", metavar="predict", default=None)
-    parser.add_argument("--save", help="Toggles whether you want to save the learned model", action="store_true")
     args = parser.parse_args()
 
     if not args.predict:
         # learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, dataset='mnist.pkl.gz', batch_size=20, n_hidden=500)
         best_iter, best_validation_loss, test_score, model = test_mlp(learning_rate=float(args.lrate), batch_size=20, n_epochs=100000, 
-                                                                n_hidden=int(args.hidden), dataset=int(args.dims), verbose=True) #L1_reg=0.10, L2_reg=0.001 )
-        if args.save:
-            with open("mlp_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
-                dill.dump(model, f)
+                                                                n_hidden=int(args.hidden), dataset=args.dims, verbose=True) #L1_reg=0.10, L2_reg=0.001 )
+        with open("mlp_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
+            dill.dump(model, f)
 
         with open("mlp.out", "a") as f:
             f.write("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %d\n" % (best_validation_loss, best_iter, test_score, int(args.dims), int(args.hidden)))
@@ -487,7 +484,7 @@ if __name__ == '__main__':
 
     else:
         #with open("mlp.predict", "w") as f:
-        y_pred = predict(args.predict, int(args.dims))
+        y_pred = predict(args.predict)
         for item in y_pred:
             #thefile.write("%s\n" % item)    
             print (item)

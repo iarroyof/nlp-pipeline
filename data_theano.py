@@ -1,6 +1,7 @@
 from numpy import array, loadtxt
 import math
 import numpy
+
 def quantize(x):
   return array([math.floor(d) if d-int(d) < 0.5 else math.ceil(d) for d in x]).astype("int")
 
