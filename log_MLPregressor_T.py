@@ -23,7 +23,7 @@ from __future__ import print_function
 
 __docformat__ = 'restructedtext en'
 
-__op = "sub"
+__op = "conc"
 
 import os
 import sys
@@ -233,9 +233,9 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     path = "/almac/ignacio/data/sts_all/"
     tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
     print ("%s\n%s\n%s\n%s\n%s\n%s\n" % (tr_px,tr_py,ts_px,ts_py,vl_px,vl_py))
     #tr_px = path + "pairs-NO_2013/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_OnWN_d2v_H"+ dataset+"_sub_m5w8.mtx"
@@ -437,9 +437,9 @@ def predict(model, dim):
     path = "/almac/ignacio/data/sts_all/"
     tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf0_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty-halpf1_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
     # /almac/ignacio/data/sts_all/pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt
     # load the saved model
