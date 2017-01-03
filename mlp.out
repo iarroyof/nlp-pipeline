@@ -687,3 +687,4 @@ Best validation score of 71.182796 % obtained at iteration 4788, with test perfo
 Best validation score of 70.967742 % obtained at iteration 2052, with test performance 69.032258 %	Parameters: dims = 2	Hidden = 50
 Best validation score of 70.967742 % obtained at iteration 2052, with test performance 69.032258 %	Parameters: dims = 2	Hidden = 50
 Best validation score of 70.967742 % obtained at iteration 2052, with test performance 69.032258 %	Parameters: dims = 2	Hidden = 50
+Best validation score of 71.129032 % obtained at iteration 342, with test performance 70.376344 %	Parameters: dims = 300	Hidden = 80

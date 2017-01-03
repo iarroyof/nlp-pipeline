@@ -23,7 +23,7 @@ from __future__ import print_function
 
 __docformat__ = 'restructedtext en'
 
-__op = "conc"
+__op = "sub"
 
 import os
 import sys
