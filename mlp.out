@@ -760,3 +760,13 @@ Best validation score of 75.591398 % obtained at iteration 9576, with test perfo
 Best validation score of 74.247312 % obtained at iteration 342, with test performance 73.924731 %	Parameters: dims = 600	Hidden = 500
 Best validation score of 73.333333 % obtained at iteration 1710, with test performance 74.462366 %	Parameters: dims = 600	Hidden = 550
 Best validation score of 73.763441 % obtained at iteration 342, with test performance 75.000000 %	Parameters: dims = 600	Hidden = 600
+Best validation score of 67.580645 % obtained at iteration 342, with test performance 68.279570 %	Parameters: dims = 300	Hidden = 80
+Best validation score of 67.634409 % obtained at iteration 342, with test performance 68.440860 %	Parameters: dims = 300	Hidden = 80
+Best validation score of 69.731183 % obtained at iteration 684, with test performance 69.139785 %	Parameters: dims = 300	Hidden = 85
+Best validation score of 69.247312 % obtained at iteration 7866, with test performance 69.946237 %	Parameters: dims = 300	Hidden = 75
+Best validation score of 67.311828 % obtained at iteration 342, with test performance 68.172043 %	Parameters: dims = 300	Hidden = 80
+Best validation score of 68.279570 % obtained at iteration 1026, with test performance 69.354839 %	Parameters: dims = 300	Hidden = 80
+Best validation score of 67.580645 % obtained at iteration 342, with test performance 68.279570 %	Parameters: dims = 300	Hidden = 80
+Best validation score of 71.344086 % obtained at iteration 3078, with test performance 69.892473 %	Parameters: dims = 300	Hidden = 81
+Best validation score of 69.946237 % obtained at iteration 342, with test performance 69.838710 %	Parameters: dims = 300	Hidden = 79
+Best validation score of 67.580645 % obtained at iteration 342, with test performance 68.279570 %	Parameters: dims = 300	Hidden = 80

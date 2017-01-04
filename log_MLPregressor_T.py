@@ -92,9 +92,9 @@ class HiddenLayer(object):
 
             if activation == theano.tensor.nnet.sigmoid:
                 W_values *= 4
-            print (low)
-            print (high)
-            print (Weights)
+            #print (low)
+            #print (high)
+            #print (Weights)
             W = theano.shared(value=W_values, name='W', borrow=True)
 
         if b is None:
@@ -237,7 +237,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
     vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-    print ("%s\n%s\n%s\n%s\n%s\n%s\n" % (tr_px,tr_py,ts_px,ts_py,vl_px,vl_py))
+    #print ("%s\n%s\n%s\n%s\n%s\n%s\n" % (tr_px,tr_py,ts_px,ts_py,vl_px,vl_py))
     #tr_px = path + "pairs-NO_2013/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_OnWN_d2v_H"+ dataset+"_sub_m5w8.mtx"
     #tr_py = path + "pairs-NO_2013/STS.gs.OnWN.txt"
     #ts_px = path + "pairs-SI_2014/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_deft-news_d2v_H"+ dataset+"_sub_m5w8.mtx"
