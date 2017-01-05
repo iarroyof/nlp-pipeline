@@ -92,9 +92,7 @@ class HiddenLayer(object):
 
             if activation == theano.tensor.nnet.sigmoid:
                 W_values *= 4
-            #print (low)
-            #print (high)
-            #print (Weights)
+
             W = theano.shared(value=W_values, name='W', borrow=True)
 
         if b is None:
@@ -111,7 +109,6 @@ class HiddenLayer(object):
         )
         # parameters of the model
         self.params = [self.W, self.b]
-
 
 # start-snippet-2
 class MLP(object):
@@ -152,33 +149,55 @@ class MLP(object):
         # into a HiddenLayer with a tanh activation function connected to the
         # LogisticRegression layer; the activation function can be replaced by
         # sigmoid or any other nonlinear function
-        self.hiddenLayer = HiddenLayer(
-            rng=rng,
-            input=input,
-            n_in=n_in,
-            n_out=n_hidden,
-            activation=T.tanh
-        )
+#        self.hiddenLayer = HiddenLayer(
+#            rng=rng,
+#            input=input,
+#            n_in=n_in,
+#            n_out=n_hidden,
+#            activation=T.tanh
+#        )
 
+        self.hiddenLayers=[] 
+        for i in xrange(len(n_hidden)):
+            if i == 0:
+                self.hiddenLayers.append(HiddenLayer(
+                rng=rng,
+                input=input, 
+                n_in=n_in,       # [dim(input), n_hiden[0],...]
+                n_out=n_hidden[i],  # [n_hidden[0], n_hidden[1],...]
+                activation=T.tanh)
+                )
+            elif i < len(n_hidden) and i > 0:
+                self.hiddenLayers.append(HiddenLayer(
+                rng=rng,
+                input=self.hiddenLayers[i-1].output,           
+                n_in=n_hidden[i-1],       # [dim(input), n_hiden[0],...]
+                n_out=n_hidden[i],  # [n_hidden[0], n_hidden[1],...]
+                activation=T.tanh)
+                )
+        
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer.output,
-            n_in=n_hidden,
+            input=self.hiddenLayers[-1].output,
+            n_in=n_hidden[-1],
             n_out=n_out
         )
         # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
+
         self.L1 = (
-            abs(self.hiddenLayer.W).sum()
+            numpy.array([abs(self.hiddenLayers[i].W).sum() for i in xrange(len(n_hidden))]).sum()
+            #abs(self.hiddenLayer.W).sum()
             + abs(self.logRegressionLayer.W).sum()
         )
 
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
         self.L2_sqr = (
-            (self.hiddenLayer.W ** 2).sum()
+            numpy.array([abs(self.hiddenLayers[i].W ** 2).sum() for i in xrange(len(n_hidden))]).sum()
+            #(self.hiddenLayer.W ** 2).sum()
             + (self.logRegressionLayer.W ** 2).sum()
         )
 
@@ -193,7 +212,11 @@ class MLP(object):
         self.y_pred = self.logRegressionLayer.y_pred
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.hiddenLayer.params + self.logRegressionLayer.params
+        self.params = []
+        for i in xrange(len(n_hidden)):
+            self.params += self.hiddenLayers[i].params
+
+        self.params = self.params + self.logRegressionLayer.params
         # end-snippet-3
 
         # keep track of model input
@@ -201,7 +224,7 @@ class MLP(object):
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
-             dataset='mnist.pkl.gz', batch_size=20, n_hidden=500, verbose = False):
+             dataset='mnist.pkl.gz', batch_size=20, n_hidden=[10], verbose = False):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
@@ -383,9 +406,6 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
             if (iter + 1) % validation_frequency == 0:
                 # compute zero-one loss on validation set
-                #validation_losses = []
-                #for i in range(n_valid_batches):
-                #    validation_losses.append(validate_model(i))     
                 validation_losses = [validate_model(i) for i in range(n_valid_batches)]
                 this_validation_loss = numpy.mean(validation_losses)
                 if verbose:
@@ -426,6 +446,8 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
                 break
 
     end_time = timeit.default_timer()
+    print('Run time required: %.2fm' % ((end_time - start_time) / 60.))
+
     return best_iter + 1, best_validation_loss * 100.0, test_score * 100.0, classifier
 
 def predict(model, dim):
@@ -462,28 +484,35 @@ def predict(model, dim):
     return predicted_values
 
 if __name__ == '__main__':
-
+    from ast import literal_eval
     from argparse import ArgumentParser as ap
     parser = ap(description='This script trains/applies a Multi-Layer Perceptron over any input dataset of numerical representations. The main aim is to determine a set of learning parameters and architecture.')
     parser.add_argument("--hidden", help="Size of the hidden layer", metavar="hidden", default=100)
     parser.add_argument("--dims", help="Size of the input layer", metavar="dims", default=2)
     parser.add_argument("--lrate", help="The learning rate", metavar="lrate", default=0.01)
     parser.add_argument("--predict", help="Predict by loading an existent mode or train a new model (specify the file name of the trained model)", metavar="predict", default=None)
+    parser.add_argument("--l1_reg", help="L1 regularization parameter", metavar="l1_reg", default=0.0)
+    parser.add_argument("--l2_reg", help="L2 regularization parameter", metavar="l2_reg", default=0.00010)
+    parser.add_argument("--n_epochs", help="Maximum number of training epochs", metavar="n_epochs", default=1000)
+    parser.add_argument("--batch", help="Size of the training mini batch", metavar="batch", default=20)
     parser.add_argument("--save", help="Toggles whether you want to save the learned model", action="store_true")
     args = parser.parse_args()
-
+    
+    
     if not args.predict:
         # learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, dataset='mnist.pkl.gz', batch_size=20, n_hidden=500)
-        best_iter, best_validation_loss, test_score, model = test_mlp(learning_rate=float(args.lrate), batch_size=20, n_epochs=100000, 
-                                                                n_hidden=int(args.hidden), dataset=int(args.dims), verbose=True) #L1_reg=0.10, L2_reg=0.001 )
+        best_iter, best_validation_loss, test_score, model = test_mlp(learning_rate=float(args.lrate), batch_size=20, 
+                                                                      n_epochs=int(args.n_epochs), n_hidden=literal_eval(args.hidden), 
+                                                                      dataset=int(args.dims), verbose=True, 
+                                                                      L1_reg=float(args.l1_reg), L2_reg=float(args.l2_reg) )
         if args.save:
             with open("mlp_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
                 dill.dump(model, f)
 
         with open("mlp.out", "a") as f:
-            f.write("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %d\n" % (best_validation_loss, best_iter, test_score, int(args.dims), int(args.hidden)))
+            f.write("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), args.hidden))
 
-        print("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %d\n" % (best_validation_loss, best_iter, test_score, int(args.dims), int(args.hidden)))
+        print("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), args.hidden))
 
     else:
         #with open("mlp.predict", "w") as f:
