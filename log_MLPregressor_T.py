@@ -510,7 +510,10 @@ if __name__ == '__main__':
                 dill.dump(model, f)
 
         with open("mlp.out", "a") as f:
-            f.write("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), args.hidden))
+            f.write("Best validation score of %f %% obtained at iteration %i, with test performance\
+                       %f %%\tParameters: dims = %d\tHidden = %s\tLearning rate %s\tN epochs %s\tL1 regularizer %s\t\
+                            L2 regularizer %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), 
+                                    args.hidden, args.lrate, args.n_epochs, args.l1_reg, args.l2_reg))
 
         print("Best validation score of %f %% obtained at iteration %i, with test performance %f %%\tParameters: dims = %d\tHidden = %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), args.hidden))
 
