@@ -512,18 +512,21 @@ if __name__ == '__main__':
             with open("mlp_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
                 dill.dump(model, f)
 
-        with open("mlp.out", "a") as f:
-            f.write("Best validation score of %f %% obtained at iteration %i, with test performance\
-                       %f %%\tParameters: dims = %d\tHidden = %s\tLearning rate %s\tN epochs %s\tL1 regularizer %s\t\
-                            L2 regularizer %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), 
-                                    args.hidden, args.lrate, args.n_epochs, args.l1_reg, args.l2_reg))
+        with open("mlrk.out", "a") as f:
+        f.write("# Validation score | Iteration | test performance | \
+              Dims | Hidden | Learning rate | N epochs | L1 regularizer | L2 regularizer\n")
+
+        f.write("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
+                                                        test_score, int(args.dims),
+                                                        args.hidden, args.lrate, args.n_epochs,
+                                                        args.l1_reg, args.l2_reg))
 
         print("Validation score | Iteration | test performance | \
               Dims | Hidden | Learning rate | N epochs | L1 regularizer | L2 regularizer")
 
-        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter, 
+        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
                                                         test_score, int(args.dims),
-                                                        args.hidden, args.lrate, args.n_epochs, 
+                                                        args.hidden, args.lrate, args.n_epochs,
                                                         args.l1_reg, args.l2_reg))
 
     else:
