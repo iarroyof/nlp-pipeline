@@ -23,7 +23,7 @@ from __future__ import print_function
 
 __docformat__ = 'restructedtext en'
 
-__op = "conc"
+__op = "sub"
 
 import os
 import sys
@@ -86,7 +86,7 @@ class HiddenLayer(object):
             b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
         if s is None:
-            sigmas = rng.uniform(low=0.001, high=100, size=(n_out,))
+            sigmas = rng.uniform(low=0.001, high=1.0, size=(n_out,))
             s_values = numpy.asarray(sigmas, dtype=theano.config.floatX)
             s = theano.shared(value=s_values, name='s', borrow=True)
 
