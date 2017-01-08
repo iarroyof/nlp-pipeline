@@ -1,26 +1,12 @@
 """
-This tutorial introduces the multilayer perceptron using Theano.
+Experimental machine for Reproducing kernel Hilbert spaces implemented in Theano.
+Main functionalities of this code were aquired from the Theano Multilayer Perceptron
+tutorial.
 
- A multilayer perceptron is a logistic regressor where
-instead of feeding the input to the logistic regression you insert a
-intermediate layer, called the hidden layer, that has a nonlinear
-activation function (usually tanh or sigmoid) . One can use many such
-hidden layers making the architecture deep. The tutorial will also tackle
-the problem of MNIST digit classification.
-
-.. math::
-
-    f(x) = G( b^{(2)} + W^{(2)}( s( b^{(1)} + W^{(1)} x))),
-
-References:
-
-    - textbooks: "Pattern Recognition and Machine Learning" -
-                 Christopher M. Bishop, section 5
-
+Only RKHS and number of layer functionalities were introduced me.
 """
 
 from __future__ import print_function
-
 __docformat__ = 'restructedtext en'
 
 __op = "sub"
@@ -28,31 +14,23 @@ __op = "sub"
 import os
 import sys
 import timeit
-
 import numpy
-
+import dill
 import theano
 import theano.tensor as T
 from theano.tensor import _tensor_py_operators as ops
-
 from logistic_sgd import LogisticRegression, load_data
-
 from data_theano import *
-import dill
-theano.config.exception_verbosity="high"
-
 
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, batch_s, W=None, s=None, b=None,
                  kernel="gaussian"):
         """
-        Typical hidden layer of a MLP: units are fully-connected and have
-        sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
+        Typical hidden layer of a mlRKHS: units are fully-connected and have
+        not activation function. Weight (mean) matrix W is of shape (n_in,n_out)
         and the bias vector b is of shape (n_out,).
 
-        NOTE : The nonlinearity used here is tanh
-
-        Hidden unit activation is given by: tanh(dot(input,W) + b)
+        NOTE : The nonlinearity used here is tanh when kernel product is not asked
 
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
@@ -66,9 +44,8 @@ class HiddenLayer(object):
         :type n_out: int
         :param n_out: number of hidden units
 
-        :type activation: theano.Op or function
-        :param activation: Non linearity to be applied in the hidden
-                           layer
+        :type kernel: str
+        :param kernel: Kernel type asked by user
         """
         self.input = input
         self.kernel = kernel
@@ -76,12 +53,11 @@ class HiddenLayer(object):
         if W is None:
             #low = -numpy.sqrt(6. / (n_in + n_out))
             #high = numpy.sqrt(6. / (n_in + n_out))
-            low = -2.0
-            high = 2.0
+            low = -5.0
+            high = 5.0
             Weights = rng.uniform(low=low, high=high, size=(n_in, n_out))
             W_values = numpy.asarray(Weights, dtype=theano.config.floatX)
             W = theano.shared(value=W_values, name='W', borrow=True)
-
         if b is None:
             b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
@@ -102,32 +78,23 @@ class HiddenLayer(object):
         elif self.kernel == "gaussian":
             # The RKHS inner product via the Gaussian kernel (dot_H)
             h_values = numpy.zeros((batch_s, n_out), dtype=theano.config.floatX)
-            dot_H = theano.shared(value=h_values, name='h', borrow=True)
+            dot_H = theano.shared(value=h_values, name='dot_H', borrow=True)
             for i in range(batch_s):
                 T.set_subtensor(dot_H[i:],theano.scan(lambda w, sig, bias: \
-                               T.exp(-ops.norm(w - input[i], 2) ** 2 / 2*sig ** 2) + bias, 
+                               T.exp(-ops.norm(w - input[i], 2) ** 2 / 2*sig ** 2) + bias,
                                sequences=[self.W.T, self.s, self.b])[0])
             output = dot_H.get_value()
-        
+
         self.output = output
-        
-        # parameters of the model
+        # parameters of this hidden layer
         self.params = [self.W, self.b, self.s]
 
-# start-snippet-2
-class MLP(object):
-    """Multi-Layer Perceptron Class
-
-    A multilayer perceptron is a feedforward artificial neural network model
-    that has one layer or more of hidden units and nonlinear activations.
-    Intermediate layers usually have as activation function tanh or the
-    sigmoid function (defined here by a ``HiddenLayer`` class)  while the
-    top layer is a softmax layer (defined here by a ``LogisticRegression``
-    class).
+class mlRKHS(object):
+    """Multi-Layer Reproducing Kernel Hilbert Spaces Class
     """
 
     def __init__(self, rng, input, n_in, n_hidden, n_out, batch_s, kernel=None):
-        """Initialize the parameters for the multilayer perceptron
+        """Initialize the parameters for the multilayer RKHS
 
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
@@ -140,23 +107,24 @@ class MLP(object):
         :param n_in: number of input units, the dimension of the space in
         which the datapoints lie
 
-        :type n_hidden: int
-        :param n_hidden: number of hidden units
+        :type n_hidden: list of int
+        :param n_hidden: number of hidden units for each layer
 
         :type n_out: int
         :param n_out: number of output units, the dimension of the space in
         which the labels lie
 
         """
+        # Constructor of the hidden layers according to the number and size required of them.
         self.hiddenLayers=[] 
         for i in xrange(len(n_hidden)):
             if i == 0:
                 self.hiddenLayers.append(HiddenLayer(
                 rng=rng,
                 input=input,
-                batch_s=batch_s, 
-                n_in=n_in,       # [dim(input), n_hiden[0],...]
-                n_out=n_hidden[i],  # [n_hidden[0], n_hidden[1],...]
+                batch_s=batch_s,
+                n_in=n_in,
+                n_out=n_hidden[i],
                 kernel=kernel)
                 )
             elif i < len(n_hidden) and i > 0:
@@ -164,11 +132,11 @@ class MLP(object):
                 rng=rng,
                 input=self.hiddenLayers[i-1].output,
                 batch_s=batch_s,
-                n_in=n_hidden[i-1],       # [dim(input), n_hiden[0],...]
-                n_out=n_hidden[i],  # [n_hidden[0], n_hidden[1],...]
+                n_in=n_hidden[i-1],
+                n_out=n_hidden[i],
                 kernel=kernel)
                 )
-        
+
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.logRegressionLayer = LogisticRegression(
@@ -176,14 +144,11 @@ class MLP(object):
             n_in=n_hidden[-1],
             n_out=n_out
         )
-        # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
-        # be small
-
+        # be small. Weights (W) mostly zero, approach the Gaussian kernels nearly to the origin.
+        # The width values are not desirable to be nearly zero
         self.L1 = (
-            # Weights mostly zero, approaches the kernels nearly to the origin.
             numpy.array([abs(self.hiddenLayers[i].W).sum() for i in xrange(len(n_hidden))]).sum()
-            # The width values are not desirable to be nearly zero
             + numpy.array([abs(self.hiddenLayers[i].s ** 2).sum() for i in xrange(len(n_hidden))]).sum()
             + abs(self.logRegressionLayer.W).sum()
         )
@@ -196,7 +161,7 @@ class MLP(object):
             + (self.logRegressionLayer.W ** 2).sum()
         )
 
-        # negative log likelihood of the MLP is given by the negative
+        # negative log likelihood of the mlRKHS is given by the negative
         # log likelihood of the output of the model, computed in the
         # logistic regression layer
         self.negative_log_likelihood = (
@@ -204,26 +169,24 @@ class MLP(object):
         )
         # same holds for the function computing the number of errors
         self.errors = self.logRegressionLayer.errors
-        
+        # here are the predicted outputs
         self.y_pred = self.logRegressionLayer.y_pred
-        # the parameters of the model are the parameters of the two layer it is
+        # the parameters of the model are the parameters of the N layers it is
         # made out of
         self.params = []
         for i in xrange(len(n_hidden)):
             self.params += self.hiddenLayers[i].params
 
         self.params = self.params + self.logRegressionLayer.params
-        # end-snippet-3
-
         # keep track of model input
         self.input = input
 
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
+def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=[10], verbose = False, kernel=None):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
-    perceptron
+    RKHS
 
     This is demonstrated on MNIST.
 
@@ -242,14 +205,13 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     :type n_epochs: int
     :param n_epochs: maximal number of epochs to run the optimizer
 
-    :type dataset: string
-    :param dataset: the path of the MNIST dataset file from
-                 http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz
-
-
+    :type dataset: str
+    :param dataset: a marker for the input files (for now, this is the
+     sentence vector simensions)
    """
+
     dim = dataset
-    missing_param = "ignore"
+    missing_param = "warn"
 
     path = "/almac/ignacio/data/sts_all/"
     tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
@@ -258,20 +220,13 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
     vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-    #print ("%s\n%s\n%s\n%s\n%s\n%s\n" % (tr_px,tr_py,ts_px,ts_py,vl_px,vl_py))
-    #tr_px = path + "pairs-NO_2013/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_OnWN_d2v_H"+ dataset+"_sub_m5w8.mtx"
-    #tr_py = path + "pairs-NO_2013/STS.gs.OnWN.txt"
-    #ts_px = path + "pairs-SI_2014/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_deft-news_d2v_H"+ dataset+"_sub_m5w8.mtx"
-    #ts_py = path + "pairs-SI_2014/STS.gs.deft-news.txt"
-    #vl_px = path + "pairs-NO_2013/vectors_H"+ dataset+"/pairs_eng-NO-test-2e6-nonempty_FNWN_d2v_H"+ dataset+"_sub_m5w8.mtx"
-    #vl_py = path + "pairs-NO_2013/STS.gs.FNWN.txt"
 
     datasets = load_my_data(tr_px,tr_py,ts_px,ts_py,vl_px,vl_py, shared=True)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
     test_set_x, test_set_y = datasets[2]
-    
+
     train_samples = train_set_x.get_value(borrow=True).shape[0]
     n_train_batches = train_samples // batch_size
     valid_samples = valid_set_x.get_value(borrow=True).shape[0]
@@ -279,15 +234,13 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     test_samples = test_set_x.get_value(borrow=True).shape[0]
     n_test_batches = test_samples // batch_size
     in_dimensions = train_set_x.get_value(borrow=True).shape[1]
-    
-    #print("Shape train %s, test %s, validation %s" % (train_set_x.get_value(borrow=True).shape, test_set_x.get_value(borrow=True).shape, valid_set_x.get_value(borrow=True).shape))
-    
+
     assert (train_set_x.get_value(borrow=True).shape[1] \
             == valid_set_x.get_value(borrow=True).shape[1] \
-            == test_set_x.get_value(borrow=True).shape[1]) # verify dimensions
+            == test_set_x.get_value(borrow=True).shape[1]) # verify dataset dimensions
 
-    #k_classes = max(train_set_y) + 1 # for 0-based class index
-    k_classes = T.max(train_set_y, axis=0).eval() + 1
+    k_classes = max(train_set_y) + 1 # for 0-based class index
+    #k_classes = T.max(train_set_y, axis=0).eval() + 1
 
     ######################
     # BUILD ACTUAL MODEL #
@@ -300,9 +253,9 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
                         # [int] labels
 
     rng = numpy.random.RandomState(1234)
-    
-    # construct the MLP class
-    classifier = MLP(
+
+    # construct the classifier class
+    classifier = mlRKHS(
         rng=rng,
         input=x,
         batch_s=batch_size,
@@ -320,7 +273,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
         + L1_reg * classifier.L1
         + L2_reg * classifier.L2_sqr
     )
-    
+
     # compiling a Theano function that computes the mistakes that are made
     # by the model on a minibatch
     test_model = theano.function(
@@ -343,26 +296,15 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
         on_unused_input=missing_param
     )
 
-    # start-snippet-5
     # compute the gradient of cost with respect to theta (sorted in params)
     # the resulting gradients will be stored in a list gparams
     gparams = [T.grad(cost, param, disconnected_inputs=missing_param) for param in classifier.params]
 
-    # specify how to update the parameters of the model as a list of
-    # (variable, update expression) pairs
-
-    # given two lists of the same length, A = [a1, a2, a3, a4] and
-    # B = [b1, b2, b3, b4], zip generates a list C of same size, where each
-    # element is a pair formed from the two lists :
-    #    C = [(a1, b1), (a2, b2), (a3, b3), (a4, b4)]
     updates = [
         (param, param - learning_rate * gparam)
         for param, gparam in zip(classifier.params, gparams)
     ]
 
-    # compiling a Theano function `train_model` that returns the cost, but
-    # in the same time updates the parameter of the model based on the rules
-    # defined in `updates`
     train_model = theano.function(
         inputs=[index],
         outputs=cost,
@@ -396,11 +338,11 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
     epoch = 0
     done_looping = False
-    
+
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in range(n_train_batches):
-            
+
             minibatch_avg_cost = train_model(minibatch_index)
             # iteration number
             iter = (epoch - 1) * n_train_batches + minibatch_index
@@ -463,11 +405,9 @@ def predict(model, dim):
     ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
     vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
     vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-    # /almac/ignacio/data/sts_all/pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt
     # load the saved model
     with open(model, 'rb') as f:
         classifier = dill.load(f)
-
     # compile a predictor function
     predict_model = theano.function(
         inputs=[classifier.input],
@@ -475,18 +415,17 @@ def predict(model, dim):
         )
 
     datasets = load_my_data(tr_px,tr_py,ts_px,ts_py,vl_px,vl_py, shared=True)
-
     test_set_x, test_set_y = datasets[2]
-
     test_set_x = test_set_x.get_value()
 
     predicted_values = predict_model(test_set_x)
+
     return predicted_values
 
 if __name__ == '__main__':
     from ast import literal_eval
     from argparse import ArgumentParser as ap
-    parser = ap(description='This script trains/applies a Multi-Layer Perceptron over any input dataset of numerical representations. The main aim is to determine a set of learning parameters and architecture.')
+    parser = ap(description='This script trains/applies a Multi-Layer RKHS over any input dataset of numerical representations. The main aim is to determine a set of learning parameters and architecture.')
     parser.add_argument("--hidden", help="Size of the hidden layer", metavar="hidden", default=100)
     parser.add_argument("--dims", help="Size of the input layer", metavar="dims", default=2)
     parser.add_argument("--lrate", help="The learning rate", metavar="lrate", default=0.01)
@@ -498,34 +437,31 @@ if __name__ == '__main__':
     parser.add_argument("--kernel", help="The activation RKHS function", metavar="kernel", default=None)
     parser.add_argument("--save", help="Toggles whether you want to save the learned model", action="store_true")
     args = parser.parse_args()
-    
-    
+
     if not args.predict:
-        # Default: learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, dataset='mnist.pkl.gz', batch_size=20, n_hidden=500
-        best_iter, best_validation_loss, test_score, model = test_mlp(learning_rate=float(args.lrate), batch_size=20, 
+        best_iter, best_validation_loss, test_score, model = test_mlRKHS(learning_rate=float(args.lrate), batch_size=20, 
                                                                       n_epochs=int(args.n_epochs), 
                                                                       n_hidden=literal_eval(args.hidden), 
                                                                       dataset=int(args.dims), verbose=True, 
                                                                       L1_reg=float(args.l1_reg), L2_reg=float(args.l2_reg),
                                                                       kernel=args.kernel )
         if args.save:
-            with open("mlp_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
+            with open("mlRKHS_STS-all_H%s_idim%s.pkl" % (args.hidden, args.dims), 'wb') as f:
                 dill.dump(model, f)
 
-        with open("mlp.out", "a") as f:
-            f.write("Best validation score of %f %% obtained at iteration %i, with test performance\
-                       %f %%\tParameters: dims = %d\tHidden = %s\tLearning rate %s\tN epochs %s\tL1 regularizer %s\t\
-                            L2 regularizer %s\n" % (best_validation_loss, best_iter, test_score, int(args.dims), 
-                                    args.hidden, args.lrate, args.n_epochs, args.l1_reg, args.l2_reg))
+        with open("mlrk.out", "a") as f:
+            f.write("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
+                                                        test_score, int(args.dims),
+                                                        args.hidden, args.lrate, args.n_epochs,
+                                                        args.l1_reg, args.l2_reg))
 
         print("Validation score | Iteration | test performance | \
               Dims | Hidden | Learning rate | N epochs | L1 regularizer | L2 regularizer")
 
-        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter, 
+        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
                                                         test_score, int(args.dims),
-                                                        args.hidden, args.lrate, args.n_epochs, 
+                                                        args.hidden, args.lrate, args.n_epochs,
                                                         args.l1_reg, args.l2_reg))
-
     else:
         y_pred = predict(args.predict, int(args.dims))
         for item in y_pred:
