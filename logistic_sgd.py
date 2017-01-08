@@ -447,8 +447,8 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                     )
 
                     # save the best model
-                    with open('best_model.pkl', 'wb') as f:
-                        pickle.dump(classifier, f)
+                    #with open('best_model.pkl', 'wb') as f:
+                    #    pickle.dump(classifier, f)
 
             if patience <= iter:
                 done_looping = True
