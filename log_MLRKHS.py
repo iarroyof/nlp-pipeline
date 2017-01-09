@@ -21,6 +21,7 @@ import theano.tensor as T
 from theano.tensor import _tensor_py_operators as ops
 from logistic_sgd import LogisticRegression, load_data
 from data_theano import *
+theano.config.exception_verbosity="high"
 
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, batch_s, W=None, s=None, b=None,
@@ -80,10 +81,10 @@ class HiddenLayer(object):
             h_values = numpy.zeros((batch_s, n_out), dtype=theano.config.floatX)
             dot_H = theano.shared(value=h_values, name='dot_H', borrow=True)
             for i in range(batch_s):
-                T.set_subtensor(dot_H[i:],theano.scan(lambda w, sig, bias: \
+                dot_H = T.set_subtensor(dot_H[i:],theano.scan(lambda w, sig, bias: \
                                T.exp(-ops.norm(w - input[i], 2) ** 2 / 2*sig ** 2) + bias,
                                sequences=[self.W.T, self.s, self.b])[0])
-            output = dot_H.get_value()
+            output = dot_H
 
         self.output = output
         # parameters of this hidden layer
@@ -213,7 +214,7 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     dim = dataset
     missing_param = "warn"
 
-    path = "/almac/ignacio/data/sts_all/"
+    path = "/home/iarroyof/data/sts_all/"
     tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
     ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
@@ -239,8 +240,8 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
             == valid_set_x.get_value(borrow=True).shape[1] \
             == test_set_x.get_value(borrow=True).shape[1]) # verify dataset dimensions
 
-    k_classes = max(train_set_y) + 1 # for 0-based class index
-    #k_classes = T.max(train_set_y, axis=0).eval() + 1
+    #k_classes = max(train_set_y) + 1 # for 0-based class index
+    k_classes = T.max(train_set_y, axis=0).eval() + 1
 
     ######################
     # BUILD ACTUAL MODEL #
