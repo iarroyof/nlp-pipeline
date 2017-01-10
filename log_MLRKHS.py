@@ -65,7 +65,7 @@ class HiddenLayer(object):
             b_values = numpy.asarray(bes, dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
         if s is None:
-            sigmas = rng.uniform(low=0.001, high=10.0, size=(n_out,))
+            sigmas = rng.uniform(low=0.001, high=2.0, size=(n_out,))
             s_values = numpy.asarray(sigmas, dtype=theano.config.floatX)
             s = theano.shared(value=s_values, name='s', borrow=True)
 
@@ -84,10 +84,12 @@ class HiddenLayer(object):
                             dtype=theano.config.floatX), 
                         name='dot_H', borrow=True)
 
-            for i in range(batch_s):
-                for j in range(hidd_s):
-                    dot_H = T.set_subtensor(dot_H[i,j], 
-                        self.b * T.exp(-(self.W.T[j] - input[i]).norm(2) ** 2) / 2 * S[j] ** 2)
+            dot_H =  theano.scan(lambda sample:
+                        theano.scan(
+                            lambda w, sig, beta: 
+                                beta * T.exp(-(w - sample).norm(2) ** 2 / 2 * sig ** 2), 
+                            sequences=[self.W.T, self.s, self.b])[0], 
+                      sequences=input)[0]
 
         self.output = dot_H
         # parameters of this hidden layer
