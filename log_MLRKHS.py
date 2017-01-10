@@ -9,7 +9,7 @@ Only RKHS and number of layer functionalities were introduced me.
 from __future__ import print_function
 __docformat__ = 'restructedtext en'
 
-__op = "sub"
+__op = "conc"
 
 import os
 import sys
@@ -60,33 +60,36 @@ class HiddenLayer(object):
             W_values = numpy.asarray(Weights, dtype=theano.config.floatX)
             W = theano.shared(value=W_values, name='W', borrow=True)
         if b is None:
-            b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
+            #b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
+            bes = rng.uniform(low=0.001, high=1.0, size=(n_out,))
+            b_values = numpy.asarray(bes, dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
         if s is None:
-            sigmas = rng.uniform(low=0.001, high=1.0, size=(n_out,))
+            sigmas = rng.uniform(low=0.001, high=10.0, size=(n_out,))
             s_values = numpy.asarray(sigmas, dtype=theano.config.floatX)
             s = theano.shared(value=s_values, name='s', borrow=True)
 
         self.W = W
         self.b = b
         self.s = s
-        output = 0
 
         if self.kernel is None:
-            output = T.dot(input, self.W) + self.b
+            dot_H = T.dot(input, self.W) + self.b
         elif self.kernel == "sigmoid":
-            output = T.tanh(T.dot(input, self.W) + self.b)
+            dot_H = T.tanh(T.dot(input, self.W) + self.b)
         elif self.kernel == "gaussian":
             # The RKHS inner product via the Gaussian kernel (dot_H)
-            h_values = numpy.zeros((batch_s, n_out), dtype=theano.config.floatX)
-            dot_H = theano.shared(value=h_values, name='dot_H', borrow=True)
-            for i in range(batch_s):
-                dot_H = T.set_subtensor(dot_H[i:],theano.scan(lambda w, sig, bias: \
-                               T.exp(-ops.norm(w - input[i], 2) ** 2 / 2*sig ** 2) + bias,
-                               sequences=[self.W.T, self.s, self.b])[0])
-            output = dot_H
+            dot_H = theano.shared(
+                        value=numpy.zeros((batch_s, n_out), 
+                            dtype=theano.config.floatX), 
+                        name='dot_H', borrow=True)
 
-        self.output = output
+            for i in range(batch_s):
+                for j in range(hidd_s):
+                    dot_H = T.set_subtensor(dot_H[i,j], 
+                        self.b * T.exp(-(self.W.T[j] - input[i]).norm(2) ** 2) / 2 * S[j] ** 2)
+
+        self.output = dot_H
         # parameters of this hidden layer
         self.params = [self.W, self.b, self.s]
 
@@ -214,7 +217,7 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     dim = dataset
     missing_param = "warn"
 
-    path = "/home/iarroyof/data/sts_all/"
+    path = "/almac/ignacio/data/sts_all/"
     tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
     tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
     ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
