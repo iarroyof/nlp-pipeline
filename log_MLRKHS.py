@@ -72,24 +72,29 @@ class HiddenLayer(object):
         self.W = W
         self.b = b
         self.s = s
-
+        
         if self.kernel is None:
             dot_H = T.dot(input, self.W) + self.b
         elif self.kernel == "sigmoid":
             dot_H = T.tanh(T.dot(input, self.W) + self.b)
         elif self.kernel == "gaussian":
             # The RKHS inner product via the Gaussian kernel (dot_H)
-            dot_H = theano.shared(
-                        value=numpy.zeros((batch_s, n_out), 
-                            dtype=theano.config.floatX), 
-                        name='dot_H', borrow=True)
+            #dot_H = theano.shared(
+            #            value=numpy.zeros((batch_s, n_out), 
+            #                dtype=theano.config.floatX), 
+            #            name='dot_H', borrow=True)
 
-            dot_H =  theano.scan(lambda sample:
-                        theano.scan(
-                            lambda w, sig, beta: 
-                                beta * T.exp(-(w - sample).norm(2) ** 2 / 2 * sig ** 2), 
-                            sequences=[self.W.T, self.s, self.b])[0], 
-                      sequences=input)[0]
+            #dot_H =  theano.scan(lambda sample:
+            #            theano.scan(
+            #                lambda w, sig, beta: 
+            #                    beta * T.exp(-(w - sample).norm(2) ** 2 / 2 * sig ** 2), 
+            #                sequences=[self.W.T, self.s, self.b])[0], 
+            #          sequences=input)[0]
+            #dot_H = theano.map(lambda i : 
+            #                      T.exp(-(self.W.T - i).norm(2,axis=1) ** 2) / 2 * self.s ** 2,
+            #                            input,
+            #                            [])[0] + self.b
+            dot_H = T.exp(-T.dot(input, self.W) / self.s ** 2) + self.b
 
         self.output = dot_H
         # parameters of this hidden layer
