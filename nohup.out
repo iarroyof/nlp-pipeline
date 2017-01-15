@@ -1,0 +1,18 @@
+parallel: SIGTERM received. No new jobs will be started.
+parallel: Waiting for these 0 jobs to finish. Send SIGTERM again to stop now.
+parallel: SIGTERM received. No new jobs will be started.
+parallel: Waiting for these 0 jobs to finish. Send SIGTERM again to stop now.
+parallel: SIGTERM received. No new jobs will be started.
+parallel: Waiting for these 0 jobs to finish. Send SIGTERM again to stop now.
+
+Computers / CPU cores / Max jobs to run
+1:local / 24 / 15
+0
+
+Computers / CPU cores / Max jobs to run
+1:local / 24 / 15
+0
+
+Computers / CPU cores / Max jobs to run
+1:local / 24 / 12
+0

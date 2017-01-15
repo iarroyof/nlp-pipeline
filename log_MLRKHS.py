@@ -88,7 +88,8 @@ class HiddenLayer(object):
                                         [])[0] + self.b
         elif self.kernel == "gauss_dot":
             dot_H = T.exp(-(T.dot(input, self.W) + self.b) / self.s ** 2)
-        
+#            dot_H = T.exp(-T.dot(input, self.W) / self.s ** 2) + self.b
+
         self.output = dot_H
         # parameters of this hidden layer
         self.params = [self.W, self.b, self.s]
