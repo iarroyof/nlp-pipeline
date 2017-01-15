@@ -3,8 +3,12 @@ import math
 import numpy
 
 def quantize(x):
-  return array([math.floor(d) if d-int(d) < 0.5 else math.ceil(d) for d in x]).astype("int")
-
+    if (x > 0).all():
+        y = array([math.floor(d) if d-int(d) < 0.5 else math.ceil(d) for d in x]).astype("int")
+    else:
+        y = array([d if d > 0 else 0 for d in x]).astype("int")
+        
+    return y
 def load_my_data(train_x_path, train_y_path, test_x_path, test_y_path, valid_x_path, valid_y_path, shared = False):
 
     if shared:

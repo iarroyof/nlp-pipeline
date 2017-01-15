@@ -65,7 +65,7 @@ class HiddenLayer(object):
             b_values = numpy.asarray(bes, dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
         if s is None:
-            sigmas = rng.uniform(low=0.001, high=2.0, size=(n_out,))
+            sigmas = rng.uniform(low=0.1, high=50.0, size=(n_out,))
             s_values = numpy.asarray(sigmas, dtype=theano.config.floatX)
             s = theano.shared(value=s_values, name='s', borrow=True)
 
@@ -73,24 +73,22 @@ class HiddenLayer(object):
         self.b = b
         self.s = s
 
+        print ("b: ", self.b.eval())
+        print ("s: ", self.s.eval())
+
         if self.kernel is None:
             dot_H = T.dot(input, self.W) + self.b
         elif self.kernel == "sigmoid":
             dot_H = T.tanh(T.dot(input, self.W) + self.b)
         elif self.kernel == "gaussian":
             # The RKHS inner product via the Gaussian kernel (dot_H)
-            dot_H = theano.shared(
-                        value=numpy.zeros((batch_s, n_out), 
-                            dtype=theano.config.floatX), 
-                        name='dot_H', borrow=True)
-
-            dot_H =  theano.scan(lambda sample:
-                        theano.scan(
-                            lambda w, sig, beta: 
-                                beta * T.exp(-(w - sample).norm(2) ** 2 / 2 * sig ** 2), 
-                            sequences=[self.W.T, self.s, self.b])[0], 
-                      sequences=input)[0]
-
+            dot_H = theano.map(lambda i :
+                                  T.exp(-(self.W.T - i).norm(2,axis=1) ** 2) / 2 * self.s ** 2,
+                                        input,
+                                        [])[0] + self.b
+        elif self.kernel == "gauss_dot":
+            dot_H = T.exp(-(T.dot(input, self.W) + self.b) / self.s ** 2)
+        
         self.output = dot_H
         # parameters of this hidden layer
         self.params = [self.W, self.b, self.s]
@@ -217,15 +215,22 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
    """
 
     dim = dataset
-    missing_param = "warn"
+    missing_param = None
 
-    path = "/almac/ignacio/data/sts_all/"
-    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
-    tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
-    ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
-    vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
+    path = "/home/iarroyof/"
+#    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+#    tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
+#    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
+#    ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
+#    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
+#    vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
+
+    tr_px = path + "toy_data_2d_train.dat"
+    tr_py = path + "toy_labels_2d_train.dat"
+    ts_px = path + "toy_data_2d_test.dat"
+    ts_py = path + "toy_labels_2d_test.dat"
+    vl_px = path + "toy_data_2d_valid.dat"
+    vl_py = path + "toy_labels_2d_valid.dat"
 
     datasets = load_my_data(tr_px,tr_py,ts_px,ts_py,vl_px,vl_py, shared=True)
 
@@ -258,7 +263,7 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     y = T.ivector('y')  # the labels are presented as 1D vector of
                         # [int] labels
 
-    rng = numpy.random.RandomState(1234)
+    rng = numpy.random.RandomState()
 
     # construct the classifier class
     classifier = mlRKHS(
@@ -304,7 +309,8 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
     # compute the gradient of cost with respect to theta (sorted in params)
     # the resulting gradients will be stored in a list gparams
-    gparams = [T.grad(cost, param, disconnected_inputs=missing_param) for param in classifier.params]
+    gparams = [T.grad(cost, param, disconnected_inputs=missing_param) 
+                                             for param in classifier.params]
 
     updates = [
         (param, param - learning_rate * gparam)
@@ -456,18 +462,17 @@ if __name__ == '__main__':
                 dill.dump(model, f)
 
         with open("mlrk.out", "a") as f:
-            f.write("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
+            f.write("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
                                                         test_score, int(args.dims),
                                                         args.hidden, args.lrate, args.n_epochs,
-                                                        args.l1_reg, args.l2_reg))
+                                                        args.l1_reg, args.l2_reg, args.kernel))
 
-        print("Validation score | Iteration | test performance | \
-              Dims | Hidden | Learning rate | N epochs | L1 regularizer | L2 regularizer")
+        print("Validation score | Iteration | test performance | Dims | Hidden | Learning rate | N epochs | L1 regularizer | L2 regularizer")
 
-        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
+        print("%f\t%i\t%f\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n" % (best_validation_loss, best_iter,
                                                         test_score, int(args.dims),
                                                         args.hidden, args.lrate, args.n_epochs,
-                                                        args.l1_reg, args.l2_reg))
+                                                        args.l1_reg, args.l2_reg, args.kernel))
     else:
         y_pred = predict(args.predict, int(args.dims))
         for item in y_pred:

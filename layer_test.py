@@ -11,20 +11,15 @@ import theano.tensor as T
 import numpy
 import theano
 
-theano.config.exception_verbosity="high"
-
-batch_s=5
-dims=10
-hidd_s=3
-out_s=2
+#theano.config.exception_verbosity="high"
 
 missing_param = None #"ignore"
 
 rng = numpy.random.RandomState(1234)
 input = T.matrix("input")
-X = numpy.asarray(rng.uniform(low=-2.1, high=2.0, size=(batch_s, dims)))
+#X = numpy.asarray(rng.uniform(low=-2.1, high=2.0, size=(batch_s, dims)))
 
-def layer(x):
+def layer(x, batch_s, dims, hidd_s):
 
     W=theano.shared(
         value=numpy.asarray(
@@ -68,9 +63,16 @@ def layer(x):
     #                )
     return dot_H
 
+X=numpy.asarray(numpy.loadtxt("/home/iarroyof/data/sts_all/pairs-NO/vectors_H600/pairs_eng-NO-test-2e6-nonempty_d2v_H600_conc_m5w8.mtx.half0").T)
+batch_s, dims =  X.shape
+
+#batch_s=5
+#dims=10
+hidd_s=3
+
 layer_out = theano.function(
                             inputs=[input], 
-                            outputs=layer(input),
+                            outputs=layer(input, batch_s, dims, hidd_s),
                             on_unused_input=missing_param
                             )
 
