@@ -3,7 +3,10 @@ Experimental machine for Reproducing kernel Hilbert spaces implemented in Theano
 Main functionalities of this code were aquired from the Theano Multilayer Perceptron
 tutorial.
 
-Only RKHS and number of layer functionalities were introduced me.
+Only RKHS and number of layers functionalities were introduced by me.
+
+Ignacio Arroyo-Fernandez
+IIMAS -- UNAM
 """
 
 from __future__ import print_function
