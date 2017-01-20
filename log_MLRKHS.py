@@ -218,26 +218,29 @@ def test_mlRKHS(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     dim = dataset
     missing_param = None
 
+    path = "/almac/ignacio/data/sts_all/"
+    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
+    tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
+    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
+    ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
+    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
+    vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
+    """
     path = "/home/iarroyof/"
-#    tr_px = path + "pairs-SI/vectors_H%s/pairs_eng-SI-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx" % (dim, dim, __op)
-#    tr_py = path + "pairs-SI/STS.gs.all-eng-SI-test-nonempty.txt"
-#    ts_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half0" % (dim, dim, __op)
-#    ts_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half0.txt"
-#    vl_px = path + "pairs-NO/vectors_H%s/pairs_eng-NO-test-2e6-nonempty_d2v_H%s_%s_m5w8.mtx.half1" % (dim, dim, __op)
-#    vl_py = path + "pairs-NO/STS.gs.all-eng-NO-test-nonempty-half1.txt"
-
     tr_px = path + "toy_data_2d_train.dat"
     tr_py = path + "toy_labels_2d_train.dat"
     ts_px = path + "toy_data_2d_test.dat"
     ts_py = path + "toy_labels_2d_test.dat"
     vl_px = path + "toy_data_2d_valid.dat"
     vl_py = path + "toy_labels_2d_valid.dat"
-
+    """
     datasets = load_my_data(tr_px,tr_py,ts_px,ts_py,vl_px,vl_py, shared=True)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
     test_set_x, test_set_y = datasets[2]
+
+    print ("Shapes, train: %s, valid: %s, test: %s" % (train_set_x.get_value().shape, valid_set_x.get_value().shape, test_set_x.get_value().shape))
 
     train_samples = train_set_x.get_value(borrow=True).shape[0]
     n_train_batches = train_samples // batch_size

@@ -18,14 +18,14 @@ def load_my_data(train_x_path, train_y_path, test_x_path, test_y_path, valid_x_p
 
     else:     
 
-        train_set_x = loadtxt(train_x_path)[:40]
-        train_set_y = quantize(loadtxt(train_y_path)[:40])
+        train_set_x = loadtxt(train_x_path)
+        train_set_y = quantize(loadtxt(train_y_path))
 
-        test_set_x = loadtxt(test_x_path)[:10]
-        test_set_y = quantize(loadtxt(test_y_path)[:10])
+        test_set_x = loadtxt(test_x_path)
+        test_set_y = quantize(loadtxt(test_y_path))
 
-        valid_set_x = loadtxt(valid_x_path)[:10]
-        valid_set_y = quantize(loadtxt(valid_y_path)[:10])
+        valid_set_x = loadtxt(valid_x_path)
+        valid_set_y = quantize(loadtxt(valid_y_path))
 
     rval = [(train_set_x, train_set_y), (valid_set_x, valid_set_y),
             (test_set_x, test_set_y)]
