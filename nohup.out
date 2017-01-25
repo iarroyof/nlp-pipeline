@@ -17,3 +17,9 @@ Computers / CPU cores / Max jobs to run
 1:local / 24 / 12
 0
 sh: 1: Syntax error: "(" unexpected
+Traceback (most recent call last):
+  File "clean_latin_files.py", line 33, in <module>
+    mp_handler(args.infiles, args.outfile)
+  File "clean_latin_files.py", line 20, in mp_handler
+    f.write('%s\n' % result[1])
+UnicodeEncodeError: 'ascii' codec can't encode character u'\xe9' in position 102: ordinal not in range(128)

@@ -8,12 +8,13 @@ import sys
 from time import localtime, strftime
 
 def clean_Ustring_fromU(string):
-  if string:      
+  if not string.strip().isspace():      
     from unicodedata import name, normalize
     gClean = ''
+    accepted = ['SPACE', 'HYPHEN', 'LOW LINE']
     for ch in u''.join(string.decode('utf-8', 'ignore')):
         try:
-            if name(ch).startswith('LATIN') or name(ch) == 'SPACE':
+            if name(ch).startswith('LATIN') or name(ch) in accepted:
                 gClean = gClean + ch
             else: # Remove non-latin characters and change them by spaces
                 gClean = gClean + ' '
@@ -39,9 +40,9 @@ def clean_Ustring_fromU(string):
                     normalized_string = normalize('NFKC', gClean[0:range_error].lower())
                 except TypeError:    
                  #   sys.stderr.write('\nIt was not possible forming output file after three attempts. Fatally bad file\n')
-                    normalized_string = None
+                    normalized_string = gClean.lower()
                     pass
-    if normalized_string:
+    if not normalized_string.strip().isspace():
         return  normalized_string.split() # Return the unicode normalized document.
     return None
   else:

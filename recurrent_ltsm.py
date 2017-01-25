@@ -6,8 +6,15 @@ import re
 import codecs
 import numpy as np
 from collections import Counter
-from pdb import set_trace as st
 
+YEAR="2013"
+MAX_NB_WORDS=20000
+MAX_SEQUENCE_LENGTH=50
+VALIDATION_SPLIT=0.30
+GLOVE_DIR="/almac/ignacio/data/glove"
+EMBEDDING_DIM=300
+TRAIN_DIRS=[
+    ("/almac/ignacio/data/sts_all/train-"+YEAR,None,False)]
 
 def verbose(*args):
     print " ".join([str(a) for a in args])
@@ -24,7 +31,7 @@ def load_phrases_from_file(dirname,filename,format='2017',translation=False):
 
     if translation:
         re_file=re_file_translation
-
+    
     phrases=[]
     if not re_file.match(filename):
         return []
@@ -34,7 +41,10 @@ def load_phrases_from_file(dirname,filename,format='2017',translation=False):
             bits=line.strip().split('\t')
             if len(bits)>=2 or len(bits)<=4:
                 if not format:
-                    phrases.append((bits[0],bits[1]))
+                    try:
+                        phrases.append((bits[0],bits[1]))
+                    except:
+                        st()
                 elif format=="2017":
                     phrases.append((bits[2],bits[3]))
     return phrases
@@ -54,13 +64,13 @@ def load_gs_from_file(dirname,filename):
                 gs.append(0.0)
     return gs
 
-def load_all_phrases(dirname,filter=".",format=None,translation=False):
+def load_all_phrases(dirname,filter=".input.",format=None,translation=False):
     all_phrases=[]
     filter_dirs=re.compile(filter)
     for filename in os.listdir(dirname):
         if not filter_dirs.search(filename):
             continue
-        phrases=load_phrases_from_file(dirname,filename,format=format,translation=translation);st()
+        phrases=load_phrases_from_file(dirname,filename,format=format,translation=translation)
         if len(phrases)>0:
             all_phrases.append((filename,phrases))
     return all_phrases
@@ -81,7 +91,7 @@ def load_train_dirs(dirs):
         train_data_=load_all_phrases(os.path.join(directory,''),format=format,translation=translation)
         gs_data_=dict(load_all_gs(os.path.join(directory,'')))
 
-	st()
+
 
         for (n,d) in train_data_:
             n_=n.replace('input', 'gs')
@@ -97,19 +107,6 @@ def load_train_dirs(dirs):
         verbose('Total train phrases',len(train_data))
     return train_data,gs_data
 
-YEAR="2013"
-MAX_NB_WORDS=20000
-MAX_SEQUENCE_LENGTH=50
-VALIDATION_SPLIT=0.30
-GLOVE_DIR="/home/iarroyof/data/glove"
-#GLOVE_DIR='.'
-EMBEDDING_DIM=1300
-#TRAIN_DIRS=[
-#    ("../spanish_testbed/data/"+YEAR,None,True),
-#    ("../english_testbed/data/"+YEAR,None,False)]
-
-TRAIN_DIRS=[
-    ("/home/iarroyof/data/sts_all/train-"+YEAR,None,True)]
 
 train_data_,gs_data=load_train_dirs(TRAIN_DIRS)
 
@@ -161,7 +158,7 @@ print('Shape of train:',x_val.shape)
 print('Shape of train:',y_val.shape)
 
 embeddings_index = {}
-f = open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt'))
+f = open(os.path.join(GLOVE_DIR, 'glove.6B.%dd.txt' % EMBEDDING_DIM))
 for line in f:
     values = line.split()
     word = values[0]
@@ -180,7 +177,7 @@ for word, i in word_index.items():
         embedding_matrix[i] = embedding_vector
 print embedding_matrix
 
-from keras.layers import Embedding
+from keras.layers import Embedding, Activation
 from keras.layers import Dense, Input, Flatten
 from keras.layers import Conv1D, MaxPooling1D, Embedding
 from keras.models import Model
@@ -196,9 +193,11 @@ embedding_layer = Embedding(len(word_index) + 1,
 
 model = Sequential()
 model.add(embedding_layer)
-model.add(Bidirectional(LSTM(100, dropout_W=0.2, dropout_U=0.2)))
-model.add(Dense(200))
+model.add(Bidirectional(LSTM(300, dropout_W=0.2, dropout_U=0.2)))
+#model.add(Dense(200))
+model.add(Dense(80))
 model.add(Dense(6, activation='softmax'))
+#model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
@@ -206,5 +205,5 @@ print(model.summary())
 
 # happy learning!
 model.fit(x_train, y_train, validation_data=(x_val, y_val),
-          nb_epoch=300, batch_size=64)
+          nb_epoch=50, batch_size=20)
 
