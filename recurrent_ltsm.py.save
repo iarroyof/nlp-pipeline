@@ -234,18 +234,17 @@ sentence_A.add(embedding_layer_A)
 #sentence_A.add(SimpleRNN( output_dim=h_STATES,
 #                          return_sequences=True
 #                          ))
-sentence_A.add(#Bidirectional(
-                             LSTM(output_dim=h_STATES, 
+sentence_A.add(Bidirectional(LSTM(output_dim=h_STATES, 
                              dropout_W=0.2, 
                              dropout_U=0.2, 
-                             return_sequences=True))#)
+                             return_sequences=True)))
 #sentence_A.add(GRU(output_dim=h_STATES,
 #                  return_sequences=False))
 #sentence_A.add(Bidirectional(LSTM(output_dim=h_STATES/2, 
 #                             dropout_W=0.2, 
 #                             dropout_U=0.2)))
-sentence_A.add(AttentionLSTM(output_dim=h_STATES/2, 
-                             attention_vec=sentence_A.layers[1].states,
+sentence_A.add(AttentionLSTM(output_dim=h_STATES, 
+                             attention_vec=sentence_A.layers[0].get_weights(),
                              dropout_W=0.2, 
                              dropout_U=0.2))
 sentence_A.add(Dense(DENSES))
