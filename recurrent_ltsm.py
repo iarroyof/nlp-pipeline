@@ -12,8 +12,8 @@ MAX_NB_WORDS=20000
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
 #VECTOR_DIR="/almac/ignacio/data/glove"
-VECTOR_DIR="/almac/ignacio/data/fastText"
-EMBEDDING_DIM=100
+VECTOR_DIR="/home/iarroyof/data/fastText"
+EMBEDDING_DIM=50
 TRAIN_DIRS=[
     (VECTOR_DIR.rsplit('/', 1)[0]
  + "/sts_all/train-" + YEAR, None, False)]
@@ -229,52 +229,50 @@ embedding_layer_A = Embedding(input_dim=len(word_index_A) + 1,
                             dropout=0.2,
                             trainable=False)
 
-sentence_A = Sequential()
-sentence_A.add(embedding_layer_A)         
+#sentence_A = Sequential()
+#sentence_A.add(embedding_layer_A)         
 #sentence_A.add(SimpleRNN( output_dim=h_STATES,
 #                          return_sequences=True
 #                          ))
-sentence_A.add(#Bidirectional(
+sentence_A=(#Bidirectional(
                              LSTM(output_dim=h_STATES, 
                              dropout_W=0.2, 
                              dropout_U=0.2, 
-                             return_sequences=True))#)
-#sentence_A.add(GRU(output_dim=h_STATES,
-#                  return_sequences=False))
-#sentence_A.add(Bidirectional(LSTM(output_dim=h_STATES/2, 
-#                             dropout_W=0.2, 
-#                             dropout_U=0.2)))
-sentence_A.add(AttentionLSTM(output_dim=h_STATES/2, 
-                             attention_vec=sentence_A.layers[1].states,
-                             dropout_W=0.2, 
-                             dropout_U=0.2))
-sentence_A.add(Dense(DENSES))
+                             return_sequences=True)
+                             )#)
 
 if merged:
-    embedding_layer_B = Embedding(input_dim=len(word_index_B) + 1,       
+    embedding_layer_A = Embedding(input_dim=len(word_index_B) + 1,       
                             output_dim=EMBEDDING_DIM,                
                             input_length=MAX_SEQUENCE_LENGTH,        
                             dropout=0.2,
                             trainable=False)
 
-    sentence_B = Sequential()
-    sentence_B.add(embedding_layer_B)                                           
-    sentence_B.add(Bidirectional(LSTM(output_dim=h_STATES,
+#    sentence_B = Sequential()
+#    sentence_B.add(embedding_layer_B)                                           
+    sentence_A_a=(#Bidirectional(
+                    LSTM(output_dim=h_STATES,
                              dropout_W=0.2, 
                              dropout_U=0.2, 
-                             return_sequences=True)))
-    sentence_B.add(Bidirectional(LSTM(output_dim=h_STATES/2,
-                             dropout_W=0.2, 
-                             dropout_U=0.2)))
-#sentence_B.add(Dense(DENSES))                       
+                             return_sequences=True, go_backwards=True)
+                    )#)
 
-    pair_sent = Merge([sentence_A, sentence_B], mode="max") #'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'
+    sentence_A = sentence_A(embedding_layer_A(embedding_matrix_A))
+    sentence_A_a = sentence_A_a(embedding_layer_A(embedding_matrix_A))
+    maxpool = Lambda(lambda x: K.max(x, axis=1, keepdims=False), output_shape=lambda x: (x[0], x[2]))
+    maxpool.supports_masking = True
+    sent_A_pool = Merge([maxpool(sentence_A), maxpool(sentence_A_a)], mode="concat", concat_axis=-1) #'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'
 
-    similarity = Sequential()
-    similarity.add(pair_sent)
-    similarity.add(Dense(DENSES))
-    similarity.add(Dense(6, activation='softmax'))                              
-
+    from attention_lstm import AttentionLSTMWrapper
+    sentence_A=AttentionLSTMWrapper(sentence_A, sent_A_pool, single_attention_param=True)
+    sentence_A_a=AttentionLSTMWrapper(sentence_A_a, sent_A_pool, single_attention_param=True)
+    
+    sentence_B=sentence_A(embedding_matrix_B)
+    sentence_B_a=sentence_A_a(embedding_matrix_B)
+    
+    sent_B_pool = merge([maxpool(sentence_B), maxpool(sentence_B_a)], mode='concat', concat_axis=-1)
+    
+    
     similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     print(similarity.summary())
