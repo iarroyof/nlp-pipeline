@@ -282,7 +282,15 @@ if __name__ == "__main__":
         else:
             dws = d_ws.db_word_space(args.d)        
     else:
-        dws = wtov.load(args.w)
+        if args.w.endswith(".bin"):
+            dws = Word2Vec.load_word2vec_format(args.w, binary=True)
+        elif args.w.endswith(".vec"):
+            dws = Word2Vec.load_word2vec_format(args.w, binary=False)
+        elif args.w.endswith(".model"):
+            dws = wtov.load(args.w)
+        else:
+            sys.stderr.write("Possibly incorrect model file format. \nPlease verify wheter it is gensim or C binary or C vector. \nExtensions must be *.model, *.bin, *.vec respectively.\nProgram terminated\n")
+            exit()
     
     if args.s and args.d != 'word2vec' and not args.S:
         if not args.t: 
