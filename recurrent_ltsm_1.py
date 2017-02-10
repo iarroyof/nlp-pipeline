@@ -7,24 +7,18 @@ import codecs
 import numpy as np
 from collections import Counter
 
-YEAR_TRAIN="2013"
-YEAR_VALID="2017"
+YEAR="2013"
 MAX_NB_WORDS=20000
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
 #representation = "glove"
-representation = "fastText"
-#representation = "word2vec"
+#representation = "fastTest"
+representation = "word2vec"
 VECTOR_DIR="/almac/ignacio/data/" + representation
-EMBEDDING_DIM=50
+EMBEDDING_DIM=300
 TRAIN_DIRS=[
     (VECTOR_DIR.rsplit('/', 1)[0]
- + "/sts_all/train-" + YEAR_TRAIN, None, False)]
-
-VALID_DIRS=[
-    (VECTOR_DIR.rsplit('/', 1)[0]
- + "/sts_all/valid-" + YEAR_VALID, "validation", False)]
-
+ + "/sts_all/train-" + YEAR, None, False)]
 merged = True
 
 def verbose(*args):
@@ -35,30 +29,27 @@ class Opts:
     filter_test=".*"
 
 opts=Opts()
-from pdb import set_trace as st
+
 def load_phrases_from_file(dirname,filename,format='2017',translation=False):
-    if format != "validation":
-        re_file=re.compile('.*\.input\..*\.txt$')
-    else:
-        re_file=re.compile('.*\.input\..*en-en\.txt$')
-        
+    re_file=re.compile('.*\.input\..*\.txt$')
+    re_file_translation=re.compile('.*\.input\..*\.translation.txt$')
 
     if translation:
-        re_file_translation=re.compile('.*\.input\..*\.translation.txt$')
         re_file=re_file_translation
     
     phrases=[]
     if not re_file.match(filename):
         return []
-    
+
     with codecs.open(os.path.join(dirname,filename),encoding='utf-8') as data:
         for line in data:
             bits=line.strip().split('\t')
             if len(bits)>=2 or len(bits)<=4:
-                if not format or format == "validation":
-                    phrases.append((bits[0],bits[1]))
-                    
-                        
+                if not format:
+                    try:
+                        phrases.append((bits[0],bits[1]))
+                    except:
+                        st()
                 elif format=="2017":
                     phrases.append((bits[2],bits[3]))
     return phrases
@@ -103,9 +94,9 @@ def load_train_dirs(dirs):
     for directory,format,translation in dirs:
         verbose('Starting training')
         train_data_=load_all_phrases(os.path.join(directory,''),format=format,translation=translation)
-        
-        if format != "validation":
-            gs_data_=dict(load_all_gs(os.path.join(directory,'')))
+        gs_data_=dict(load_all_gs(os.path.join(directory,'')))
+
+
 
         for (n,d) in train_data_:
             n_=n.replace('input', 'gs')
@@ -114,36 +105,26 @@ def load_train_dirs(dirs):
             for i,s in enumerate(d):
                 train_data.append(s[0].encode('utf-8'))
                 train_data.append(s[1].encode('utf-8'))
-                if format != "validation":
-                    gs_data.append(gs_data_[n_][i])
-            if format != "validation":
-                verbose("Phrases in",n,len(d),len(gs_data_[n_]))
-            else:
-                verbose("Phrases in",n,len(d))
+                gs_data.append(gs_data_[n_][i])
+            verbose("Phrases in",n,len(d),len(gs_data_[n_]))
         verbose('Total train phrases',directory,sum([len(d) for n,d in train_data_]))
 
         verbose('Total train phrases',len(train_data))
     return train_data,gs_data
 
 
-train_data_, gs_data=load_train_dirs(TRAIN_DIRS)
-valid_data_, _ =load_train_dirs(VALID_DIRS)
+train_data_,gs_data=load_train_dirs(TRAIN_DIRS)
 
 print "Avg size:",np.mean([len(x.split()) for x in train_data_])
 print "Max size:",np.max([len(x.split()) for x in train_data_])
 print "Min size:",np.min([len(x.split()) for x in train_data_])
 
 if merged:
-    train_data_A, train_data_B = train_data_[1::2], train_data_[::2]
-    valid_data_A, valid_data_B = valid_data_[1::2], valid_data_[::2]
+    train_data_A, train_data_B = train_data_[::2], train_data_[1::2]
 else:
     train_data_A = [a.strip() + " ### " + b.strip() 
                     for a, b in zip(train_data_[::2], train_data_[1::2])]
-    valid_data_A = [a.strip() + " ### " + b.strip() 
-                    for a, b in zip(valid_data_[::2], valid_data_[1::2])]
     MAX_SEQUENCE_LENGTH=MAX_SEQUENCE_LENGTH * 2
-
-
 
 print "Avg size after merging:",np.mean([len(x.split()) for x in train_data_A])
 print "Max size after merging:",np.max([len(x.split()) for x in train_data_A])
@@ -155,18 +136,14 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
 
 tokenizer = Tokenizer(nb_words=MAX_NB_WORDS)
-
-tokenizer.fit_on_texts(train_data_A + valid_data_A)
+tokenizer.fit_on_texts(train_data_A)
 sequences_A = tokenizer.texts_to_sequences(train_data_A)
-sequences_Av = tokenizer.texts_to_sequences(valid_data_A)
 word_index_A = tokenizer.word_index
 data_A = pad_sequences(sequences_A, maxlen=MAX_SEQUENCE_LENGTH)
-x_data_Av = pad_sequences(sequences_Av, maxlen=MAX_SEQUENCE_LENGTH)
 
 print('Shape of data_A tensor:', data_A.shape)
 
-#labels = to_categorical(np.asarray(gs_data))
-labels = np.asarray(gs_data)
+labels = to_categorical(np.asarray(gs_data))
 print('Shape of label tensor:', labels.shape)
 
 # split the data into a training set and a validation set
@@ -181,12 +158,10 @@ x_val_A = data_A[-nb_validation_samples:]
 
 if merged:
     tokenizer = Tokenizer(nb_words=MAX_NB_WORDS)
-    tokenizer.fit_on_texts(train_data_B + valid_data_B)
+    tokenizer.fit_on_texts(train_data_B)
     sequences_B = tokenizer.texts_to_sequences(train_data_B)
-    sequences_Bv = tokenizer.texts_to_sequences(valid_data_B)
     word_index_B = tokenizer.word_index
     data_B = pad_sequences(sequences_B, maxlen=MAX_SEQUENCE_LENGTH)
-    x_data_Bv = pad_sequences(sequences_Bv, maxlen=MAX_SEQUENCE_LENGTH)
 
     print('Shape of data_B tensor:', data_B.shape)
 
@@ -237,32 +212,22 @@ if merged:
         if embedding_vector is not None:
             # words not found in embedding index will be all-zeros.
             embedding_matrix_B[i] = embedding_vector
-from keras.layers import Layer
 
-class Scalar(Layer):
-    def __init__(self,**kwargs):
-        super(Scalar, self).__init__(**kwargs)
-    def build(self):
-        self.scalar = shared_scalar(.001) # initial value
-        self.input = T.matrix()
-        self.params = [self.scalar]
-    def get_output(self, train=False):
-        X = self.get_input()
-        return X*self.scalar
-
-from keras.layers import Embedding, MaxoutDense
+from keras.layers import Embedding, SimpleRNN, GRU
 from keras.layers import Dense, Input, Flatten, Lambda
 from keras.layers import Conv1D, MaxPooling1D, Embedding
 from keras.models import Model
 from keras.models import Sequential
-from keras.layers import LSTM,Bidirectional, merge, Activation
+from keras.layers import LSTM,Bidirectional, merge
 from attention_ltsm import AttentionLSTM
 from keras import backend as K
 
-outfile="probabilities_bidir"
-h_STATES = 10
+from attention_lstm_2 import *
+
+
+h_STATES = 15
 EPOCHS = 200
-DENSES = 100
+DENSES = 40
 sent_A = Input(shape=(MAX_SEQUENCE_LENGTH, ),dtype="float32")
 sent_B = Input(shape=(MAX_SEQUENCE_LENGTH, ),dtype="float32")
 
@@ -273,12 +238,12 @@ embedding_layer_A = Embedding(input_dim=len(word_index_A) + 1,
                             trainable=False)
 sent_A_embedding = embedding_layer_A(sent_A)
 
-sentence=LSTM(output_dim=h_STATES, 
+sentence_A=LSTM(output_dim=h_STATES, 
             dropout_W=0.2, 
             dropout_U=0.2, 
-            return_sequences=True
-            )
-         
+            return_sequences=True,
+            consume_less='mem')
+
 if True:
     embedding_layer_B = Embedding(input_dim=len(word_index_B) + 1,       
                             output_dim=EMBEDDING_DIM,                
@@ -287,50 +252,41 @@ if True:
                             trainable=False)
     sent_B_embedding = embedding_layer_B(sent_B)
 
-    sentence_a=LSTM(output_dim=h_STATES,
+    sentence_A_a=LSTM(output_dim=h_STATES,
                          dropout_W=0.2, 
                          dropout_U=0.2, 
                          return_sequences=True, 
                          go_backwards=True)
+                    
 
-    sentence_A_comp = sentence(sent_A_embedding)
-    sentence_A_a_comp = sentence_a(sent_A_embedding)
+    sentence_A_comp = sentence_A(sent_A_embedding)
+    sentence_A_a_comp = sentence_A_a(sent_A_embedding)
 
     maxpool = Lambda(lambda x: K.max(x, axis=1, keepdims=False), output_shape=lambda x: (x[0], x[2]))
     maxpool.supports_masking = True
-
     sent_A_pool = merge([maxpool(sentence_A_comp), maxpool(sentence_A_a_comp)], mode="concat", concat_axis=-1) #'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'
 
     from attention_lstm import AttentionLSTMWrapper
-    sentence_A=AttentionLSTMWrapper(sentence, sent_A_pool, single_attention_param=True)
-    sentence_A_a=AttentionLSTMWrapper(sentence_a, sent_A_pool, single_attention_param=True)
-
+    sentence_A=AttentionLSTMWrapper(sentence_A, sent_A_pool, single_attention_param=True)
+    sentence_A_a=AttentionLSTMWrapper(sentence_A_a, sent_A_pool, single_attention_param=True)
+    
     sentence_B_comp=sentence_A(sent_B_embedding)
     sentence_B_a_comp=sentence_A_a(sent_B_embedding)
-
+    
     sent_B_pool = merge([maxpool(sentence_B_comp), maxpool(sentence_B_a_comp)], mode='concat', concat_axis=-1)
-
+    
     pair=merge([sent_A_pool, sent_B_pool], mode='concat', concat_axis=-1)
-    Pair=Dense(6, activation="relu")(pair)
-    #linear=MaxoutDense(1, activation="relu")(Pair)
-    linear=Dense(1,activation="softmax")(Pair)
-    linear=Scalar()(linear)
-    similarity = Model(input=[sent_A, sent_B], output=linear)
+    Pair=Dense(6, activation="softmax")(pair)
 
-    similarity.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
+    similarity = Model(input=[sent_A, sent_B], output=Pair)
+
+    similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     print(similarity.summary())
 
 # happy learning!
     similarity.fit([x_train_A, x_train_B], y_train, validation_data=([x_val_A,x_val_B], y_val),
           nb_epoch=EPOCHS, batch_size=20)
-
-    probabilities = similarity.predict([x_data_Av, x_data_Bv])
-    
-    with open(outfile,'w') as fn:
-        #for num in np.clip(probabilities,0,5):
-        for num in probabilities:
-            fn.write("{0:1.4f}\n".format(num[0]))
 
     print "\nParameters:\n---------------------\nh_STATES=%d\nEPOCHS=%d\nDENSES=%d\nRepresentation=%s\nEMBEDDING_DIM=%d\nMAX_SEQUENCE_LENGTH=%d" % (h_STATES,
                                                                                                                            EPOCHS,

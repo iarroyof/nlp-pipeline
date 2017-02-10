@@ -246,7 +246,7 @@ class Scalar(Layer):
         self.scalar = shared_scalar(.001) # initial value
         self.input = T.matrix()
         self.params = [self.scalar]
-    def get_output(self, train=False):
+    def call(self, X):
         X = self.get_input()
         return X*self.scalar
 

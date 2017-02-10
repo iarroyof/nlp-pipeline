@@ -283,9 +283,9 @@ if __name__ == "__main__":
             dws = d_ws.db_word_space(args.d)        
     else:
         if args.w.endswith(".bin"):
-            dws = Word2Vec.load_word2vec_format(args.w, binary=True)
+            dws = wtov.load_word2vec_format(args.w, binary=True)
         elif args.w.endswith(".vec"):
-            dws = Word2Vec.load_word2vec_format(args.w, binary=False)
+            dws = wtov.load_word2vec_format(args.w, binary=False)
         elif args.w.endswith(".model"):
             dws = wtov.load(args.w)
         else:
@@ -294,7 +294,7 @@ if __name__ == "__main__":
     
     if args.s and args.d != 'word2vec' and not args.S:
         if not args.t: 
-            print '-t argument is required.'
+            print '-t argument is required to vectorize PAIRS.'
             exit()
         for row_i, s1, s2 in read_sentence_pairs(input_file, limit, args.D):
             v = ccbsp(dws, s1, s2, operation, pos_len = args.p)
