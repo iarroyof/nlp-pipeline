@@ -24,7 +24,7 @@ from keras.utils.np_utils import to_categorical
 from attention_lstm_ import *
 from load_sts_data import *
 
-YEAR_TRAIN="2013-t"
+YEAR_TRAIN="2013"
 YEAR_VALID="2017"
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
@@ -146,11 +146,11 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
         #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
         # model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim,, consume_less='cpu' return_sequences=True))) # not supported
-        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, consume_less='gpu', return_sequences=True)))
-        model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='gpu', return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem', return_sequences=True)))
         # test each other RNN type
-        model.add(Attention(recurrent.GRU(embedding_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
-        model.add(Attention(recurrent.SimpleRNN(output_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
+        model.add(Attention(recurrent.GRU(output_dim=timesteps, consume_less='mem', return_sequences=True)))
+        model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
         model.add(core.Activation('relu'))
         #model.compile(optimizer='rmsprop', loss='mse')
         #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
@@ -161,8 +161,8 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
         #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
         model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem',dropout_W=0.2, dropout_U=0.2)))
-        model.add(Dense(output_dim))
-        #model.add(core.Activation('relu'))
+        #model.add(Dense(output_dim))
+        model.add(core.Activation('relu'))
         #model.compile(optimizer='rmsprop', loss='mse')
         #model.fit(x,y[:,-1,:], nb_epoch=1, batch_size=nb_samples)
 
@@ -171,8 +171,8 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
         model = Sequential()
         #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
-        model.add(wrappers.Bidirectional(recurrent.LSTM(embedding_dim, input_dim=embedding_dim, return_sequences=True)))
-        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem')))
+        model.add(wrappers.Bidirectional(recurrent.LSTM(output_dim=timesteps, return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, return_sequences=False, consume_less='mem')))
         model.add(core.Activation('relu'))
         #model.compile(optimizer='rmsprop', loss='mse')
         #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
@@ -189,23 +189,23 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
 
 # Leaning constants
 outfile="probabilities_bidir"
-h_STATES = 10
-EPOCHS = 200
-DENSES = 40
+h_STATES = 25
+EPOCHS = 100
+DENSES = 10
 
 timesteps=h_STATES
 embedding_dim=EMBEDDING_DIM
 
 # Building symbolic sentence models for [A] and [B] sides separately
-sent_A_pool=models("simple_att", len(word_index_A), timesteps, embedding_dim, DENSES)
-sent_B_pool=models("simple_att", len(word_index_B), timesteps, embedding_dim, DENSES)
+sent_A_pool=models("stacked", len(word_index_A), timesteps, embedding_dim, DENSES)
+sent_B_pool=models("stacked", len(word_index_B), timesteps, embedding_dim, DENSES)
 
 pair_sents=Merge([sent_A_pool, sent_B_pool], mode='concat', concat_axis=-1)
 # -----------------------------------------------------------------------
 
 similarity = Sequential()
 similarity.add(pair_sents)
-similarity.add(MaxoutDense(100))
+similarity.add(MaxoutDense(DENSES))
 similarity.add(MaxoutDense(1))
 #similarity.add(Dense(5, activation="softmax"))
 #similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
