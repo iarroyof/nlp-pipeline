@@ -30,6 +30,7 @@ MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
 representation = "fastText"
 #representation = "word2vec"
+#representation = "glove"
 VECTOR_DIR="/almac/ignacio/data/" + representation
 EMBEDDING_DIM=50
 TRAIN_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
@@ -123,7 +124,7 @@ for word, i in word_index_B.items():
 
 # --------------------------
 
-def models(M, nb_samples, timesteps, embedding_dim, output_dim):
+def models(M, nb_samples, timesteps, embedding_dim):#, output_dim): # For returning sequences only
 
     embedding_layer = Embedding(input_dim=nb_samples + 1,
                             output_dim=embedding_dim,         
@@ -133,17 +134,13 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
 
     if M == "base_line":
         model = Sequential()
-        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
-        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem')))
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, return_sequences=False, consume_less='mem')))
         model.add(core.Activation('relu'))
-        #model.compile(optimizer='rmsprop', loss='mse')
-        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
 
     elif M == "stacked":
     # test stacked with all RNN layers and consume_less options
         model = Sequential()
-        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
         # model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim,, consume_less='cpu' return_sequences=True))) # not supported
         model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='gpu', return_sequences=True)))
@@ -152,38 +149,21 @@ def models(M, nb_samples, timesteps, embedding_dim, output_dim):
         model.add(Attention(recurrent.GRU(output_dim=timesteps, consume_less='mem', return_sequences=True)))
         model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
         model.add(core.Activation('relu'))
-        #model.compile(optimizer='rmsprop', loss='mse')
-        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
 
     elif M == "simple_att":
         # test with return_sequence = False
         model = Sequential()
-        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
         model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem',dropout_W=0.2, dropout_U=0.2)))
-        #model.add(Dense(output_dim))
         model.add(core.Activation('relu'))
-        #model.compile(optimizer='rmsprop', loss='mse')
-        #model.fit(x,y[:,-1,:], nb_epoch=1, batch_size=nb_samples)
 
     elif M == "bidir_att":
     # with bidirectional encoder
         model = Sequential()
-        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
         model.add(embedding_layer)
         model.add(wrappers.Bidirectional(recurrent.LSTM(output_dim=timesteps, return_sequences=True)))
         model.add(Attention(recurrent.LSTM(output_dim=timesteps, return_sequences=False, consume_less='mem')))
         model.add(core.Activation('relu'))
-        #model.compile(optimizer='rmsprop', loss='mse')
-        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
-
-    elif M == "functional_att":
-    # test with functional API
-        input = Input(batch_shape=(nb_samples, timesteps, embedding_dim))
-        output = Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem'))(input)
-        model = Model(input, output)
-        #model.compile(optimizer='rmsprop', loss='mse')
-        #model.fit(x, y, nb_epoch=1, batch_size=nb_samples)
 
     return model
 
@@ -192,15 +172,15 @@ outfile="probabilities_bidir"
 h_STATES = 25
 EPOCHS = 100
 DENSES = 10
-
+MODEL_TYPE="stacked"
 timesteps=h_STATES
 embedding_dim=EMBEDDING_DIM
 
 # Building symbolic sentence models for [A] and [B] sides separately
-sent_A_pool=models("stacked", len(word_index_A), timesteps, embedding_dim, DENSES)
-sent_B_pool=models("stacked", len(word_index_B), timesteps, embedding_dim, DENSES)
+sent_A=models(MODEL_TYPE, len(word_index_A), timesteps, embedding_dim, DENSES)
+sent_B=models(MODEL_TYPE, len(word_index_B), timesteps, embedding_dim, DENSES)
 
-pair_sents=Merge([sent_A_pool, sent_B_pool], mode='concat', concat_axis=-1)
+pair_sents=Merge([sent_A, sent_B], mode='concat', concat_axis=-1)
 # -----------------------------------------------------------------------
 
 similarity = Sequential()
@@ -211,19 +191,15 @@ similarity.add(MaxoutDense(1))
 #similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 similarity.compile(loss='mean_absolute_error', optimizer='rmsprop', metrics=['mean_absolute_error','mean_squared_error'])
 
-    # test config
-#similarity.get_config()
-
-    # test to and from json
-#similarity = model_from_json(similarity.to_json(), custom_objects=dict(Attention=Attention))
 print similarity.summary()
 
 # happy learning!
 similarity.fit([x_train_A, x_train_B], y_train, validation_data=([x_val_A, x_val_B], y_val),
           nb_epoch=EPOCHS, batch_size=20)
 
-print "\nParameters:\n---------------------\nh_STATES=%d\nEPOCHS=%d\nDENSES=%d\nRepresentation=%s\nEMBEDDING_DIM=%d\nMAX_SEQUENCE_LENGTH=%d" % (h_STATES,
+print "\nParameters:\n---------------------\nh_STATES=%d\nEPOCHS=%d\nDENSES=%d\nRepresentation=%s\nEMBEDDING_DIM=%d\nMAX_SEQUENCE_LENGTH=%d\nMODEL_TYPE=%s\n" % (h_STATES,
                                                                                                                            EPOCHS,
                                                                                                                            DENSES,
                                                                                                                            representation,
-                                                                                                                           EMBEDDING_DIM,MAX_SEQUENCE_LENGTH)
+                                                                                                                           EMBEDDING_DIM,MAX_SEQUENCE_LENGTH,
+                                                                                                                           MODEL_TYPE)
