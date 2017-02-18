@@ -1,246 +1,229 @@
-class AttentionLSTM(LSTM):
-    """LSTM with attention mechanism
+"""
+A keras attention layer that wraps RNN layers.
 
-    This is an LSTM incorporating an attention mechanism into its hidden states.
-    Currently, the context vector calculated from the attended vector is fed
-    into the model's internal states, closely following the model by Xu et al.
-    (2016, Sec. 3.1.2), using a soft attention model following
-    Bahdanau et al. (2014).
+Based on tensorflows [attention_decoder](https://github.com/tensorflow/tensorflow/blob/c8a45a8e236776bed1d14fd71f3b6755bd63cc58/tensorflow/python/ops/seq2seq.py#L506) 
+and [Grammar as a Foreign Language](https://arxiv.org/abs/1412.7449).
 
-    The layer expects two inputs instead of the usual one:
-        1. the "normal" layer input; and
-        2. a 3D vector to attend.
+date: 20161101
+author: wassname
+url: https://gist.github.com/wassname/5292f95000e409e239b9dc973295327a
+"""
 
-    Args:
-        attn_activation: Activation function for attentional components
-        attn_init: Initialization function for attention weights
-        output_alpha (boolean): If true, outputs the alpha values, i.e.,
-            what parts of the attention vector the layer attends to at each
-            timestep.
+# test likes in https://github.com/fchollet/keras/blob/master/tests/keras/layers/test_wrappers.py
+import pytest
+import numpy as np
+from numpy.testing import assert_allclose
+from keras.utils.test_utils import keras_test
+from keras.layers import wrappers, Input, recurrent, InputLayer, Merge,MaxoutDense
+from keras.layers import core, convolutional, recurrent, Embedding, Dense
+from keras.models import Sequential, Model, model_from_json
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+from keras.utils.np_utils import to_categorical
 
-    References:
-        * Bahdanau, Cho & Bengio (2014), "Neural Machine Translation by Jointly
-          Learning to Align and Translate", <https://arxiv.org/pdf/1409.0473.pdf>
-        * Xu, Ba, Kiros, Cho, Courville, Salakhutdinov, Zemel & Bengio (2016),
-          "Show, Attend and Tell: Neural Image Caption Generation with Visual
-          Attention", <http://arxiv.org/pdf/1502.03044.pdf>
+from attention_lstm_ import *
+from load_sts_data import *
 
-    See Also:
-        `LSTM`_ in the Keras documentation.
+YEAR_TRAIN="2013-t"
+YEAR_VALID="2017"
+MAX_SEQUENCE_LENGTH=50
+VALIDATION_SPLIT=0.30
+representation = "fastText"
+#representation = "word2vec"
+VECTOR_DIR="/almac/ignacio/data/" + representation
+EMBEDDING_DIM=50
+TRAIN_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
+ + "/sts_all/train-" + YEAR_TRAIN, None, False)]
 
-        .. _LSTM: http://keras.io/layers/recurrent/#lstm
-    """
-    def __init__(self, *args, attn_activation='tanh', attn_init='orthogonal',
-                 output_alpha=False, **kwargs):
-        self.attn_activation = activations.get(attn_activation)
-        self.attn_init = initializations.get(attn_init)
-        self.output_alpha = output_alpha
-        super().__init__(*args, **kwargs)
+VALID_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
+ + "/sts_all/valid-" + YEAR_VALID, "validation", False)]
+MAX_NB_WORDS=20000
 
-    def build(self, input_shape):
-        if not (isinstance(input_shape, list) and len(input_shape) == 2):
-            raise Exception('Input to AttentionLSTM must be a list of '
-                            'two tensors [lstm_input, attn_input].')
+# --------------------------
+print "Loanding train and valid dirs......"
+train_data_, gs_data=load_train_dirs(TRAIN_DIRS)
+valid_data_, _ =load_train_dirs(VALID_DIRS)
 
-        input_shape, attn_input_shape = input_shape
-        super().build(input_shape)
-        self.input_spec.append(InputSpec(shape=attn_input_shape))
+print "Spliting tab-separated files..."
+train_data_A, train_data_B = train_data_[1::2], train_data_[::2]
+valid_data_A, valid_data_B = valid_data_[1::2], valid_data_[::2]
 
-        # weights for attention model
-        self.U_att = self.inner_init((self.output_dim, self.output_dim),
-                                     name='{}_U_att'.format(self.name))
-        self.W_att = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                    name='{}_W_att'.format(self.name))
-        self.v_att = self.init((self.output_dim, 1),
-                               name='{}_v_att'.format(self.name))
-        self.b_att = K.zeros((self.output_dim,), name='{}_b_att'.format(self.name))
-        self.trainable_weights += [self.U_att, self.W_att, self.v_att, self.b_att]
+#labels = to_categorical(np.asarray(gs_data))
+labels=np.asarray(gs_data)
+indices = np.arange(labels.shape[0])
+np.random.shuffle(indices)
+nb_validation_samples = int(VALIDATION_SPLIT * labels.shape[0])
 
-        # weights for incorporating attention into hidden states
-        if self.consume_less == 'gpu':
-            self.Z = self.init((attn_input_shape[-1], 4 * self.output_dim),
-                               name='{}_Z'.format(self.name))
-            self.trainable_weights += [self.Z]
-        else:
-            self.Z_i = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                      name='{}_Z_i'.format(self.name))
-            self.Z_f = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                      name='{}_Z_f'.format(self.name))
-            self.Z_c = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                      name='{}_Z_c'.format(self.name))
-            self.Z_o = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                      name='{}_Z_o'.format(self.name))
-            self.trainable_weights += [self.Z_i, self.Z_f, self.Z_c, self.Z_o]
-            self.Z = K.concatenate([self.Z_i, self.Z_f, self.Z_c, self.Z_o])
+print "Labels shape: ", labels.shape
 
-        # weights for initializing states based on attention vector
-        if not self.stateful:
-            self.W_init_c = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                           name='{}_W_init_c'.format(self.name))
-            self.W_init_h = self.attn_init((attn_input_shape[-1], self.output_dim),
-                                           name='{}_W_init_h'.format(self.name))
-            self.b_init_c = K.zeros((self.output_dim,),
-                                    name='{}_b_init_c'.format(self.name))
-            self.b_init_h = K.zeros((self.output_dim,),
-                                    name='{}_b_init_h'.format(self.name))
-            self.trainable_weights += [self.W_init_c, self.b_init_c,
-                                       self.W_init_h, self.b_init_h]
+print "Tokenizing files... [A]"
+tokenizer = Tokenizer(nb_words=MAX_NB_WORDS)
+tokenizer.fit_on_texts(train_data_A + valid_data_A)
+sequences_A = tokenizer.texts_to_sequences(train_data_A)
+sequences_Av = tokenizer.texts_to_sequences(valid_data_A)
+word_index_A = tokenizer.word_index
+data_A = pad_sequences(sequences_A, maxlen=MAX_SEQUENCE_LENGTH)
+x_data_Av = pad_sequences(sequences_Av, maxlen=MAX_SEQUENCE_LENGTH)
+data_A = data_A[indices]
 
-        if self.initial_weights is not None:
-            self.set_weights(self.initial_weights)
-            del self.initial_weights
+print "Split training set into train and val... [A]"
+x_train_A = data_A[:-nb_validation_samples]
+x_val_A = data_A[-nb_validation_samples:]
 
-    def get_output_shape_for(self, input_shape):
-        # output shape is not affected by the attention component
-        return super().get_output_shape_for(input_shape[0])
+print "Tokenizing files... [B]"
+tokenizer = Tokenizer(nb_words=MAX_NB_WORDS)
+tokenizer.fit_on_texts(train_data_B + valid_data_B)
+sequences_B = tokenizer.texts_to_sequences(train_data_B)
+sequences_Bv = tokenizer.texts_to_sequences(valid_data_B)
+word_index_B = tokenizer.word_index
+data_B = pad_sequences(sequences_B, maxlen=MAX_SEQUENCE_LENGTH)
+x_data_Bv = pad_sequences(sequences_Bv, maxlen=MAX_SEQUENCE_LENGTH)
+data_B = data_B[indices]
 
-    def compute_mask(self, input, input_mask=None):
-        if input_mask is not None:
-            input_mask = input_mask[0]
-        return super().compute_mask(input, input_mask=input_mask)
+print "Split training set into train and val... [B]"
+x_train_B = data_B[:-nb_validation_samples]
+x_val_B = data_B[-nb_validation_samples:]
 
-    def get_initial_states(self, x_input, x_attn, mask_attn):
-        # set initial states from mean attention vector fed through a dense
-        # activation
-        mean_attn = K.mean(x_attn * K.expand_dims(mask_attn), axis=1)
-        h0 = K.dot(mean_attn, self.W_init_h) + self.b_init_h
-        c0 = K.dot(mean_attn, self.W_init_c) + self.b_init_c
-        return [self.attn_activation(h0), self.attn_activation(c0)]
+labels = labels[indices]
+y_train = labels[:-nb_validation_samples]
+y_val = labels[-nb_validation_samples:]
 
-    def call(self, x, mask=None):
-        assert isinstance(x, list) and len(x) == 2
-        x_input, x_attn = x
-        if mask is not None:
-            mask_input, mask_attn = mask
-        else:
-            mask_input, mask_attn = None, None
-        # input shape: (nb_samples, time (padded with zeros), input_dim)
-        input_shape = self.input_spec[0].shape
-        if K._BACKEND == 'tensorflow':
-            if not input_shape[1]:
-                raise Exception('When using TensorFlow, you should define '
-                                'explicitly the number of timesteps of '
-                                'your sequences.\n'
-                                'If your first layer is an Embedding, '
-                                'make sure to pass it an "input_length" '
-                                'argument. Otherwise, make sure '
-                                'the first layer has '
-                                'an "input_shape" or "batch_input_shape" '
-                                'argument, including the time axis. '
-                                'Found input shape at layer ' + self.name +
-                                ': ' + str(input_shape))
-        if self.stateful:
-            initial_states = self.states
-        else:
-            initial_states = self.get_initial_states(x_input, x_attn, mask_attn)
-        constants = self.get_constants(x_input, x_attn, mask_attn)
-        preprocessed_input = self.preprocess_input(x_input)
+embeddings_index = {}
+if representation == "glove":
+    f = open(os.path.join(VECTOR_DIR, 'glove.6B.%dd.txt' % EMBEDDING_DIM))
+elif representation == "fastText":
+    f = open(os.path.join(VECTOR_DIR, 'wikiEn_Full_H%d.model.vec' % EMBEDDING_DIM))
+elif representation == "word2vec":
+    f = open(os.path.join(VECTOR_DIR, 'w2v_En_vector_space_H%d.vec' % EMBEDDING_DIM))
 
-        last_output, outputs, states = K.rnn(self.step, preprocessed_input,
-                                             initial_states,
-                                             go_backwards=self.go_backwards,
-                                             mask=mask_input,
-                                             constants=constants,
-                                             unroll=self.unroll,
-                                             input_length=input_shape[1])
-        if self.stateful:
-            self.updates = []
-            for i in range(len(states)):
-                self.updates.append((self.states[i], states[i]))
+print "Getting embedding matrix..."
+for line in f:
+    values = line.split()
+    word = values[0]
+    coefs = np.asarray(values[1:], dtype='float32')
+    embeddings_index[word] = coefs
+f.close()
 
-        if self.return_sequences:
-            return outputs
-        else:
-            return last_output
+print('Found %s word vectors.' % len(embeddings_index))
+#embeddings_index['###'] = np.zeros(100)
 
-    def step(self, x, states):
-        h_tm1 = states[0]
-        c_tm1 = states[1]
-        B_U = states[2]
-        B_W = states[3]
-        x_attn = states[4]
-        mask_attn = states[5]
-        attn_shape = self.input_spec[1].shape
+print "Filling embedding matrices..."
+embedding_matrix_A = np.zeros((len(word_index_A) + 1, EMBEDDING_DIM))
+for word, i in word_index_A.items():
+    embedding_vector = embeddings_index.get(word)
+    if embedding_vector is not None:
+        # words not found in embedding index will be all-zeros.
+        embedding_matrix_A[i] = embedding_vector
 
-        #### attentional component
-        # alignment model
-        # -- keeping weight matrices for x_attn and h_s separate has the advantage
-        # that the feature dimensions of the vectors can be different
-        h_att = K.repeat(h_tm1, attn_shape[1])
-        att = time_distributed_dense(x_attn, self.W_att, self.b_att)
-        energy = self.attn_activation(K.dot(h_att, self.U_att) + att)
-        energy = K.squeeze(K.dot(energy, self.v_att), 2)
-        # make probability tensor
-        alpha = K.exp(energy)
-        if mask_attn is not None:
-            alpha *= mask_attn
-        alpha /= K.sum(alpha, axis=1, keepdims=True)
-        alpha_r = K.repeat(alpha, attn_shape[2])
-        alpha_r = K.permute_dimensions(alpha_r, (0, 2, 1))
-        # make context vector -- soft attention after Bahdanau et al.
-        z_hat = x_attn * alpha_r
-        z_hat = K.sum(z_hat, axis=1)
+embedding_matrix_B = np.zeros((len(word_index_B) + 1, EMBEDDING_DIM))
+for word, i in word_index_B.items():
+    embedding_vector = embeddings_index.get(word)
+    if embedding_vector is not None:
+       embedding_matrix_B[i] = embedding_vector
 
-        if self.consume_less == 'gpu':
-            z = K.dot(x * B_W[0], self.W) + K.dot(h_tm1 * B_U[0], self.U) \
-                + K.dot(z_hat, self.Z) + self.b
+# --------------------------
 
-            z0 = z[:, :self.output_dim]
-            z1 = z[:, self.output_dim: 2 * self.output_dim]
-            z2 = z[:, 2 * self.output_dim: 3 * self.output_dim]
-            z3 = z[:, 3 * self.output_dim:]
-        else:
-            if self.consume_less == 'cpu':
-                x_i = x[:, :self.output_dim]
-                x_f = x[:, self.output_dim: 2 * self.output_dim]
-                x_c = x[:, 2 * self.output_dim: 3 * self.output_dim]
-                x_o = x[:, 3 * self.output_dim:]
-            elif self.consume_less == 'mem':
-                x_i = K.dot(x * B_W[0], self.W_i) + self.b_i
-                x_f = K.dot(x * B_W[1], self.W_f) + self.b_f
-                x_c = K.dot(x * B_W[2], self.W_c) + self.b_c
-                x_o = K.dot(x * B_W[3], self.W_o) + self.b_o
-            else:
-                raise Exception('Unknown `consume_less` mode.')
+def models(M, nb_samples, timesteps, embedding_dim, output_dim):
 
-            z0 = x_i + K.dot(h_tm1 * B_U[0], self.U_i) + K.dot(z_hat, self.Z_i)
-            z1 = x_f + K.dot(h_tm1 * B_U[1], self.U_f) + K.dot(z_hat, self.Z_f)
-            z2 = x_c + K.dot(h_tm1 * B_U[2], self.U_c) + K.dot(z_hat, self.Z_c)
-            z3 = x_o + K.dot(h_tm1 * B_U[3], self.U_o) + K.dot(z_hat, self.Z_o)
+    embedding_layer = Embedding(input_dim=nb_samples + 1,
+                            output_dim=embedding_dim,         
+                            input_length=MAX_SEQUENCE_LENGTH, 
+                            dropout=0.2,
+                            trainable=False)
 
-        i = self.inner_activation(z0)
-        f = self.inner_activation(z1)
-        c = f * c_tm1 + i * self.activation(z2)
-        o = self.inner_activation(z3)
+    if M == "base_line":
+        model = Sequential()
+        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
+        model.add(embedding_layer)
+        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem')))
+        model.add(core.Activation('relu'))
+        #model.compile(optimizer='rmsprop', loss='mse')
+        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
 
-        h = o * self.activation(c)
-        if self.output_alpha:
-            return alpha, [h, c]
-        else:
-            return h, [h, c]
+    elif M == "stacked":
+    # test stacked with all RNN layers and consume_less options
+        model = Sequential()
+        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
+        model.add(embedding_layer)
+        # model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim,, consume_less='cpu' return_sequences=True))) # not supported
+        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, consume_less='gpu', return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
+        # test each other RNN type
+        model.add(Attention(recurrent.GRU(embedding_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
+        model.add(Attention(recurrent.SimpleRNN(output_dim, input_dim=embedding_dim, consume_less='mem', return_sequences=True)))
+        model.add(core.Activation('relu'))
+        #model.compile(optimizer='rmsprop', loss='mse')
+        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
 
-    def get_constants(self, x_input, x_attn, mask_attn):
-        constants = super().get_constants(x_input)
-        attn_shape = self.input_spec[1].shape
-        if mask_attn is not None:
-            if K.ndim(mask_attn) == 3:
-                mask_attn = K.all(mask_attn, axis=-1)
-        constants.append(x_attn)
-        constants.append(mask_attn)
-        return constants
+    elif M == "simple_att":
+        # test with return_sequence = False
+        model = Sequential()
+        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
+        model.add(embedding_layer)
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem',dropout_W=0.2, dropout_U=0.2)))
+        model.add(Dense(output_dim))
+        #model.add(core.Activation('relu'))
+        #model.compile(optimizer='rmsprop', loss='mse')
+        #model.fit(x,y[:,-1,:], nb_epoch=1, batch_size=nb_samples)
 
-    def get_config(self):
-        cfg = super().get_config()
-        cfg['output_alpha'] = self.output_alpha
-        cfg['attn_activation'] = self.attn_activation.__name__
-        return cfg
+    elif M == "bidir_att":
+    # with bidirectional encoder
+        model = Sequential()
+        #model.add(InputLayer(batch_input_shape=(nb_samples, timesteps, embedding_dim)))
+        model.add(embedding_layer)
+        model.add(wrappers.Bidirectional(recurrent.LSTM(embedding_dim, input_dim=embedding_dim, return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem')))
+        model.add(core.Activation('relu'))
+        #model.compile(optimizer='rmsprop', loss='mse')
+        #model.fit(x,y, nb_epoch=1, batch_size=nb_samples)
 
-    @classmethod
-    def from_config(cls, config):
-        instance = super(AttentionLSTM, cls).from_config(config)
-        if 'output_alpha' in config:
-            instance.output_alpha = config['output_alpha']
-        if 'attn_activation' in config:
-            instance.attn_activation = activations.get(config['attn_activation'])
-        return instance
+    elif M == "functional_att":
+    # test with functional API
+        input = Input(batch_shape=(nb_samples, timesteps, embedding_dim))
+        output = Attention(recurrent.LSTM(output_dim, input_dim=embedding_dim, return_sequences=True, consume_less='mem'))(input)
+        model = Model(input, output)
+        #model.compile(optimizer='rmsprop', loss='mse')
+        #model.fit(x, y, nb_epoch=1, batch_size=nb_samples)
 
+    return model
+
+# Leaning constants
+outfile="probabilities_bidir"
+h_STATES = 10
+EPOCHS = 200
+DENSES = 40
+
+timesteps=h_STATES
+embedding_dim=EMBEDDING_DIM
+
+# Building symbolic sentence models for [A] and [B] sides separately
+sent_A_pool=models("simple_att", len(word_index_A), timesteps, embedding_dim, DENSES)
+sent_B_pool=models("simple_att", len(word_index_B), timesteps, embedding_dim, DENSES)
+
+pair_sents=Merge([sent_A_pool, sent_B_pool], mode='concat', concat_axis=-1)
+# -----------------------------------------------------------------------
+
+similarity = Sequential()
+similarity.add(pair_sents)
+similarity.add(MaxoutDense(100))
+similarity.add(MaxoutDense(1))
+#similarity.add(Dense(5, activation="softmax"))
+#similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+similarity.compile(loss='mean_absolute_error', optimizer='rmsprop', metrics=['mean_absolute_error','mean_squared_error'])
+
+    # test config
+#similarity.get_config()
+
+    # test to and from json
+#similarity = model_from_json(similarity.to_json(), custom_objects=dict(Attention=Attention))
+print similarity.summary()
+
+# happy learning!
+similarity.fit([x_train_A, x_train_B], y_train, validation_data=([x_val_A, x_val_B], y_val),
+          nb_epoch=EPOCHS, batch_size=20)
+
+print "\nParameters:\n---------------------\nh_STATES=%d\nEPOCHS=%d\nDENSES=%d\nRepresentation=%s\nEMBEDDING_DIM=%d\nMAX_SEQUENCE_LENGTH=%d" % (h_STATES,
+                                                                                                                           EPOCHS,
+                                                                                                                           DENSES,
+                                                                                                                           representation,
+                                                                                                                           EMBEDDING_DIM,MAX_SEQUENCE_LENGTH)
