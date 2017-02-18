@@ -28,11 +28,11 @@ YEAR_TRAIN="2013"
 YEAR_VALID="2017"
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
-representation = "fastText"
+#representation = "fastText"
 #representation = "word2vec"
-#representation = "glove"
+representation = "glove"
 VECTOR_DIR="/almac/ignacio/data/" + representation
-EMBEDDING_DIM=50
+EMBEDDING_DIM=100
 TRAIN_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
  + "/sts_all/train-" + YEAR_TRAIN, None, False)]
 
@@ -177,8 +177,8 @@ timesteps=h_STATES
 embedding_dim=EMBEDDING_DIM
 
 # Building symbolic sentence models for [A] and [B] sides separately
-sent_A=models(MODEL_TYPE, len(word_index_A), timesteps, embedding_dim, DENSES)
-sent_B=models(MODEL_TYPE, len(word_index_B), timesteps, embedding_dim, DENSES)
+sent_A=models(MODEL_TYPE, len(word_index_A), timesteps, embedding_dim)#, DENSES)
+sent_B=models(MODEL_TYPE, len(word_index_B), timesteps, embedding_dim)#, DENSES)
 
 pair_sents=Merge([sent_A, sent_B], mode='concat', concat_axis=-1)
 # -----------------------------------------------------------------------
