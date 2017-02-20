@@ -28,9 +28,9 @@ YEAR_TRAIN="2013"
 YEAR_VALID="2017"
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
-#representation = "fastText"
+representation = "fastText"
 #representation = "word2vec"
-representation = "glove"
+#representation = "glove"
 VECTOR_DIR="/almac/ignacio/data/" + representation
 EMBEDDING_DIM=100
 TRAIN_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
@@ -91,13 +91,14 @@ y_val = labels[-nb_validation_samples:]
 
 embeddings_index = {}
 if representation == "glove":
-    f = open(os.path.join(VECTOR_DIR, 'glove.6B.%dd.txt' % EMBEDDING_DIM))
+    vectors_file = VECTOR_DIR + '/glove.6B.%dd.txt' % EMBEDDING_DIM
 elif representation == "fastText":
-    f = open(os.path.join(VECTOR_DIR, 'wikiEn_Full_H%d.model.vec' % EMBEDDING_DIM))
+    vectors_file = VECTOR_DIR + '/wikiEn_Full_H%d.model.vec' % EMBEDDING_DIM
 elif representation == "word2vec":
-    f = open(os.path.join(VECTOR_DIR, 'w2v_En_vector_space_H%d.vec' % EMBEDDING_DIM))
+    vectors_file = VECTOR_DIR + '/w2v_En_vector_space_H%d.vec' % EMBEDDING_DIM
 
-print "Getting embedding matrix..."
+f = open(vectors_file)
+print "Getting embedding matrix... from %s" % vectors_file
 for line in f:
     values = line.split()
     word = values[0]
@@ -150,6 +151,19 @@ def models(M, nb_samples, timesteps, embedding_dim):#, output_dim): # For return
         model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
         model.add(core.Activation('relu'))
 
+elif M == "stacked_bidir":
+    # test stacked with all RNN layers and consume_less options
+        model = Sequential()
+        model.add(embedding_layer)
+        # model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim,, consume_less='cpu' return_sequences=True))) # not supported
+        #model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='gpu', return_sequences=True)))
+        model.add(wrappers.Bidirectional(recurrent.LSTM(output_dim=timesteps, return_sequences=True)))
+        #model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem', return_sequences=True)))
+        # test each other RNN type
+        model.add(Attention(recurrent.GRU(output_dim=timesteps, consume_less='mem', return_sequences=False)))
+        #model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
+        model.add(core.Activation('relu'))
+
     elif M == "simple_att":
         # test with return_sequence = False
         model = Sequential()
@@ -169,9 +183,9 @@ def models(M, nb_samples, timesteps, embedding_dim):#, output_dim): # For return
 
 # Leaning constants
 outfile="probabilities_bidir"
-h_STATES = 25
+h_STATES = 50
 EPOCHS = 100
-DENSES = 10
+DENSES = 50
 MODEL_TYPE="stacked"
 timesteps=h_STATES
 embedding_dim=EMBEDDING_DIM
