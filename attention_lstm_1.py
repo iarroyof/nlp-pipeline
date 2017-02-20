@@ -19,6 +19,7 @@ from keras.models import Sequential, Model, model_from_json
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
+from keras.callbacks import ModelCheckpoint
 
 from attention_lstm_ import *
 from load_sts_data import *
@@ -202,13 +203,16 @@ similarity.add(MaxoutDense(DENSES))
 similarity.add(MaxoutDense(1))
 #similarity.add(Dense(5, activation="softmax"))
 #similarity.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+print "Compiling the model..."
 similarity.compile(loss='mean_absolute_error', optimizer='rmsprop', metrics=['mean_absolute_error','mean_squared_error'])
 
 print similarity.summary()
-
-# happy learning!
+params="%d_%d_%d_%s_%d_%d_%s"% (h_STATES,EPOCHS,DENSES,representation,EMBEDDING_DIM,
+                                                        MAX_SEQUENCE_LENGTH,MODEL_TYPE)
+print "Happy learning!!!"
+checkpointer = ModelCheckpoint(filepath="/almac/ignacio/%s.hdf5" % params, verbose=1, save_best_only=True)
 similarity.fit([x_train_A, x_train_B], y_train, validation_data=([x_val_A, x_val_B], y_val),
-          nb_epoch=EPOCHS, batch_size=20)
+                                                 nb_epoch=EPOCHS, batch_size=20, callbacks=[checkpointer])
 
 print "\nParameters:\n---------------------\nh_STATES=%d\nEPOCHS=%d\nDENSES=%d\nRepresentation=%s\nEMBEDDING_DIM=%d\nMAX_SEQUENCE_LENGTH=%d\nMODEL_TYPE=%s\n" % (h_STATES,
                                                                                                                            EPOCHS,
