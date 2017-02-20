@@ -10,7 +10,6 @@ url: https://gist.github.com/wassname/5292f95000e409e239b9dc973295327a
 """
 
 # test likes in https://github.com/fchollet/keras/blob/master/tests/keras/layers/test_wrappers.py
-import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from keras.utils.test_utils import keras_test
@@ -151,7 +150,7 @@ def models(M, nb_samples, timesteps, embedding_dim):#, output_dim): # For return
         model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
         model.add(core.Activation('relu'))
 
-elif M == "stacked_bidir":
+    elif M == "stacked_bidir":
     # test stacked with all RNN layers and consume_less options
         model = Sequential()
         model.add(embedding_layer)
@@ -186,7 +185,7 @@ outfile="probabilities_bidir"
 h_STATES = 50
 EPOCHS = 100
 DENSES = 50
-MODEL_TYPE="stacked"
+MODEL_TYPE="stacked_bidir"
 timesteps=h_STATES
 embedding_dim=EMBEDDING_DIM
 
