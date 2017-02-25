@@ -85,8 +85,8 @@ def load_train_dirs(dirs):
         verbose('Starting training')
         train_data_=load_all_phrases(os.path.join(directory,''),format=format,translation=translation)
         
-        if format != "validation":
-            gs_data_=dict(load_all_gs(os.path.join(directory,'')))
+        #if format != "validation":
+        gs_data_=dict(load_all_gs(os.path.join(directory,'')))
 
         for (n,d) in train_data_:
             n_=n.replace('input', 'gs')
@@ -95,12 +95,12 @@ def load_train_dirs(dirs):
             for i,s in enumerate(d):
                 train_data.append(s[0].encode('utf-8'))
                 train_data.append(s[1].encode('utf-8'))
-                if format != "validation":
-                    gs_data.append(gs_data_[n_][i])
-            if format != "validation":
-                verbose("Phrases in",n,len(d),len(gs_data_[n_]))
-            else:
-                verbose("Phrases in",n,len(d))
+                #if format != "validation":
+                gs_data.append(gs_data_[n_][i])
+            #if format != "validation":
+            verbose("Phrases in",n,len(d),len(gs_data_[n_]))
+            #else:
+            #    verbose("Phrases in",n,len(d))
         verbose('Total train phrases',directory,sum([len(d) for n,d in train_data_]))
 
         verbose('Total train phrases',len(train_data))
