@@ -20,27 +20,39 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
 from keras.callbacks import ModelCheckpoint
+from argparse import ArgumentParser as ap
+
 
 from attention_lstm_ import *
 from load_sts_data import *
+
+parser = ap()
+parser.add_argument("-s", help="Number of hidden states (time steps of the moving filter)", default=10,  type=int)
+parser.add_argument("-e", help="Number of training epochs", default=25, type=int)
+parser.add_argument("-d", help="Number of hidden output perceptron nodes", default=20, type=int)
+parser.add_argument("-m", help="Model type", default="base_line")
+parser.add_argument("-D", help="Embeddings dimensions", default=100, type=int)
+parser.add_argument("-t", help="Toggles train mode. Default is False.", action="store_true")
+parser.add_argument("-E", help="Embedding type. 'word2vec', 'glove' 'fastText'.", default="fastText")
+args = parser.parse_args()
+
 # ----------
-train=False
+train=args.t
 # ----------
-h_STATES = 100
-DENSES = 40
-EMBEDDING_DIM=100
-MODEL_TYPE="stacked"
-EPOCHS = 50
+h_STATES = args.s
+DENSES = args.d
+EMBEDDING_DIM = args.D
+MODEL_TYPE=args.m
+EPOCHS = args.e
+EMBEDDING = args.E
+
 
 if train:
-    YEAR_TRAIN="2013"
+    YEARS_TRAIN=["2012", "2013","2015","2016"]
 
 YEAR_VALID="2017"
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
-EMBEDDING = "fastText"
-#EMBEDDING = "word2vec"
-#EMBEDDING = "glove"
 VECTOR_DIR="/almac/ignacio/data/" + EMBEDDING
 MAX_NB_WORDS=20000
 params="%s_Ts%d_Ds%d_%s_H%d_Sl%d"% (MODEL_TYPE, h_STATES,DENSES, EMBEDDING,
@@ -48,8 +60,10 @@ params="%s_Ts%d_Ds%d_%s_H%d_Sl%d"% (MODEL_TYPE, h_STATES,DENSES, EMBEDDING,
 model_file="/almac/ignacio/%s.hdf5" % params
 
 if train:
-    TRAIN_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
-            + "/sts_all/train-" + YEAR_TRAIN, None, False)]
+    TRAIN_DIRS = []
+    for year in YEARS_TRAIN:
+        TRAIN_DIRS.append(( VECTOR_DIR.rsplit('/', 1)[0]
+            + "/sts_all/train-" + year, None, False) )
 
 VALID_DIRS=[(VECTOR_DIR.rsplit('/', 1)[0]
      + "/sts_all/valid-" + YEAR_VALID, "validation", False)]
@@ -125,11 +139,6 @@ if train:
     labels = labels[indices]
     y_train = labels[:-nb_validation_samples]
     y_val = labels[-nb_validation_samples:]
-
-# indices_test
-# test_labels
-# x_data_Av
-# x_data_Bv
 
 embeddings_index = {}
 if EMBEDDING == "glove":
@@ -306,7 +315,7 @@ if train:
                             len(word_index_B), h_STATES, EMBEDDING_DIM)
 
     print "Compiling the model..."
-    similarity.compile(loss='mean_absolute_error', optimizer='rmsprop', 
+    similarity.compile(loss='mean_squared_error', optimizer='rmsprop', 
                     metrics=['mean_absolute_error','mean_squared_error'])
 
     print similarity.summary()

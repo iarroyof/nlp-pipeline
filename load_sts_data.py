@@ -7,6 +7,7 @@ import codecs
 import numpy as np
 from collections import Counter
 
+from pdb import set_trace as st
 
 def verbose(*args):
     print " ".join([str(a) for a in args])
@@ -16,7 +17,6 @@ class Opts:
     filter_test=".*"
 
 opts=Opts()
-from pdb import set_trace as st
 def load_phrases_from_file(dirname,filename,format='2017',translation=False):
     if format != "validation":
         re_file=re.compile('.*\.input\..*\.txt$')
@@ -37,9 +37,7 @@ def load_phrases_from_file(dirname,filename,format='2017',translation=False):
             bits=line.strip().split('\t')
             if len(bits)>=2 or len(bits)<=4:
                 if not format or format == "validation":
-                    phrases.append((bits[0],bits[1]))
-                    
-                        
+                    phrases.append((bits[0],bits[1]))                        
                 elif format=="2017":
                     phrases.append((bits[2],bits[3]))
     return phrases
@@ -56,7 +54,7 @@ def load_gs_from_file(dirname,filename):
             try:
                 gs.append(float(line))
             except ValueError:
-                gs.append(0.0)
+                gs.append("NaN")
     return gs
 
 def load_all_phrases(dirname,filter=".input.",format=None,translation=False):
@@ -87,21 +85,26 @@ def load_train_dirs(dirs):
         
         #if format != "validation":
         gs_data_=dict(load_all_gs(os.path.join(directory,'')))
-
+        
         for (n,d) in train_data_:
             n_=n.replace('input', 'gs')
             if translation:
                 n_=n_.replace('.translation', '')
+            l=0
             for i,s in enumerate(d):
-                train_data.append(s[0].encode('utf-8'))
-                train_data.append(s[1].encode('utf-8'))
+                if gs_data_[n_][i] != 'NaN': # Rejecting unlabeled pairs (absent gs score)
+                    gs_data.append(gs_data_[n_][i])
+
+                    train_data.append(s[0].encode('utf-8'))
+                    train_data.append(s[1].encode('utf-8'))
+                    l += 1
                 #if format != "validation":
-                gs_data.append(gs_data_[n_][i])
             #if format != "validation":
-            verbose("Phrases in",n,len(d),len(gs_data_[n_]))
+            
+            verbose("Phrases in",n,len(d),l)
             #else:
             #    verbose("Phrases in",n,len(d))
-        verbose('Total train phrases',directory,sum([len(d) for n,d in train_data_]))
+        verbose('Total train phrases',directory,sum([len(d) for d in train_data]))
 
         verbose('Total train phrases',len(train_data))
     return train_data,gs_data
