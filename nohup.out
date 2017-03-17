@@ -109,3 +109,55 @@ Traceback (most recent call last):
   File "/usr/local/lib/python2.7/dist-packages/keras/engine/topology.py", line 1357, in _arguments_validation
     if shape1[self.dot_axes[0]] != shape2[self.dot_axes[1]]:
 IndexError: tuple index out of range
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Loanding train and valid dirs......
+Starting training
+Phrases in STS.input.MSRvid.txt 750 750
+Phrases in STS.input.MSRpar.txt 750 750
+Phrases in STS.input.SMTeuroparl.txt 734 734
+Total train phrases /almac/ignacio/data/sts_all/train-2012 450269
+Total train phrases 4468
+Starting training
+Phrases in STS.input.headlines.txt 750 750
+Phrases in STS.input.OnWN.txt 561 561
+Phrases in STS.input.FNWN.txt 189 189
+Total train phrases /almac/ignacio/data/sts_all/train-2013 609362
+Total train phrases 7468
+Starting training
+Phrases in STS.input.headlines.txt 1500 750
+Phrases in STS.input.belief.txt 2000 375
+Phrases in STS.input.answers-students.txt 1500 750
+Phrases in STS.input.answers-forums.txt 2000 375
+Phrases in STS.input.images.txt 1500 750
+Total train phrases /almac/ignacio/data/sts_all/train-2015 949868
+Total train phrases 13468
+Starting training
+Phrases in STS2016.input.answer-answer.txt 1572 254
+Phrases in STS2016.input.question-question.txt 1555 209
+Phrases in STS2016.input.headlines.txt 1498 249
+Phrases in STS2016.input.plagiarism.txt 1271 230
+Phrases in STS2016.input.postediting.txt 3287 244
+Total train phrases /almac/ignacio/data/sts_all/train-2016 1101296
+Total train phrases 15840
+Loanding validation dirs......
+Starting training
+Phrases in STS.input.track5.en-en.txt 250 250
+Total train phrases /almac/ignacio/data/sts_all/valid-2017 21669
+Total train phrases 500
+Spliting tab-separated files...
+Labels shape:  (7920,)
+Tokenizing files... [A]
+Split training set into train and val... [A]
+Tokenizing files... [B]
+Split training set into train and val... [B]
+Getting embedding matrix... from /almac/ignacio/data/fastText/wikiEn_Full_H100.model.vec
+Found 4049540 word vectors.
+Filling embedding matrices...
+Traceback (most recent call last):
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 326, in <module>
+    len(word_index_B), h_STATES, EMBEDDING_DIM)
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 292, in build_model
+    similarity.add(Activation("sigmoid"))
+NameError: global name 'Activation' is not defined
