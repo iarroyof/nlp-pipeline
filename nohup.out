@@ -23,3 +23,89 @@ Traceback (most recent call last):
   File "clean_latin_files.py", line 20, in mp_handler
     f.write('%s\n' % result[1])
 UnicodeEncodeError: 'ascii' codec can't encode character u'\xe9' in position 102: ordinal not in range(128)
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Loanding train and valid dirs......
+Starting training
+Phrases in STS.input.headlines.txt 750 750
+Phrases in STS.input.OnWN.txt 561 561
+Phrases in STS.input.FNWN.txt 189 189
+Total train phrases /almac/ignacio/data/sts_all/train-2013 159093
+Total train phrases 3000
+Loanding validation dirs......
+Starting training
+Phrases in STS.input.track5.en-en.txt 250 250
+Total train phrases /almac/ignacio/data/sts_all/valid-2017 21669
+Total train phrases 500
+Spliting tab-separated files...
+Labels shape:  (1500,)
+Tokenizing files... [A]
+Split training set into train and val... [A]
+Tokenizing files... [B]
+Split training set into train and val... [B]
+Traceback (most recent call last):
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 151, in <module>
+    f = open(vectors_file)
+IOError: [Errno 2] No such file or directory: '/almac/ignacio/data/fastText/wikiEn_Full_H200.model.vec'
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Loanding train and valid dirs......
+Starting training
+Phrases in STS.input.FNWN.txt 189 189
+Total train phrases /almac/ignacio/data/sts_all/train-2013-t 45349
+Total train phrases 378
+Loanding validation dirs......
+Starting training
+Phrases in STS.input.track5.en-en.txt 250 250
+Total train phrases /almac/ignacio/data/sts_all/valid-2017 21669
+Total train phrases 500
+Spliting tab-separated files...
+Labels shape:  (189,)
+Tokenizing files... [A]
+Split training set into train and val... [A]
+Tokenizing files... [B]
+Split training set into train and val... [B]
+Getting embedding matrix... from /almac/ignacio/data/fastText/wikiEn_Full_H2000.model.vec
+Found 1000 word vectors.
+Filling embedding matrices...
+Traceback (most recent call last):
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 170, in <module>
+    embedding_matrix_A[i] = embedding_vector
+ValueError: could not broadcast input array from shape (200) into shape (2000)
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Loanding train and valid dirs......
+Starting training
+Phrases in STS.input.FNWN.txt 189 189
+Total train phrases /almac/ignacio/data/sts_all/train-2013-t 45349
+Total train phrases 378
+Loanding validation dirs......
+Starting training
+Phrases in STS.input.track5.en-en.txt 250 250
+Total train phrases /almac/ignacio/data/sts_all/valid-2017 21669
+Total train phrases 500
+Spliting tab-separated files...
+Labels shape:  (189,)
+Tokenizing files... [A]
+Split training set into train and val... [A]
+Tokenizing files... [B]
+Split training set into train and val... [B]
+Getting embedding matrix... from /almac/ignacio/data/fastText_dummy/wikiEn_Full_H200.model.vec
+Found 1000 word vectors.
+Filling embedding matrices...
+Traceback (most recent call last):
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 323, in <module>
+    len(word_index_B), h_STATES, EMBEDDING_DIM)
+  File "/almac/ignacio/nlp-pipeline/attention_lstm_1.py", line 286, in build_model
+    pair_sents=Merge([sent_A, sent_B], mode='cos', dot_axes=2)
+  File "/usr/local/lib/python2.7/dist-packages/keras/engine/topology.py", line 1299, in __init__
+    node_indices, tensor_indices)
+  File "/usr/local/lib/python2.7/dist-packages/keras/engine/topology.py", line 1357, in _arguments_validation
+    if shape1[self.dot_axes[0]] != shape2[self.dot_axes[1]]:
+IndexError: tuple index out of range

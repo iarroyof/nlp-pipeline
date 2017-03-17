@@ -14,7 +14,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from keras.utils.test_utils import keras_test
 from keras.layers import wrappers, Input, recurrent, InputLayer, Merge,MaxoutDense
-from keras.layers import core, convolutional, recurrent, Embedding, Dense
+from keras.layers import core, convolutional, recurrent, Embedding, Dense,Flatten
 from keras.models import Sequential, Model, model_from_json
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -45,19 +45,25 @@ EMBEDDING_DIM = args.D
 MODEL_TYPE=args.m
 EPOCHS = args.e
 EMBEDDING = args.E
+MODEL_DIR = "/almac/ignacio"
 
+dummy=""
 
 if train:
-    YEARS_TRAIN=["2012", "2013","2015","2016"]
+    if dummy== "":
+        YEARS_TRAIN=["2012", "2013", "2015", "2016"]
+        #YEARS_TRAIN=["2013"]
+    else:
+        YEARS_TRAIN=["2013-t"]
 
 YEAR_VALID="2017"
 MAX_SEQUENCE_LENGTH=50
 VALIDATION_SPLIT=0.30
-VECTOR_DIR="/almac/ignacio/data/" + EMBEDDING
+VECTOR_DIR=MODEL_DIR + "/data/" + EMBEDDING + dummy
 MAX_NB_WORDS=20000
 params="%s_Ts%d_Ds%d_%s_H%d_Sl%d"% (MODEL_TYPE, h_STATES,DENSES, EMBEDDING,
                                                 EMBEDDING_DIM, MAX_SEQUENCE_LENGTH)
-model_file="/almac/ignacio/%s.hdf5" % params
+model_file=MODEL_DIR + "/%s.hdf5" % params
 
 if train:
     TRAIN_DIRS = []
@@ -229,11 +235,10 @@ def models(M, nb_samples, timesteps, embedding_dim):#, output_dim): # For return
         model.add(embedding_layer)
         # model.add(Attention(recurrent.LSTM(embedding_dim, input_dim=embedding_dim,, consume_less='cpu' return_sequences=True))) # not supported
         model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='gpu', return_sequences=True)))
-        #model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem', return_sequences=True)))
+        model.add(Attention(recurrent.LSTM(output_dim=timesteps, consume_less='mem', return_sequences=True)))
         # test each other RNN type
         model.add(Attention(recurrent.GRU(output_dim=timesteps, consume_less='mem', return_sequences=True)))
         model.add(Attention(recurrent.SimpleRNN(output_dim=timesteps, consume_less='mem', return_sequences=False)))
-        model.add(core.Activation('relu'))
 
     elif M == "stacked_bidir":
     # test stacked with all RNN layers and consume_less options
@@ -272,13 +277,19 @@ def build_model(model_type, len_vocab_A, len_vocab_B, hidden_states, embedding_d
     sent_A=models(model_type, len_vocab_A, hidden_states, embedding_dim)#, DENSES)
     sent_B=models(model_type, len_vocab_B, hidden_states, embedding_dim)#, DENSES)
 
-    pair_sents=Merge([sent_A, sent_B], mode='concat', concat_axis=-1)
+    if DENSES:
+        pair_sents=Merge([sent_A, sent_B], mode='concat', concat_axis=-1)
 # -----------------------------------------------------------------------
-    similarity = Sequential()
-    similarity.add(pair_sents)
-    similarity.add(MaxoutDense(DENSES))
-    similarity.add(MaxoutDense(1))
-    
+        similarity = Sequential()
+        similarity.add(pair_sents)
+        similarity.add(MaxoutDense(DENSES))
+        similarity.add(MaxoutDense(1))
+    else:
+        pair_sents=Merge([sent_A, sent_B], mode='dot')
+        similarity = Sequential()
+        similarity.add(pair_sents)
+        #similarity.add(MaxoutDense(1))
+        similarity.add(Activation("sigmoid"))
     return similarity
 
 import subprocess
@@ -316,12 +327,14 @@ if train:
 
     print "Compiling the model..."
     similarity.compile(loss='mean_squared_error', optimizer='rmsprop', 
-                    metrics=['mean_absolute_error','mean_squared_error'])
+                    metrics=['acc','mean_squared_error'])
 
-    print similarity.summary()
+    similarity.get_config()
+    summ=model_from_json(similarity.to_json(),custom_objects=dict(Attention=Attention))
+    summ.summary()
     
     print "Happy learning!!!"
-    checkpointer = ModelCheckpoint(filepath=model_file, verbose=1, save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=model_file, monitor='val_acc', verbose=1, save_best_only=True)
     
     similarity.fit([x_train_A, x_train_B], y_train, validation_data=([x_val_A, x_val_B], y_val),
                                                  nb_epoch=EPOCHS, batch_size=20, callbacks=[checkpointer])
