@@ -3,7 +3,7 @@ import math
 import numpy
 
 def quantize(x):
-    if (x > 0).all():
+    if (x >= 0).all():
         y = array([math.floor(d) if d-int(d) < 0.5 else math.ceil(d) for d in x]).astype("int")
     else:
         y = array([d if d > 0 else 0 for d in x]).astype("int")
