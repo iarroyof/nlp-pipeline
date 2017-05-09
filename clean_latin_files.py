@@ -1,7 +1,12 @@
 from w2v import *
-import multiprocessing
+import multiprocessing, logging
 from ast import literal_eval as le
 from fasttext import load_model as load_ft
+import re
+from pdb import set_trace as st
+
+#mpl = multiprocessing.log_to_stderr()
+#mpl.setLevel(logging.INFO)
 
 n_cpus = 20
 
@@ -15,10 +20,18 @@ def mp_worker(filename):
     return m
 
 def ln_worker(line):
-    global ft
+    global ph_comb
+    # The cleaning function returns a list of words.
+    if ph_comb=='_': # Simple underscore string joining
+        phrase = ph_comb.join(clean_Ustring_fromU(line))
+        v=ft[phrase]
+    elif ph_comb=='+': #Averaged phrase vector
+        from numpy import sum, array, multiply
+        phrase=clean_Ustring_fromU(line)
+        summand=[array(ft[word]) for word in phrase]
+        v=multiply(sum(array(summand), axis=0), 1.0/len(phrase))
+        phrase="_".join(phrase)
 
-    phrase = clean_Ustring_fromU(line).replace(' ', '_')
-    v=ft(phrase)
     str_v=" ".join([str(n) for n in v])
     return phrase + " " + str_v
 
@@ -44,14 +57,17 @@ if __name__=='__main__':
 
     from ast import literal_eval
     from argparse import ArgumentParser as ap
+    global ph_comb
 
     parser = ap(description='This script cleans LATIN encoded text files from non printable chars.')
     parser.add_argument("--infiles", help="A file containing a list of input files to clean.", metavar="infiles", default=None)
     parser.add_argument("--inlines", help="A file containing the input file containing lines to clean.", metavar="inlines", default=None)
     parser.add_argument("--model", help="A file containing the word embeddings bin.", metavar="model", default=None)
+    parser.add_argument("--comb", help="Combination among phrase vectors: simple ('_') or vector average ('+').", metavar="comb", default='_')
     parser.add_argument("--outfile", help="A file where cleaned files must be saved together.", metavar="outfile", default='clean.txt')
     args = parser.parse_args()
 
-    global ft=load_ft(args.model)
+    ft=load_ft(args.model)
+    ph_comb=args.comb
 
     mp_handler(args.infiles, args.inlines, args.outfile)
