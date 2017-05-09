@@ -285,11 +285,11 @@ def build_model(model_type, len_vocab_A, len_vocab_B, hidden_states, embedding_d
         similarity.add(MaxoutDense(DENSES))
         similarity.add(MaxoutDense(1))
     else:
-        pair_sents=Merge([sent_A, sent_B], mode='dot', dot_axes=-1)
+        pair_sents=Merge([sent_A, sent_B], mode='concat', concat_axis=-1)
         similarity = Sequential()
         similarity.add(pair_sents)
-        #similarity.add(MaxoutDense(1))
-        similarity.add(core.Activation("sigmoid"))
+        similarity.add(MaxoutDense(1))
+        #similarity.add(core.Activation("sigmoid"))
     return similarity
 
 import subprocess

@@ -1,0 +1,71 @@
+Using Theano backend.
+WARNING (theano.gof.cmodule): WARNING: your Theano flags `gcc.cxxflags` specify an `-march=X` flags.
+         It is better to let Theano/g++ find it automatically, but we don't do it now
+Loanding train and valid dirs......
+Starting training
+Phrases in STS.input.MSRvid.txt 750 750
+Phrases in STS.input.MSRpar.txt 750 750
+Phrases in STS.input.SMTeuroparl.txt 734 734
+Total train phrases /almac/ignacio/data/sts_all/train-2012 450269
+Total train phrases 4468
+Starting training
+Phrases in STS.input.headlines.txt 750 750
+Phrases in STS.input.OnWN.txt 561 561
+Phrases in STS.input.FNWN.txt 189 189
+Total train phrases /almac/ignacio/data/sts_all/train-2013 609362
+Total train phrases 7468
+Starting training
+Phrases in STS.input.headlines.txt 1500 750
+Phrases in STS.input.belief.txt 2000 375
+Phrases in STS.input.answers-students.txt 1500 750
+Phrases in STS.input.answers-forums.txt 2000 375
+Phrases in STS.input.images.txt 1500 750
+Total train phrases /almac/ignacio/data/sts_all/train-2015 949868
+Total train phrases 13468
+Starting training
+Phrases in STS2016.input.answer-answer.txt 1572 254
+Phrases in STS2016.input.question-question.txt 1555 209
+Phrases in STS2016.input.headlines.txt 1498 249
+Phrases in STS2016.input.plagiarism.txt 1271 230
+Phrases in STS2016.input.postediting.txt 3287 244
+Total train phrases /almac/ignacio/data/sts_all/train-2016 1101296
+Total train phrases 15840
+Loanding validation dirs......
+Starting training
+Phrases in STS.input.track5.en-en.txt 250 250
+Total train phrases /almac/ignacio/data/sts_all/valid-2017 21669
+Total train phrases 500
+Spliting tab-separated files...
+Labels shape:  (7920,)
+Tokenizing files... [A]
+Split training set into train and val... [A]
+Tokenizing files... [B]
+Split training set into train and val... [B]
+Getting embedding matrix... from /almac/ignacio/data/fastText/wikiEn_Full_H200.model.vec
+Found 2226372 word vectors.
+Filling embedding matrices...
+Compiling the model...
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+embedding_1 (Embedding)          (None, 50, 200)       2195200     embedding_input_3[0][0]          
+____________________________________________________________________________________________________
+attention_1 (Attention)          (None, 50, 50)        130600      embedding_1[0][0]                
+____________________________________________________________________________________________________
+attention_2 (Attention)          (None, 50, 50)        10150       attention_1[0][0]                
+____________________________________________________________________________________________________
+attention_3 (Attention)          (None, 50, 50)        10150       attention_2[0][0]                
+____________________________________________________________________________________________________
+attention_4 (Attention)          (None, 50)            10150       attention_3[0][0]                
+____________________________________________________________________________________________________
+embedding_2 (Embedding)          (None, 50, 200)       2254800     embedding_input_4[0][0]          
+____________________________________________________________________________________________________
+attention_5 (Attention)          (None, 50, 50)        130600      embedding_2[0][0]                
+____________________________________________________________________________________________________
+attention_6 (Attention)          (None, 50, 50)        10150       attention_5[0][0]                
+____________________________________________________________________________________________________
+attention_7 (Attention)          (None, 50, 50)        10150       attention_6[0][0]                
+____________________________________________________________________________________________________
+attention_8 (Attention)          (None, 50)            10150       attention_7[0][0]                
+____________________________________________________________________________________________________
+maxoutdense_1 (MaxoutDense
