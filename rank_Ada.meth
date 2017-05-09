@@ -1,0 +1,12 @@
+# The most similars to: 'Ada . methyl	Ada-methyl . ada-alkB	ada-alkB_mRNA	A'
+
+4	0.99963	AcrR . ethidium	AcrR-ethidium . proflavin	AcrR-pro
+10	0.99959	AllR . glyoxylate	AllR-glyoxylate . allA	allA_mRNA
+6	0.99957	AdiY . adiA	adiA_mRNA	AdiA	ARGDECARBOX-RXN	arginin
+7	0.99940	AgaR . agaR	agaR_mRNA	AgaR . agaS-kbaY-agaBCDI	aga
+13	0.99807	AppY . appCBXA	appCBXA_mRNA	AppC	AppC-AppB	RXN0-52
+12	0.99758	AlsR . allose	AlsR-allose . rpiB	rpiB_mRNA	RpiB	RX
+11	0.99706	AllS . allantoin	AllS-allantoin . allDCE	allDCE_mR
+3	0.99286	AccB . accBC	accBC_mRNA	AccB	AccD-AccA-AccC-AccB	A
+14	0.99199	AraC . arabinose	AraC-arabinose . fucose	AraC-fuco
+9	0.98166	AlaS . alanine	AlaS-alanine . alaS	alaS_mRNA	AlaS	

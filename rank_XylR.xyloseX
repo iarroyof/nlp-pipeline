@@ -1,0 +1,13 @@
+# The most similars to this GU: '
+# XylR . xylose	XylR-xylose . xylAB	xylAB_mRNA	XylA	XYLISOM-RXN	xylopyra'
+
+172	0.86116	TrpR . tryptophan	TrpR-tryptophan . aroH	aroH_mRNA	AroH	DAHPSYN-RXN	P-enol-pyruv
+169	0.82007	TdcR . tdcABCDEFG	tdcABCDEFG_mRNA	TdcA . tdcABCDEFG	tdcABCDEFG_mRNA	TdcB . tdcAB
+176	0.81844	UlaR . ulaABCDEF	ulaABCDEF_mRNA	UlaA	UlaC-UlaB-UlaA	RXN0-2461	HPr - phosphorylat
+173	0.79348	TyrR . tryptophan	TyrR-tryptophan . phenylalanine	TyrR-phenylalanine . tyrosine	
+174	0.78728	UhpA . phosphate	UhpA-phosphate . uhpT	uhpT_mRNA	UhpT	TRANS-RXN0-534	GAP_Ext	GAP
+166	0.77735	SoxS . acnA	acnA_mRNA	AcnA	ACONITATEHYDR-RXN	cis-aconitate	I-CIT	ACONITATEDEHYDR
+180	0.76551	YdeO . appCBXA	appCBXA_mRNA	AppC	AppC-AppB	RXN0-5266	ubiquinol_Ext	oxygen_Ext	ub
+167	0.76202	StpA . bglG	bglG_mRNA	BglG . bglGFB	bglGFB_mRNA	BglG . bglGFB	bglGFB_mRNA	BglF .
+161	0.75943	RutR . thymine	RutR-thymine . uracil	RutR-uracil . carAB	carAB_mRNA	CarA	CarB-Ca
+170	0.75093	TorR . phosphate	TorR-phosphate . TorI	TorR-TorI . gadAX	gadAX_mRNA	GadA	GLUTDEC

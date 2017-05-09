@@ -1,0 +1,12 @@
+# The most similars to: 'ArgP . arginine	ArgP-arginine . lysine	ArgP-lysine'
+
+11	0.96595	AllS . allantoin	AllS-allantoin . allDCE	allDCE_mR
+7	0.96445	AgaR . agaR	agaR_mRNA	AgaR . agaS-kbaY-agaBCDI	aga
+10	0.96392	AllR . glyoxylate	AllR-glyoxylate . allA	allA_mRNA
+6	0.96369	AdiY . adiA	adiA_mRNA	AdiA	ARGDECARBOX-RXN	arginin
+12	0.96237	AlsR . allose	AlsR-allose . rpiB	rpiB_mRNA	RpiB	RX
+14	0.96222	AraC . arabinose	AraC-arabinose . fucose	AraC-fuco
+5	0.96203	Ada . methyl	Ada-methyl . ada-alkB	ada-alkB_mRNA	A
+4	0.96194	AcrR . ethidium	AcrR-ethidium . proflavin	AcrR-pro
+13	0.96039	AppY . appCBXA	appCBXA_mRNA	AppC	AppC-AppB	RXN0-52
+3	0.95761	AccB . accBC	accBC_mRNA	AccB	AccD-AccA-AccC-AccB	A

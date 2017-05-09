@@ -1,0 +1,14 @@
+# The most similars to this GU: '
+# AraC . arabinose	AraC-arabinose . fucose	AraC-fucose . araBAD	araBAD_m'
+
+10	0.99226	AllR . glyoxylate	AllR-glyoxylate . allA	allA_mRNA	AllA	UREIDOGLYCOLATE-LYASE-RX
+5	0.99199	Ada . methyl	Ada-methyl . ada-alkB	ada-alkB_mRNA	Ada	Ada-methyl . ada-alkB	ada-a
+4	0.99137	AcrR . ethidium	AcrR-ethidium . proflavin	AcrR-proflavin . rhodamine 6G	AcrR-rho
+6	0.99095	AdiY . adiA	adiA_mRNA	AdiA	ARGDECARBOX-RXN	arginine	agmatine	CO2 . gadAX	gadAX_m
+7	0.99053	AgaR . agaR	agaR_mRNA	AgaR . agaS-kbaY-agaBCDI	agaS-kbaY-agaBCDI_mRNA	AgaS . aga
+11	0.98684	AllS . allantoin	AllS-allantoin . allDCE	allDCE_mRNA	AllD	RXN0-7024	ureidoglycol
+13	0.98683	AppY . appCBXA	appCBXA_mRNA	AppC	AppC-AppB	RXN0-5266	ubiquinol_Ext	oxygen_Ext	ub
+12	0.98499	AlsR . allose	AlsR-allose . rpiB	rpiB_mRNA	RpiB	RXN0-303	aldehydo-D-allose-6-P	a
+3	0.98437	AccB . accBC	accBC_mRNA	AccB	AccD-AccA-AccC-AccB	ACETYL-COA-CARBOXYLTRANSFER-RXN
+9	0.97129	AlaS . alanine	AlaS-alanine . alaS	alaS_mRNA	AlaS	AlaS-alanine . 
+
